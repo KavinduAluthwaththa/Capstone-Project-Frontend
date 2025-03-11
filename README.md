@@ -1,4 +1,4 @@
-# capsfront
+# Capstone Project Frontend Development
 
 A new Flutter project.
 
