@@ -21,6 +21,8 @@ class BottomNavigationBarExample extends StatefulWidget {
   State<BottomNavigationBarExample> createState() => _BottomNavigationBarExampleState();
 }
 
+
+//bottom navigation bar
 class _BottomNavigationBarExampleState extends State<BottomNavigationBarExample> {
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
