@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'Home.dart';
-import 'Chat.dart';
-import 'Chatbot.dart';
 import 'Dashboard.dart';
 
 void main() => runApp(const BottomNavigationBarExampleApp());
