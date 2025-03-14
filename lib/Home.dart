@@ -13,7 +13,7 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Welcome Back, User!",
+              "Welcome, User!",
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF4A6B3E)),
             ),
             const SizedBox(height: 10),

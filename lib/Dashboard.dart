@@ -18,7 +18,7 @@ class DashboardPage extends StatelessWidget {
               icon: Icons.home_outlined,
               label: "Home",
               context: context,
-              routeName: "/home",
+              routeName: "/Home.dart",
             ),
             _buildDashboardItem(
               icon: Icons.chat_bubble_outline,
