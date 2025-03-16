@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'Splash.dart';
 import 'Home.dart';
 import 'Dashboard.dart';
 
@@ -10,7 +10,11 @@ class BottomNavigationBarExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: BottomNavigationBarExample());
+    return  MaterialApp(
+      debugShowCheckedModeBanner: false,
+        home: Container(
+          child: Splashscreen(
+        child: BottomNavigationBarExample())));
   }
 }
 
