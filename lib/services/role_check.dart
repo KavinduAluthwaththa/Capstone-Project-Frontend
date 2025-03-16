@@ -1,7 +1,6 @@
 import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/constraints/token_handler.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class RoleCheck{

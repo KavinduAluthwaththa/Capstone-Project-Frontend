@@ -15,6 +15,7 @@ class Splashscreen extends StatefulWidget {
 }
 
 class _State extends State<Splashscreen> {
+  @override
   void initState() {
     super.initState();
     // Navigate to SecondPage after a delay of 3 seconds

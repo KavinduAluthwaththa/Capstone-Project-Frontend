@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class ShopOwnerMainPage extends StatefulWidget {
   final String email;
-  ShopOwnerMainPage({super.key, required this.email});
+  const ShopOwnerMainPage({super.key, required this.email});
 
   @override
   State<ShopOwnerMainPage> createState() => _ShopOwnerMainPageState();

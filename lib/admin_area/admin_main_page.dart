@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class AdminMainPage extends StatefulWidget {
   final String email;
-  AdminMainPage({super.key, required this.email});
+  const AdminMainPage({super.key, required this.email});
 
   @override
   @override

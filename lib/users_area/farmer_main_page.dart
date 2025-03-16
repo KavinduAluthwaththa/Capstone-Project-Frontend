@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class FarmerMainPage extends StatefulWidget {
   final String email;
-  FarmerMainPage({super.key, required this.email});
+  const FarmerMainPage({super.key, required this.email});
 
   @override
   @override

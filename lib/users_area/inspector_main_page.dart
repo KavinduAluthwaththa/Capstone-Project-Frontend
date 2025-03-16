@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class InspectorMainPage extends StatefulWidget {
   final String email;
-  InspectorMainPage({super.key, required this.email});
+  const InspectorMainPage({super.key, required this.email});
 
   @override
   @override
