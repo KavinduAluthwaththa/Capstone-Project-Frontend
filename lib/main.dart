@@ -29,7 +29,6 @@ class BottomNavigationBarExample extends StatefulWidget {
 //bottom navigation bar
 class _BottomNavigationBarExampleState extends State<BottomNavigationBarExample> {
   int _selectedIndex = 0;
-  static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static const List<Widget> _widgetOptions = <Widget>[
     HomePage(),
     Text('Chatbot'),
