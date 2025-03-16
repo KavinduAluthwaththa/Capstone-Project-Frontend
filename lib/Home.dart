@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'profile_page.dart';
+
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -42,6 +44,14 @@ class HomePage extends StatelessWidget {
 
   Widget _buildFeatureCard(IconData icon, String title, Color color, BuildContext context) {
     return GestureDetector(
+      onTap: () {
+        if (title == "My Account") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfilePage()), // Navigate to ProfilePage
+          );
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           color: color.withOpacity(0.2),

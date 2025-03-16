@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'Home.dart';
 import 'Dashboard.dart';
 
+
 void main() => runApp(const BottomNavigationBarExampleApp());
 
 class BottomNavigationBarExampleApp extends StatelessWidget {
@@ -33,6 +34,7 @@ class _BottomNavigationBarExampleState extends State<BottomNavigationBarExample>
     Text('Chatbot'),
     Text('Chat'),
     DashboardPage(),
+
   ];
 
   void _onItemTapped(int index) {
