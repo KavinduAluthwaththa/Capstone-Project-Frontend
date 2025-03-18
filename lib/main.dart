@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'Splash.dart';
 import 'Home.dart';
 import 'Dashboard.dart';
 
@@ -10,9 +10,11 @@ class BottomNavigationBarExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return  MaterialApp(
       debugShowCheckedModeBanner: false,
-        home: BottomNavigationBarExample());
+        home: Container(
+          child: Splashscreen(
+        child: BottomNavigationBarExample())));
   }
 }
 
@@ -27,7 +29,6 @@ class BottomNavigationBarExample extends StatefulWidget {
 //bottom navigation bar
 class _BottomNavigationBarExampleState extends State<BottomNavigationBarExample> {
   int _selectedIndex = 0;
-  static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static const List<Widget> _widgetOptions = <Widget>[
     HomePage(),
     Text('Chatbot'),
