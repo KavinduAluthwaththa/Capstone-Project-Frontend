@@ -1,12 +1,12 @@
 import 'package:capsfront/enums/User_Types.dart';
 import 'package:flutter/material.dart';
 
-class UserRegistrationScreen extends StatefulWidget {
+class RegisterPage extends StatefulWidget {
   @override
-  _UserRegistrationScreenState createState() => _UserRegistrationScreenState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
