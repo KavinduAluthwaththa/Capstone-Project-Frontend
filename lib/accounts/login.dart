@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:capsfront/accounts/register.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/constraints/token_handler.dart';
@@ -111,7 +113,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -119,36 +120,61 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Username',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
                 ),
                 validator: (value) =>
-                    (value == null || value.isEmpty) ? 'Please enter your username' : null,
+                    (value == null || value.isEmpty) ? 'Enter Username' : null,
               ),
               const SizedBox(height: 16.0),
+
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
                 ),
+                
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return 'Enter Password';
                   } else if (value.length < 6) {
                     return 'Password must be at least 6 characters';
                   }
                   return null;
                 },
               ),
+
               const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: submitForm,
-                child: const Text('Login'),
+
+            SizedBox(
+              width: double.infinity,
+                child: CupertinoButton.filled(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+              onPressed: submitForm,
+              borderRadius: BorderRadius.circular(8.0),
+              child: const Text('Login'),
+              ),
+            ),
+
+              const SizedBox(height: 16.0),
+              
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterPage()), // Replace with your screen
+                  );
+                },
+                child: Text(
+                  'Create an Account',
+                  style: TextStyle(fontSize: 15, color: Colors.black), // Change color for better visibility
+                ),
               ),
             ],
           ),
@@ -161,3 +187,5 @@ class _LoginPageState extends State<LoginPage> {
 void main() {
   runApp(const MaterialApp(home: LoginPage()));
 }
+
+
