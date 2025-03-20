@@ -25,8 +25,8 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Profile Image
-              Flexible(
-                child: Container(
+              
+                Container(
                   width: 150,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -41,7 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     backgroundImage: ExactAssetImage('assets/profile.png'), // Update with a valid asset
                   ),
                 ),
-              ),
+              
 
               const SizedBox(height: 10),
 
