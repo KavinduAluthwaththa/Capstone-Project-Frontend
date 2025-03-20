@@ -46,12 +46,15 @@ class HomePage extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (title == "My Account") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()), // Navigate to ProfilePage
-          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()), // Navigate to ProfilePage
+            );
+          });
         }
       },
+
       child: Container(
         decoration: BoxDecoration(
           color: color.withOpacity(0.2),

@@ -4,6 +4,7 @@ import 'Home.dart';
 import 'Dashboard.dart';
 
 
+
 void main() => runApp(const BottomNavigationBarExampleApp());
 
 class BottomNavigationBarExampleApp extends StatelessWidget {
@@ -13,7 +14,7 @@ class BottomNavigationBarExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-        home: BottomNavigationBarExample());
+        home: BottomNavigationBarExample(),);
   }
 }
 
@@ -34,6 +35,7 @@ class _BottomNavigationBarExampleState extends State<BottomNavigationBarExample>
     Text('Chatbot'),
     Text('Chat'),
     DashboardPage(),
+
 
   ];
 

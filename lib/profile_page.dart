@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const CircleAvatar(
                     radius: 60,
                     backgroundColor: Colors.transparent,
-                    backgroundImage: ExactAssetImage('assetName'), // Update with a valid asset
+                    backgroundImage: ExactAssetImage('assets/profile.png'), // Update with a valid asset
                   ),
                 ),
               ),
@@ -62,7 +62,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(width: 10),
                     SizedBox(
                       height: 24.0,
-                      child: Image.asset("name"), // Update with a valid asset
+                      child: Image.asset("assets/profile.png"), // Update with a valid asset
                     ),
                   ],
                 ),
