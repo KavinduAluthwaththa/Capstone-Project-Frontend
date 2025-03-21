@@ -1,3 +1,4 @@
+import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/enums/User_Types.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -36,6 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
+
           key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -44,12 +46,14 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 12.0),
               _buildTextField(_lastNameController, 'Last Name'),
               const SizedBox(height: 12.0),
+
               _buildTextField(
                 _emailController,
                 'Email',
                 keyboardType: TextInputType.emailAddress,
                 validator: _validateEmail,
               ),
+
               const SizedBox(height: 12.0),
               _buildTextField(
                 _passwordController,
@@ -59,6 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? 'Password must be at least 6 characters'
                     : null,
               ),
+
               const SizedBox(height: 12.0),
               _buildTextField(
                 _confirmPasswordController,
@@ -68,12 +73,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? 'Passwords do not match'
                     : null,
               ),
+
               const SizedBox(height: 12.0),
               DropdownButtonFormField<UserTypes>(
                 decoration: const InputDecoration(
                   labelText: 'User Type',
                   border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
                 ),
+
                 value: _selectedUserType,
                 onChanged: (newValue) => setState(() => _selectedUserType = newValue),
                 items: _userTypes.map((type) => DropdownMenuItem(
@@ -82,7 +89,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 )).toList(),
                 validator: (value) => value == null ? 'Please select a user type' : null,
               ),
+
               const SizedBox(height: 16.0),
+
               SizedBox(
                 width: double.infinity,
                 child: CupertinoButton.filled(
@@ -90,6 +99,21 @@ class _RegisterPageState extends State<RegisterPage> {
                   onPressed: _registerUser,
                   borderRadius: BorderRadius.circular(8.0),
                   child: const Text('Register'),
+                ),
+              ),
+
+              const SizedBox(height: 16.0),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()), // Replace with your screen
+                  );
+                },
+                child: Text(
+                  'Already has an Account ?',
+                  style: TextStyle(fontSize: 15, color: Colors.black), // Change color for better visibility
                 ),
               ),
             ],

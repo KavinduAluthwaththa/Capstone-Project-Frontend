@@ -5,7 +5,6 @@ class InspectorMainPage extends StatefulWidget {
   const InspectorMainPage({super.key, required this.email});
 
   @override
-  @override
   State<InspectorMainPage> createState() => _InspectorMainPageState();
 }
 

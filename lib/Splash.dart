@@ -1,3 +1,4 @@
+import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/accounts/register.dart';
 import 'package:capsfront/main.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class _State extends State<Splashscreen> {
     Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => RegisterPage()),
+        MaterialPageRoute(builder: (context) => LoginPage()),
       );
     });
   }
