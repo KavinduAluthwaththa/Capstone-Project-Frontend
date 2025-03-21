@@ -1,11 +1,15 @@
-import 'package:capsfront/accounts/login.dart';
-import 'package:capsfront/enums/User_Types.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
+import 'package:jwt_decoder/jwt_decoder.dart';
+
+import '../constraints/api_endpoint.dart';
+import '../constraints/token_handler.dart';
+import 'login.dart';
+
+enum UserTypes { farmer, inspector, shopOwner }
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
-
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
@@ -22,16 +26,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final List<UserTypes> _userTypes = UserTypes.values;
 
   @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
@@ -41,7 +35,6 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-
               Text(
                 'Register',
                 style: TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w800),
@@ -87,7 +80,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   labelText: 'User Type',
                   border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
                 ),
-
                 value: _selectedUserType,
                 onChanged: (newValue) => setState(() => _selectedUserType = newValue),
                 items: _userTypes.map((type) => DropdownMenuItem(
@@ -105,11 +97,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 50), // Fixed missing value
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                  onPressed: _registerUser, // Corrected function call
-                  child: Text('Register',
-                  style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600)),
+                  onPressed: _registerUser,
+                  child: Text(
+                    'Register',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
 
@@ -119,15 +113,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginPage()), // Replace with your screen
+                    MaterialPageRoute(builder: (context) => LoginPage()), // Replace with actual screen
                   );
                 },
                 child: Text(
-                  'Already has an Account ?',
-                  style: TextStyle(fontSize: 15, color: Colors.black), // Change color for better visibility
+                  'Already have an account?',
+                  style: TextStyle(fontSize: 15, color: Colors.black),
                 ),
               ),
-
             ],
           ),
         ),
@@ -151,7 +144,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return 'Please enter your email';
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\$');
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     return emailRegex.hasMatch(value) ? null : 'Please enter a valid email address';
   }
 
@@ -168,7 +161,53 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _registerUser() {
     if (_formKey.currentState!.validate()) {
+      if (_selectedUserType == null) {
+        _showError("Please select a user type.");
+        return;
+      }
+
       print('User Registered: ${_firstNameController.text}, Type: ${_selectedUserType.toString()}');
+
+      submitForm();
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message, style: TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+    );
+  }
+
+  Future<void> submitForm() async {
+    final registerData = {
+      "firstName": _firstNameController.text.trim(),
+      "lastName": _lastNameController.text.trim(),
+      "userName": _emailController.text.trim(),
+      "password": _passwordController.text.trim(),
+      "confirmedPassword": _confirmPasswordController.text.trim(),
+      "userTypes": _selectedUserType?.index, // Convert enum to int
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.registerUser),
+        headers: {"Content-Type": "application/json; charset=UTF-8"},
+        body: jsonEncode(registerData),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final jsonData = json.decode(response.body);
+        if (!jsonData.containsKey('token') || jsonData['token'] == null || jsonData['token'].isEmpty) {
+          _showError("Invalid token received.");
+          return;
+        }
+
+      } else {
+        final errorMessage = json.decode(response.body)['message'] ?? "Registration failed.";
+        _showError(errorMessage);
+      }
+    } catch (e) {
+      _showError("An unexpected error occurred: $e");
     }
   }
 }
