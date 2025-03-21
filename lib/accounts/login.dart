@@ -81,16 +81,16 @@ class _LoginPageState extends State<LoginPage> {
 
     switch (role) {
       case "Admin":
-        nextPage = AdminMainPage(email: email) as Widget;
+        nextPage = AdminMainPage(email: email);
         break;
       case "Farmer":
-        nextPage = FarmerMainPage(email: email) as Widget;
+        nextPage = FarmerMainPage(email: email);
         break;
       case "Inspector":
-        nextPage = InspectorMainPage(email: email) as Widget;
+        nextPage = InspectorMainPage(email: email);
         break;
       case "ShopOwner":
-        nextPage = ShopOwnerMainPage(email: email) as Widget;
+        nextPage = ShopOwnerMainPage(email: email);
         break;
       default:
         _showError("Unauthorized role: $role");
@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => nextPage),
-      (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
     );
   }
 
@@ -121,6 +121,12 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
 
+              Text(
+                'Login',
+                style: TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 50.0),
+
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
@@ -128,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
                 ),
                 validator: (value) =>
-                    (value == null || value.isEmpty) ? 'Enter Username' : null,
+                (value == null || value.isEmpty) ? 'Enter Username' : null,
               ),
               const SizedBox(height: 16.0),
 
@@ -138,7 +144,6 @@ class _LoginPageState extends State<LoginPage> {
                   labelText: 'Password',
                   border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
                 ),
-                
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -150,30 +155,34 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
 
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 20.0),
 
-            SizedBox(
-              width: double.infinity,
-                child: CupertinoButton.filled(
-                padding: const EdgeInsets.symmetric(vertical: 15.0),
-              onPressed: submitForm,
-              borderRadius: BorderRadius.circular(8.0),
-              child: const Text('Login'),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 50), // Fixed missing value
+                  ),
+                  onPressed: submitForm, // Corrected function call
+                  child: Text('Login',
+                      style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600)),
+                ),
               ),
-            ),
 
               const SizedBox(height: 16.0),
-              
+
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => RegisterPage()), // Replace with your screen
+                    MaterialPageRoute(builder: (context) => RegisterPage()), // Fixed incorrect reference
                   );
                 },
                 child: Text(
                   'Create an Account',
-                  style: TextStyle(fontSize: 15, color: Colors.black), // Change color for better visibility
+                  style: TextStyle(fontSize: 15, color: Colors.black),
                 ),
               ),
             ],
@@ -187,5 +196,3 @@ class _LoginPageState extends State<LoginPage> {
 void main() {
   runApp(const MaterialApp(home: LoginPage()));
 }
-
-

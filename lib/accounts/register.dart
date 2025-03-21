@@ -37,11 +37,18 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-
           key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+
+              Text(
+                'Register',
+                style: TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w800),
+              ),
+
+              const SizedBox(height: 50.0),
+
               _buildTextField(_firstNameController, 'First Name'),
               const SizedBox(height: 12.0),
               _buildTextField(_lastNameController, 'Last Name'),
@@ -94,11 +101,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
               SizedBox(
                 width: double.infinity,
-                child: CupertinoButton.filled(
-                  padding: const EdgeInsets.symmetric(vertical: 15.0),
-                  onPressed: _registerUser,
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: const Text('Register'),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 50), // Fixed missing value
+                  ),
+                  onPressed: _registerUser, // Corrected function call
+                  child: Text('Register',
+                  style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600)),
                 ),
               ),
 
@@ -116,6 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: TextStyle(fontSize: 15, color: Colors.black), // Change color for better visibility
                 ),
               ),
+
             ],
           ),
         ),
