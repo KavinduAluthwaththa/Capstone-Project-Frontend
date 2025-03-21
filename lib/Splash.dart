@@ -1,7 +1,6 @@
 import 'package:capsfront/accounts/register.dart';
 import 'package:capsfront/main.dart';
 import 'package:flutter/material.dart';
-import 'package:capsfront/Home.dart';
 import 'package:lottie/lottie.dart';
 
 
@@ -20,7 +19,7 @@ class _State extends State<Splashscreen> {
   void initState() {
     super.initState();
     // Navigate to SecondPage after a delay of 3 seconds
-    Future.delayed(Duration(seconds: 5), () {
+    Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => RegisterPage()),
@@ -73,25 +72,6 @@ class _State extends State<Splashscreen> {
 
       child: Icon(Icons.account_tree, size: 90,),);
   }
-
-// ElevatedButton1() {
-//   return Container(
-//       margin: EdgeInsets.only(top: 300),
-//       child: ElevatedButton(
-//           onPressed: () {},
-//           child: Text('Next', style: TextStyle(
-//               fontWeight: FontWeight.bold, color: Colors.black)),
-//           style: ElevatedButton.styleFrom(
-//             backgroundColor: Colors.green.shade700,
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(20.0),
-//             ),
-//
-//           )
-//
-//       )
-//   )
-//   ;
 }
 
 Loading() {

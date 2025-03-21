@@ -1,7 +1,10 @@
 import 'package:capsfront/enums/User_Types.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
@@ -30,36 +33,47 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('User Registration')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildTextField(_firstNameController, 'First Name'),
+              const SizedBox(height: 12.0),
               _buildTextField(_lastNameController, 'Last Name'),
+              const SizedBox(height: 12.0),
               _buildTextField(
                 _emailController,
                 'Email',
                 keyboardType: TextInputType.emailAddress,
                 validator: _validateEmail,
               ),
+              const SizedBox(height: 12.0),
               _buildTextField(
                 _passwordController,
                 'Password',
                 obscureText: true,
-                validator: (value) => value != null && value.length < 6 ? 'Password must be at least 6 characters' : null,
+                validator: (value) => value != null && value.length < 6
+                    ? 'Password must be at least 6 characters'
+                    : null,
               ),
+              const SizedBox(height: 12.0),
               _buildTextField(
                 _confirmPasswordController,
                 'Confirm Password',
                 obscureText: true,
-                validator: (value) => value != _passwordController.text ? 'Passwords do not match' : null,
+                validator: (value) => value != _passwordController.text
+                    ? 'Passwords do not match'
+                    : null,
               ),
+              const SizedBox(height: 12.0),
               DropdownButtonFormField<UserTypes>(
-                decoration: InputDecoration(labelText: 'User Type'),
+                decoration: const InputDecoration(
+                  labelText: 'User Type',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+                ),
                 value: _selectedUserType,
                 onChanged: (newValue) => setState(() => _selectedUserType = newValue),
                 items: _userTypes.map((type) => DropdownMenuItem(
@@ -68,10 +82,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 )).toList(),
                 validator: (value) => value == null ? 'Please select a user type' : null,
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _registerUser,
-                child: Text('Register'),
+              const SizedBox(height: 16.0),
+              SizedBox(
+                width: double.infinity,
+                child: CupertinoButton.filled(
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  onPressed: _registerUser,
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: const Text('Register'),
+                ),
               ),
             ],
           ),
@@ -80,10 +99,14 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String labelText, {TextInputType? keyboardType, bool obscureText = false, String? Function(String?)? validator}) {
+  Widget _buildTextField(TextEditingController controller, String labelText,
+      {TextInputType? keyboardType, bool obscureText = false, String? Function(String?)? validator}) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(labelText: labelText),
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+      ),
       keyboardType: keyboardType,
       obscureText: obscureText,
       validator: validator ?? (value) => (value == null || value.isEmpty) ? 'Please enter your $labelText' : null,
@@ -109,17 +132,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _registerUser() {
     if (_formKey.currentState!.validate()) {
-      print('User Registered: ${_firstNameController.text}, Type: ${userTypesToJson(_selectedUserType!)}');
-      _clearForm();
+      print('User Registered: ${_firstNameController.text}, Type: ${_selectedUserType.toString()}');
     }
-  }
-
-  void _clearForm() {
-    _firstNameController.clear();
-    _lastNameController.clear();
-    _emailController.clear();
-    _passwordController.clear();
-    _confirmPasswordController.clear();
-    setState(() => _selectedUserType = null);
   }
 }
