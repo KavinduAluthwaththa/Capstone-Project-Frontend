@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:capsfront/accounts/register.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/constraints/token_handler.dart';
@@ -79,16 +81,16 @@ class _LoginPageState extends State<LoginPage> {
 
     switch (role) {
       case "Admin":
-        nextPage = AdminMainPage(email: email) as Widget;
+        nextPage = AdminMainPage(email: email);
         break;
       case "Farmer":
-        nextPage = FarmerMainPage(email: email) as Widget;
+        nextPage = FarmerMainPage(email: email);
         break;
       case "Inspector":
-        nextPage = InspectorMainPage(email: email) as Widget;
+        nextPage = InspectorMainPage(email: email);
         break;
       case "ShopOwner":
-        nextPage = ShopOwnerMainPage(email: email) as Widget;
+        nextPage = ShopOwnerMainPage(email: email);
         break;
       default:
         _showError("Unauthorized role: $role");
@@ -98,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => nextPage),
-      (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
     );
   }
 
@@ -111,7 +113,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -119,36 +120,70 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+
+              Text(
+                'Login',
+                style: TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 50.0),
+
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Username',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
                 ),
                 validator: (value) =>
-                    (value == null || value.isEmpty) ? 'Please enter your username' : null,
+                (value == null || value.isEmpty) ? 'Enter Username' : null,
               ),
               const SizedBox(height: 16.0),
+
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
                 ),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return 'Enter Password';
                   } else if (value.length < 6) {
                     return 'Password must be at least 6 characters';
                   }
                   return null;
                 },
               ),
+
+              const SizedBox(height: 20.0),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 50), // Fixed missing value
+                  ),
+                  onPressed: submitForm, // Corrected function call
+                  child: Text('Login',
+                      style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600)),
+                ),
+              ),
+
               const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: submitForm,
-                child: const Text('Login'),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterPage()), // Fixed incorrect reference
+                  );
+                },
+                child: Text(
+                  'Create an Account',
+                  style: TextStyle(fontSize: 15, color: Colors.black),
+                ),
               ),
             ],
           ),
