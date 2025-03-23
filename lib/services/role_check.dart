@@ -6,7 +6,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 class RoleCheck{
   void checkAdminRole(BuildContext context){
     final decodedToken = JwtDecoder.decode(TokenHandler().getToken());
-    String role = decodedToken['token'];
+    String role = decodedToken['Role'];
 
     if(role != "admin" || role.isEmpty){
       Navigator.pushAndRemoveUntil(
@@ -18,7 +18,7 @@ class RoleCheck{
 
   void checkUserRole(BuildContext context){
     final decodedToken = JwtDecoder.decode(TokenHandler().getToken());
-    String role = decodedToken['token'];
+    String role = decodedToken['Role'];
 
     if(role != "user" || role.isEmpty){
       Navigator.pushAndRemoveUntil(
