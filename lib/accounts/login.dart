@@ -3,7 +3,6 @@ import 'package:capsfront/accounts/register.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/constraints/token_handler.dart';
