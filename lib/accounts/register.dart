@@ -1,15 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:jwt_decoder/jwt_decoder.dart';
-
 import '../constraints/api_endpoint.dart';
-import '../constraints/token_handler.dart';
 import 'login.dart';
 
 enum UserTypes { farmer, inspector, shopOwner }
 
 class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
