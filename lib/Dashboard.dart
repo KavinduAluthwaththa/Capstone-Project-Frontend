@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'settings.dart'; // ✅ Import the SettingsPage
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -52,7 +53,15 @@ class DashboardPage extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, routeName);
+        // ✅ Special case for Settings
+        if (label == "Settings") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SettingsPage()),
+          );
+        } else {
+          Navigator.pushNamed(context, routeName);
+        }
       },
       child: Container(
         decoration: BoxDecoration(

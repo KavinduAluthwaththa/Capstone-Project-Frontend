@@ -1,5 +1,5 @@
 
-
+import 'package:capsfront/accounts/register.dart';
 import 'package:capsfront/main.dart';
 import 'package:flutter/material.dart';
 import 'package:capsfront/Home.dart';
@@ -15,13 +15,14 @@ class Splashscreen extends StatefulWidget {
 }
 
 class _State extends State<Splashscreen> {
+  @override
   void initState() {
     super.initState();
     // Navigate to SecondPage after a delay of 3 seconds
     Future.delayed(Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => RegisterPage()),
       );
     });
   }
