@@ -4,15 +4,15 @@ import 'package:google_fonts/google_fonts.dart';
 
 
 
-class Farmer extends StatelessWidget {
+class Inspector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-             Container(
-               height: 200,
+            Container(
+              height: 200,
               padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.green[400],
@@ -34,7 +34,7 @@ class Farmer extends StatelessWidget {
                           SizedBox(height: 5),
                           Text('26°',style: GoogleFonts.poppins(fontSize: 30,fontWeight: FontWeight.bold),),
                           SizedBox(height: 10,),
-                          Icon(Icons.cloud, color: Colors.white),
+                          Icon(Icons.cloud, color: Colors.white,),
 
                         ],
                       ),
@@ -53,10 +53,11 @@ class Farmer extends StatelessWidget {
                       children: [
 
 
-                        Text('Hi <Farmer Name>!',style: GoogleFonts.poppins(fontSize: 20), ),
+                        Text('Hi <Inspector Name>!',style: GoogleFonts.poppins(fontSize: 20), ),
                       ],
                     ),
                   ),
+
                 ],
               ),
             ), SizedBox(height: 50,),
@@ -66,11 +67,10 @@ class Farmer extends StatelessWidget {
                 child: Column(
 
                   children: [
-                    buildButton('Crops'),
+                    buildButton('Add Diseases'),
                     SizedBox(height: 50,),
-                    buildButton('Shop list'),
-                    SizedBox(height: 50,),
-                    buildButton('Market price'),
+                    buildButton('Answer Questions'),
+
 
 
                   ],
