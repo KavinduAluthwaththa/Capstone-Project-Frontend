@@ -1,5 +1,9 @@
+import 'package:capsfront/farmer_area/FarmersList.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+// Import the FarmersListPage
+
 
 class ShopOwnerMainPage extends StatefulWidget {
   final String email;
@@ -13,7 +17,7 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Shop(shopOwnerEmail: widget.email), // Pass email if needed
+      body: Shop(shopOwnerEmail: widget.email),
     );
   }
 }
@@ -79,9 +83,9 @@ class Shop extends StatelessWidget {
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    buildButton('Farmers List'),
+                    buildButton(context, 'Farmers List'), // Pass context
                     const SizedBox(height: 50),
-                    buildButton('Order Request'),
+                    buildButton(context, 'Order Request'), // Pass context
                   ],
                 ),
               ),
@@ -92,7 +96,8 @@ class Shop extends StatelessWidget {
     );
   }
 
-  Widget buildButton(String text) {
+  // Updated buildButton method with navigation support
+  Widget buildButton(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: SizedBox(
@@ -105,9 +110,45 @@ class Shop extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          onPressed: () {},
-          child: Text(text, style: GoogleFonts.poppins(fontSize: 20, color: Colors.green.shade900, fontWeight: FontWeight.bold)),
+          onPressed: () {
+            if (text == 'Farmers List') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FarmersList()),
+              );
+            } else if (text == 'Order Request') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Order Request button clicked')),
+              );
+            }
+          },
+          child: Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              color: Colors.green.shade900,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
+      ),
+    );
+  }
+}
+
+// Placeholder FarmersListPage
+class FarmersListPage extends StatelessWidget {
+  const FarmersListPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Farmers List'),
+        backgroundColor: Colors.green,
+      ),
+      body: const Center(
+        child: Text('This is the Farmers List page'),
       ),
     );
   }
