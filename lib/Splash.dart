@@ -1,6 +1,5 @@
-import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/main.dart';
-import 'package:capsfront/profile_page.dart';
+import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -19,7 +18,7 @@ class _State extends State<Splashscreen> {
     Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
+        MaterialPageRoute(builder: (context) => ShopOwnerMainPage(email: 'example@example.com')),
       );
     });
   }
@@ -37,11 +36,13 @@ class _State extends State<Splashscreen> {
                   colors: [ Colors.green.shade900, Colors.white10],
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft
+
               )
           ),
+
           child: Column(
+
             mainAxisAlignment: MainAxisAlignment.center,
-        
         
             children: [
               Icon1(),
@@ -51,13 +52,8 @@ class _State extends State<Splashscreen> {
               //ElevatedButton1(),
               SizedBox(height: 20,),
               Expanded(child: Loading1(),)
-
-        
-        
             ],
-        
           ),
-        
         ),
       ),
     );

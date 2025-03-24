@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'settings.dart'; // ✅ Import the SettingsPage
+import 'shared/settings.dart'; // ✅ Import the SettingsPage
 import 'profile_page.dart'; // ✅ Import the ProfilePage
 
 class DashboardPage extends StatelessWidget {
