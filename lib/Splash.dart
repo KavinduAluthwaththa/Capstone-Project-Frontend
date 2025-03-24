@@ -1,4 +1,3 @@
-import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/main.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +39,7 @@ class _State extends State<Splashscreen> {
 
               )
           ),
-          
+
           child: Column(
 
             mainAxisAlignment: MainAxisAlignment.center,
