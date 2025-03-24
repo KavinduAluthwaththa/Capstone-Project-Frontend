@@ -1,138 +1,95 @@
 import 'package:flutter/material.dart';
 
 class Constants {
-  static final Color primaryColor = Colors.blue; // Change color as needed
-  static final Color blackColor = Colors.black;
+  static final Color primaryColor = Colors.green.shade400;
+  static final Color secondaryColor = Colors.green.shade800;
+  static final Color textColor = Colors.black87;
 }
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
-  @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Profile Image
-              
-                Container(
-                  width: 150,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Constants.primaryColor.withOpacity(.5),
-                      width: 5.0,
-                    ),
-                  ),
-                  child: const CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Colors.transparent,
-                    backgroundImage: ExactAssetImage('assets/profile.png'), // Update with a valid asset
-                  ),
-                ),
-              
-
-              const SizedBox(height: 10),
-
-              // User Name and Verification Icon
-              SizedBox(
-                width: size.width * 0.6,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'John Doe',
-                      style: TextStyle(
-                        color: Constants.blackColor,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      height: 24.0,
-                      child: Image.asset("assets/profile.png"), // Update with a valid asset
-                    ),
-                  ],
-                ),
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Constants.primaryColor,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(50),
+                bottomRight: Radius.circular(50),
               ),
-
-              // Email
-              Text(
-                'johndoe@gmail.com',
-                style: TextStyle(color: Constants.blackColor.withOpacity(.3)),
-              ),
-
-              const SizedBox(height: 30.0),
-
-              // Profile Options
-              SizedBox(
-                width: size.width,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ProfileWidget(icon: Icons.person, title: 'My Profile'),
-                    ProfileWidget(icon: Icons.settings, title: 'Settings'),
-                    ProfileWidget(icon: Icons.notifications, title: 'Notifications'),
-                    ProfileWidget(icon: Icons.chat, title: 'FAQs'),
-                    ProfileWidget(icon: Icons.share, title: 'Share'),
-                    ProfileWidget(icon: Icons.logout, title: 'Log out'),
-                  ],
+            ),
+            child: Column(
+              children: [
+                const CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 50, color: Colors.black),
                 ),
-              ),
-            ],
+                const SizedBox(height: 10),
+                Text(
+                  "Name",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+                Text(
+                  "user@gmail.com",
+                  style: TextStyle(color: Colors.black.withOpacity(0.6)),
+                ),
+                Text(
+                  "Location",
+                  style: TextStyle(color: Colors.black.withOpacity(0.6)),
+                ),
+              ],
+            ),
           ),
-        ),
+          const SizedBox(height: 20),
+          ProfileOption(icon: Icons.notifications, title: "Notifications"),
+          ProfileOption(icon: Icons.receipt_long, title: "My orders"),
+          ProfileOption(icon: Icons.settings, title: "Settings"),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Constants.secondaryColor,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.cloud), label: "Com.chat"),
+          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: "AI chat bot"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
+        ],
       ),
     );
   }
 }
 
-// Profile Option Widget
-class ProfileWidget extends StatelessWidget {
+class ProfileOption extends StatelessWidget {
   final IconData icon;
   final String title;
 
-  const ProfileWidget({super.key, required this.icon, required this.title});
+  const ProfileOption({super.key, required this.icon, required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: Constants.blackColor.withOpacity(.5), size: 24.0),
-              const SizedBox(width: 16.0),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Constants.blackColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          Icon(
-            Icons.arrow_forward_ios,
-            color: Constants.blackColor.withOpacity(.3),
-            size: 16.0,
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Constants.primaryColor.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: ListTile(
+          leading: Icon(icon, color: Colors.black),
+          title: Text(title, style: TextStyle(color: Constants.textColor, fontSize: 18)),
+          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.black38, size: 16),
+        ),
       ),
     );
   }
