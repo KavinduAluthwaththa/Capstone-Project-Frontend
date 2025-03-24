@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+class ShopOwnerMainPage extends StatefulWidget {
+  final String email;
+  const ShopOwnerMainPage({super.key, required this.email});
 
+  @override
+  State<ShopOwnerMainPage> createState() => _ShopOwnerMainPageState();
+}
 
+class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Shop(shopOwnerEmail: widget.email), // Pass email if needed
+    );
+  }
+}
 
-class Inspector extends StatelessWidget {
-  const Inspector({super.key});
+class Shop extends StatelessWidget {
+  final String shopOwnerEmail;
+  const Shop({super.key, required this.shopOwnerEmail});
 
   @override
   Widget build(BuildContext context) {
@@ -15,10 +30,10 @@ class Inspector extends StatelessWidget {
           children: [
             Container(
               height: 200,
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.green[400],
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                 ),
@@ -32,49 +47,41 @@ class Inspector extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Now',style: GoogleFonts.poppins(fontSize: 20),),
-                          SizedBox(height: 5),
-                          Text('26°',style: GoogleFonts.poppins(fontSize: 30,fontWeight: FontWeight.bold),),
-                          SizedBox(height: 10,),
-                          Icon(Icons.cloud, color: Colors.white,),
-
+                          Text('Now', style: GoogleFonts.poppins(fontSize: 20)),
+                          const SizedBox(height: 5),
+                          Text('26°', style: GoogleFonts.poppins(fontSize: 30, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 10),
+                          const Icon(Icons.cloud, color: Colors.white),
                         ],
                       ),
                       Row(
                         children: [
-                          Icon(Icons.location_pin, color: Colors.red),
-                          Text('Anuradhapura',style: GoogleFonts.poppins(fontSize: 16) ),
+                          const Icon(Icons.location_pin, color: Colors.red),
+                          Text('Anuradhapura', style: GoogleFonts.poppins(fontSize: 16)),
                         ],
                       ),
                     ],
                   ),
-
                   Padding(
                     padding: const EdgeInsets.only(top: 40),
                     child: Column(
                       children: [
-
-
-                        Text('Hi <Inspector Name>!',style: GoogleFonts.poppins(fontSize: 20), ),
+                        Text('Hi, $shopOwnerEmail!', style: GoogleFonts.poppins(fontSize: 20)), // Display shop owner's email
                       ],
                     ),
                   ),
-
                 ],
               ),
-            ), SizedBox(height: 50,),
+            ),
+            const SizedBox(height: 50),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
-
                   children: [
-                    buildButton('Add Diseases'),
-                    SizedBox(height: 50,),
-                    buildButton('Answer Questions'),
-
-
-
+                    buildButton('Farmers List'),
+                    const SizedBox(height: 50),
+                    buildButton('Order Request'),
                   ],
                 ),
               ),
@@ -99,7 +106,7 @@ class Inspector extends StatelessWidget {
             ),
           ),
           onPressed: () {},
-          child: Text(text,style: GoogleFonts.poppins(fontSize: 20,color: Colors.green.shade900,fontWeight: FontWeight.bold), ),
+          child: Text(text, style: GoogleFonts.poppins(fontSize: 20, color: Colors.green.shade900, fontWeight: FontWeight.bold)),
         ),
       ),
     );

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+class InspectorMainPage extends StatefulWidget {
+  final String email;
+  const InspectorMainPage({super.key, required this.email});
 
+  @override
+  State<InspectorMainPage> createState() => _InspectorMainPageState();
+}
 
-
-class Shop extends StatelessWidget {
-  const Shop({super.key});
-
+class _InspectorMainPageState extends State<InspectorMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,10 +18,10 @@ class Shop extends StatelessWidget {
           children: [
             Container(
               height: 200,
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.green[400],
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                 ),
@@ -32,49 +35,41 @@ class Shop extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Now',style: GoogleFonts.poppins(fontSize: 20),),
-                          SizedBox(height: 5),
-                          Text('26°',style: GoogleFonts.poppins(fontSize: 30,fontWeight: FontWeight.bold),),
-                          SizedBox(height: 10,),
-                          Icon(Icons.cloud, color: Colors.white,),
-
+                          Text('Now', style: GoogleFonts.poppins(fontSize: 20)),
+                          const SizedBox(height: 5),
+                          Text('26°', style: GoogleFonts.poppins(fontSize: 30, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 10),
+                          const Icon(Icons.cloud, color: Colors.white),
                         ],
                       ),
                       Row(
                         children: [
-                          Icon(Icons.location_pin, color: Colors.red),
-                          Text('Anuradhapura',style: GoogleFonts.poppins(fontSize: 16) ),
+                          const Icon(Icons.location_pin, color: Colors.red),
+                          Text('Anuradhapura', style: GoogleFonts.poppins(fontSize: 16)),
                         ],
                       ),
                     ],
                   ),
-
                   Padding(
                     padding: const EdgeInsets.only(top: 40),
                     child: Column(
                       children: [
-
-
-                        Text('Hi <Shop Name>!',style: GoogleFonts.poppins(fontSize: 20), ),
+                        Text('Hi, ${widget.email}!', style: GoogleFonts.poppins(fontSize: 20)),
                       ],
                     ),
                   ),
-
                 ],
               ),
-            ), SizedBox(height: 50,),
+            ),
+            const SizedBox(height: 50),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
-
                   children: [
-                    buildButton('Farmers List'),
-                    SizedBox(height: 50,),
-                    buildButton('Order Request'),
-
-
-
+                    buildButton('Add Diseases'),
+                    const SizedBox(height: 50),
+                    buildButton('Answer Questions'),
                   ],
                 ),
               ),
@@ -99,7 +94,10 @@ class Shop extends StatelessWidget {
             ),
           ),
           onPressed: () {},
-          child: Text(text,style: GoogleFonts.poppins(fontSize: 20,color: Colors.green.shade900,fontWeight: FontWeight.bold), ),
+          child: Text(
+            text,
+            style: GoogleFonts.poppins(fontSize: 20, color: Colors.green.shade900, fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );
