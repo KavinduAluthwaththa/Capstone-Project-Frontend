@@ -3,15 +3,14 @@ import 'package:capsfront/accounts/register.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/constraints/token_handler.dart';
 import 'package:capsfront/models/login_model.dart';
 import 'package:capsfront/admin_area/admin_main_page.dart';
-import 'package:capsfront/users_area/farmer_main_page.dart';
-import 'package:capsfront/users_area/inspector_main_page.dart';
-import 'package:capsfront/users_area/shop_owner_main_page.dart';
+import 'package:capsfront/farmer_area/farmer_main_page.dart';
+import 'package:capsfront/Inspector_area/inspector_main_page.dart';
+import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

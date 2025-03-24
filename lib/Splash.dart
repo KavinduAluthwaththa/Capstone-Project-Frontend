@@ -1,8 +1,8 @@
+
 import 'package:capsfront/accounts/register.dart';
 import 'package:capsfront/main.dart';
-import 'package:capsfront/profile_page.dart';
+import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
-import 'package:capsfront/Home.dart';
 import 'package:lottie/lottie.dart';
 
 
@@ -24,7 +24,11 @@ class _State extends State<Splashscreen> {
     Future.delayed(Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+
+       // MaterialPageRoute(builder: (context) => HomePage()),
+
+        MaterialPageRoute(builder: (context) => ShopOwnerMainPage(email: 'example@example.com')),
+
       );
     });
   }
@@ -33,6 +37,7 @@ class _State extends State<Splashscreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+
 
 
         height: 900,
@@ -44,6 +49,33 @@ class _State extends State<Splashscreen> {
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft
             )
+
+          width: double.infinity,
+        
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [ Colors.green.shade900, Colors.white10],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft
+
+              )
+          ),
+
+          child: Column(
+
+            mainAxisAlignment: MainAxisAlignment.center,
+        
+            children: [
+              Icon1(),
+              SizedBox(height: 20,),
+              Text("Crop planning",
+                style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold),),
+              //ElevatedButton1(),
+              SizedBox(height: 20,),
+              Expanded(child: Loading1(),)
+            ],
+          ),
+
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
