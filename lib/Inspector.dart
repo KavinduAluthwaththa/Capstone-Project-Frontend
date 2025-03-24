@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 
 class Inspector extends StatelessWidget {
+  const Inspector({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

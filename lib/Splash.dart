@@ -1,6 +1,5 @@
 import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/main.dart';
-import 'package:capsfront/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
