@@ -5,7 +5,6 @@ class FarmerMainPage extends StatefulWidget {
   const FarmerMainPage({super.key, required this.email});
 
   @override
-  @override
   State<FarmerMainPage> createState() => _FarmerMainPageState();
 }
 
