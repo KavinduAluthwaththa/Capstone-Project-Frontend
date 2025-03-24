@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const FarmersList());
-}
-
 class FarmersList extends StatelessWidget {
   const FarmersList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const FarmersListPage(),
-    );
+    return const FarmersListPage();
   }
 }
 
@@ -31,6 +24,12 @@ class _FarmersListPageState extends State<FarmersListPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEAF4D3), // Light green background
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(); // This will navigate back
+          },
+        ),
         title: const Text(
           "Farmers List",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),

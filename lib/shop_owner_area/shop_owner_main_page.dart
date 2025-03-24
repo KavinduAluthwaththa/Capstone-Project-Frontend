@@ -1,4 +1,5 @@
-import 'package:capsfront/farmer_area/FarmersList.dart';
+import 'package:capsfront/shop_owner_area/FarmersList.dart';
+import 'package:capsfront/shop_owner_area/OrderRequest.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -117,8 +118,12 @@ class Shop extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => const FarmersList()),
               );
             } else if (text == 'Order Request') {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Order Request button clicked')),
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   const SnackBar(content: Text('Order Request button clicked')),
+              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const OrderRequestsPage()),
               );
             }
           },

@@ -1,3 +1,4 @@
+//import 'package:capsfront/farmer_area/farmer_main_page.dart';
 import 'package:capsfront/main.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ class Splashscreen extends StatefulWidget {
 }
 
 class _State extends State<Splashscreen> {
+  String email = "shopowner@example.com";
+
   @override
   void initState() {
     super.initState();
@@ -18,7 +21,7 @@ class _State extends State<Splashscreen> {
     Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => ShopOwnerMainPage(email: 'example@example.com')),
+        MaterialPageRoute(builder: (context) => ShopOwnerMainPage(email: email)),
       );
     });
   }
