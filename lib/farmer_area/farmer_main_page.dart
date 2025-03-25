@@ -54,7 +54,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                     padding: const EdgeInsets.only(top: 40),
                     child: Column(
                       children: [
-                        Text('Hi Farmer!', style: GoogleFonts.poppins(fontSize: 20)),
+                        Text('Hi, ${widget.email}!', style: GoogleFonts.poppins(fontSize: 20)),
                       ],
                     ),
                   ),
