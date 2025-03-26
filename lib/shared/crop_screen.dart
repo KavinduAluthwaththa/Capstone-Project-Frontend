@@ -2,6 +2,25 @@ import 'package:capsfront/models/crop_model.dart';
 import 'package:capsfront/shared/crop_services.dart';
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
+      home: FarmerCropsPage(),
+    );
+  }
+}
+
 class FarmerCropsPage extends StatefulWidget {
   @override
   _FarmerCropsPageState createState() => _FarmerCropsPageState();

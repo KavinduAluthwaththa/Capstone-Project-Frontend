@@ -1,4 +1,3 @@
-import 'package:capsfront/Inspector_area/inspector_main_page.dart';
 import 'package:capsfront/main.dart';
 import 'package:capsfront/shared/crop_screen.dart';
 import 'package:flutter/material.dart';

@@ -2,7 +2,7 @@ class Crop {
   final int? id;
   final String cropName;
   final String plantingSeason;
-  final String farmerId;  // Farmer's unique ID
+  final String farmerId;
 
   Crop({this.id, required this.cropName, required this.plantingSeason, required this.farmerId});
 
