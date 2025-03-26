@@ -22,6 +22,8 @@ class MyApp extends StatelessWidget {
 }
 
 class FarmerCropsPage extends StatefulWidget {
+  const FarmerCropsPage({super.key});
+
   @override
   _FarmerCropsPageState createState() => _FarmerCropsPageState();
 }
