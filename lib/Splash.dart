@@ -1,7 +1,7 @@
 
 import 'package:capsfront/accounts/register.dart';
 import 'package:capsfront/main.dart';
-import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
+import 'package:capsfront/shared/crop_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -20,14 +20,11 @@ class _State extends State<Splashscreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to SecondPage after a delay of 3 seconds
-    Future.delayed(Duration(seconds: 5), () {
+
+    Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-
-       // MaterialPageRoute(builder: (context) => HomePage()),
-
-        MaterialPageRoute(builder: (context) => ShopOwnerMainPage(email: 'example@example.com')),
+        MaterialPageRoute(builder: (context) => FarmerCropsPage()),
 
       );
     });
