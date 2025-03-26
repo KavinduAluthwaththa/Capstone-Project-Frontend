@@ -3,7 +3,25 @@ import 'package:capsfront/shop_owner_area/OrderRequest.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Import the FarmersListPage
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
+      home: ShopOwnerMainPage(email: 'example@example.com'),
+    );
+  }
+} 
 
 
 class ShopOwnerMainPage extends StatefulWidget {
