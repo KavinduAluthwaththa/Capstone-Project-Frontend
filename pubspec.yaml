@@ -39,6 +39,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+    
+  shared_preferences: ^2.1.0
   http:
   jwt_decoder:
 
