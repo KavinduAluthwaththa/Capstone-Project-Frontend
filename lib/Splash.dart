@@ -54,50 +54,19 @@ class _State extends State<Splashscreen> {
             gradient: LinearGradient(
                 colors: [ Colors.green.shade900, Colors.white10],
                 begin: Alignment.topRight,
-                end: Alignment.bottomLeft
-            )
-
-          width: double.infinity,
-        
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [ Colors.green.shade900, Colors.white10],
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft
-
-              )
+              end: Alignment.bottomLeft,
           ),
-
-          child: Column(
-
-            mainAxisAlignment: MainAxisAlignment.center,
-        
-            children: [
-              Icon1(),
-              SizedBox(height: 20,),
-              Text("Crop planning",
-                style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold),),
-              //ElevatedButton1(),
-              SizedBox(height: 20,),
-              Expanded(child: Loading1(),)
-            ],
-          ),
-
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-
-
           children: [
             Icon1(),
+            SizedBox(height: 20,),
             Text("Crop planning",
               style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold),),
-            //ElevatedButton1(),
-            Loading(),
-
-
+            SizedBox(height: 20,),
+            Expanded(child: Loading(),),
           ],
-
         ),
 
       ),
