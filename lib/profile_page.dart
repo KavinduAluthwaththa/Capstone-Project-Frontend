@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class Constants {
-  static final Color primaryColor = Colors.green.shade400;
-  static final Color secondaryColor = Colors.green.shade800;
-  static final Color textColor = Colors.black87;
-}
+// class Constants {
+//   static final Color primaryColor = Colors.green.shade400;
+//   static final Color secondaryColor = Colors.green.shade800;
+//   static final Color textColor = Colors.black87;
+// }
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -19,7 +19,7 @@ class ProfilePage extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Constants.primaryColor,
+              color: Colors.green.shade800,
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(50),
                 bottomRight: Radius.circular(50),
@@ -56,12 +56,12 @@ class ProfilePage extends StatelessWidget {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Constants.secondaryColor,
+        backgroundColor: Colors.green.shade800,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
-        items: const [
+        items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.cloud), label: "Com.chat"),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Com.chat"),
           BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: "AI chat bot"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
         ],
@@ -82,12 +82,12 @@ class ProfileOption extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       child: Container(
         decoration: BoxDecoration(
-          color: Constants.primaryColor.withOpacity(0.2),
+          color: Colors.green.shade800.withOpacity(0.2),
           borderRadius: BorderRadius.circular(15),
         ),
         child: ListTile(
           leading: Icon(icon, color: Colors.black),
-          title: Text(title, style: TextStyle(color: Constants.textColor, fontSize: 18)),
+          title: Text(title, style: TextStyle(color: Colors.black87, fontSize: 18)),
           trailing: const Icon(Icons.arrow_forward_ios, color: Colors.black38, size: 16),
         ),
       ),
