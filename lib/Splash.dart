@@ -1,16 +1,10 @@
 
 //import 'package:capsfront/farmer_area/farmer_main_page.dart';
-import 'package:capsfront/accounts/register.dart';
 import 'package:capsfront/main.dart';
 import 'package:capsfront/shared/crop_screen.dart';
-import 'package:capsfront/shop_owner_area/OrderRequest.dart';
-import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-import 'Inspector_area/inspector_main_page.dart';
-import 'farmer_area/ShopList.dart';
-import 'farmer_area/farmer_main_page.dart';
 
 
 class Splashscreen extends StatefulWidget {
