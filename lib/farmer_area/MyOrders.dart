@@ -1,5 +1,8 @@
+import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -17,8 +20,52 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyOrdersPage extends StatelessWidget {
+class MyOrdersPage extends StatefulWidget {
   const MyOrdersPage({super.key});
+
+  @override
+  _MyOrdersPageState createState() => _MyOrdersPageState();
+}
+
+class _MyOrdersPageState extends State<MyOrdersPage> {
+  List<dynamic> _orders = [];
+  final String apiUrl =  ApiEndpoints.getRequests;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchOrders();
+  }
+
+  Future<void> fetchOrders() async {
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          _orders = json.decode(response.body);
+        });
+      } else {
+        throw Exception('Failed to load orders');
+      }
+    } catch (error) {
+      print("Error fetching orders: $error");
+    }
+  }
+
+  Future<void> deleteOrder(int requestId) async {
+    try {
+      final response = await http.delete(Uri.parse('$apiUrl/$requestId'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _orders.removeWhere((order) => order['requestID'] == requestId);
+        });
+      } else {
+        throw Exception('Failed to delete order');
+      }
+    } catch (error) {
+      print("Error deleting order: $error");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,12 +99,20 @@ class MyOrdersPage extends StatelessWidget {
 
           // List of My Orders
           Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return OrderRequestTile(cropName: "Crop ${index + 1}", date: "2025.03.06");
-              },
-            ),
+            child: _orders.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: _orders.length,
+                    itemBuilder: (context, index) {
+                      return OrderRequestTile(
+                        requestId: _orders[index]['requestID'],
+                        cropName: _orders[index]['cropName'],
+                        date: _orders[index]['date'],
+                        amount: _orders[index]['amount'].toString(),
+                        onDelete: deleteOrder,
+                      );
+                    },
+                  ),
           ),
 
           // Bottom Navigation Bar
@@ -80,10 +135,20 @@ class MyOrdersPage extends StatelessWidget {
 }
 
 class OrderRequestTile extends StatelessWidget {
+  final int requestId;
   final String cropName;
   final String date;
+  final String amount;
+  final Function(int) onDelete;
 
-  const OrderRequestTile({super.key, required this.cropName, required this.date});
+  const OrderRequestTile({
+    super.key,
+    required this.requestId,
+    required this.cropName,
+    required this.date,
+    required this.amount,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -108,29 +173,14 @@ class OrderRequestTile extends StatelessWidget {
                   Text(date, style: GoogleFonts.poppins(fontSize: 14)),
                 ],
               ),
+              Text("Amount: $amount", style: GoogleFonts.poppins(fontSize: 14)),
             ],
           ),
           Row(
             children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {},
-                child: const Text("Amount"),
-              ),
-              const SizedBox(width: 10),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.person, color: Colors.blue),
-                onPressed: () {},
+                onPressed: () => onDelete(requestId),
               ),
             ],
           ),
