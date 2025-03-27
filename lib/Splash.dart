@@ -1,41 +1,24 @@
-
-//import 'package:capsfront/farmer_area/farmer_main_page.dart';
-import 'package:capsfront/accounts/register.dart';
 import 'package:capsfront/main.dart';
-import 'package:capsfront/shared/crop_screen.dart';
-import 'package:capsfront/shop_owner_area/OrderRequest.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-import 'Inspector_area/inspector_main_page.dart';
-import 'farmer_area/ShopList.dart';
-import 'farmer_area/farmer_main_page.dart';
-
-
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key, required BottomNavigationBarExample child});
-
-
 
   @override
   State<Splashscreen> createState() => _State();
 }
 
 class _State extends State<Splashscreen> {
-  String email = "shopowner@example.com";
-
   @override
   void initState() {
     super.initState();
-
-    Future.delayed(Duration(seconds: 2), () {
+    // Navigate to SecondPage after a delay of 3 seconds
+    Future.delayed(Duration(seconds: 4), () {
       Navigator.pushReplacement(
         context,
-
-        MaterialPageRoute(builder: (context) => FarmerCropsPage()),
-
-
+        MaterialPageRoute(builder: (context) => ShopOwnerMainPage(email: 'example@example.com')),
       );
     });
   }
@@ -43,32 +26,35 @@ class _State extends State<Splashscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: SafeArea(
+        child: Container(
 
+          width: double.infinity,
+        
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [ Colors.green.shade900, Colors.white10],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft
 
+              )
+          ),
 
-        height: 900,
-        width: double.infinity,
+          child: Column(
 
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: [ Colors.green.shade900, Colors.white10],
-                begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
+            mainAxisAlignment: MainAxisAlignment.center,
+        
+            children: [
+              Icon1(),
+              SizedBox(height: 20,),
+              Text("Crop planning",
+                style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold),),
+              //ElevatedButton1(),
+              SizedBox(height: 20,),
+              Expanded(child: Loading1(),)
+            ],
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon1(),
-            SizedBox(height: 20,),
-            Text("Crop planning",
-              style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold),),
-            SizedBox(height: 20,),
-            Expanded(child: Loading(),),
-          ],
-        ),
-
       ),
     );
   }
@@ -82,32 +68,15 @@ class _State extends State<Splashscreen> {
 
       child: Icon(Icons.account_tree, size: 90,),);
   }
-
-// ElevatedButton1() {
-//   return Container(
-//       margin: EdgeInsets.only(top: 300),
-//       child: ElevatedButton(
-//           onPressed: () {},
-//           child: Text('Next', style: TextStyle(
-//               fontWeight: FontWeight.bold, color: Colors.black)),
-//           style: ElevatedButton.styleFrom(
-//             backgroundColor: Colors.green.shade700,
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(20.0),
-//             ),
-//
-//           )
-//
-//       )
-//   )
-//   ;
 }
 
-Loading() {
+Loading1() {
   return Container(
-    margin: EdgeInsets.only(top: 200),
+    margin: EdgeInsets.symmetric(vertical: 50),
 
-    child: Lottie.network('https://lottie.host/430eaba1-0722-4d09-893d-80fc747c75e5/mvvEzovt6M.json'),
+    child: Lottie.network('https://lottie.host/9f1a777d-fa08-4d3b-8c88-9e510ee525be/r1E9fn5G5E.json'),
   );
 }
+
+
 
