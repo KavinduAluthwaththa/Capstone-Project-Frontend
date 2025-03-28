@@ -3,7 +3,6 @@ import 'package:capsfront/accounts/register.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
-
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/constraints/token_handler.dart';
 import 'package:capsfront/models/login_model.dart';
@@ -41,7 +40,8 @@ class _LoginPageState extends State<LoginPage> {
       try {
         final response = await http.post(
           Uri.parse(ApiEndpoints.loginUser),
-          headers: {"Content-Type": "application/json; charset=UTF-8"},
+          headers: {"Content-Type": "application/json", 
+          "Accept": "application/json"},
           body: jsonEncode(loginData.toJson()),
         );
 

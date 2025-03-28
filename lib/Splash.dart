@@ -1,23 +1,17 @@
-
-//import 'package:capsfront/farmer_area/farmer_main_page.dart';
+import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/main.dart';
-import 'package:capsfront/shared/crop_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 
-
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key, required BottomNavigationBarExample child});
-
-
 
   @override
   State<Splashscreen> createState() => _State();
 }
 
 class _State extends State<Splashscreen> {
-  String email = "shopowner@example.com";
 
   @override
   void initState() {
@@ -27,8 +21,7 @@ class _State extends State<Splashscreen> {
       Navigator.pushReplacement(
         context,
 
-        MaterialPageRoute(builder: (context) => FarmerCropsPage()),
-
+        MaterialPageRoute(builder: (context) => LoginPage()),
 
       );
     });
@@ -38,8 +31,6 @@ class _State extends State<Splashscreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-
-
 
         height: 900,
         width: double.infinity,
@@ -65,8 +56,6 @@ class _State extends State<Splashscreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
 
-
-
           children: [
             Icon1(),
             Text(
@@ -76,9 +65,7 @@ class _State extends State<Splashscreen> {
             //ElevatedButton1(),
             Loading(),
 
-
           ],
-
 
         ),
 
@@ -89,32 +76,12 @@ class _State extends State<Splashscreen> {
   Icon1() {
     return Container(
 
-
       margin: EdgeInsets.only(top: 100, bottom: 10),
-
 
         child: Icon(Icons.account_tree, size: 90),
       );
   }
 
-// ElevatedButton1() {
-//   return Container(
-//       margin: EdgeInsets.only(top: 300),
-//       child: ElevatedButton(
-//           onPressed: () {},
-//           child: Text('Next', style: TextStyle(
-//               fontWeight: FontWeight.bold, color: Colors.black)),
-//           style: ElevatedButton.styleFrom(
-//             backgroundColor: Colors.green.shade700,
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(20.0),
-//             ),
-//
-//           )
-//
-//       )
-//   )
-//   ;
 }
 
 Loading() {

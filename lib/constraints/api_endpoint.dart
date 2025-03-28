@@ -1,9 +1,9 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://localhost:44320/api/";
+  static const String baseUrl = "https://10.0.2.2:44320";
 
   // Crop
-  static const String getCrops = "$baseUrl/Crop";
-  static const String postCrop = "$baseUrl/Crop";
+  static const String getCrops = "$baseUrl/api/Crop";
+  static const String postCrop = "$baseUrl/api/Crop";
   static String deleteCrop(String cropId) => "$baseUrl/Crop/$cropId";
   static String updateCrop(String cropId) => "$baseUrl/Crop/$cropId";
 
@@ -91,6 +91,6 @@ class ApiEndpoints {
   static String deleteShop(String id) => "$baseUrl/Shop/$id";
 
   // User
-  static const String registerUser = "$baseUrl/User/Register";
-  static const String loginUser = "$baseUrl/User/Login";
+  static const String registerUser = "$baseUrl/api/User/Register";
+  static const String loginUser = "$baseUrl/api/User/Login";
 }
