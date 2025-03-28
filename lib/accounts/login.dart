@@ -3,11 +3,9 @@ import 'package:capsfront/accounts/register.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
-
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/constraints/token_handler.dart';
 import 'package:capsfront/models/login_model.dart';
-import 'package:capsfront/admin_area/admin_main_page.dart';
 import 'package:capsfront/farmer_area/farmer_main_page.dart';
 import 'package:capsfront/Inspector_area/inspector_main_page.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
@@ -41,14 +39,14 @@ class _LoginPageState extends State<LoginPage> {
       try {
         final response = await http.post(
           Uri.parse(ApiEndpoints.loginUser),
-          headers: {"Content-Type": "application/json; charset=UTF-8"},
+          headers: {"Content-Type": "application/json", 
+          "Accept": "application/json"},
           body: jsonEncode(loginData.toJson()),
         );
 
         if (response.statusCode >= 200 && response.statusCode < 300) {
           final jsonData = json.decode(response.body);
           final token = jsonData['token'];
-
           if (token == null || token.isEmpty) {
             _showError("Invalid token received.");
             return;
@@ -56,16 +54,38 @@ class _LoginPageState extends State<LoginPage> {
 
           TokenHandler().addToken(token);
           final decodedToken = JwtDecoder.decode(token);
+          print(decodedToken);  
 
-          if (!decodedToken.containsKey('role')) {
+
+          if (!decodedToken.containsKey('Role')) {
             _showError("User role not found.");
             return;
           }
 
-          String role = decodedToken['role'];
+          // Access the userTypes as an integer
+          var role = decodedToken['Role'];
           String email = _emailController.text.trim();
 
+          if (role is String) {
+          switch (role.toLowerCase()) {
+            case "farmer":
+              role = 0;
+              break;
+            case "inspector":
+              role = 1;
+              break;
+            case "shopowner":
+              role = 2;
+              break;
+            default:
+              _showError("Unknown role: $role");
+              return;
+          }
+        }
+
+          // Pass the integer value to the navigation method
           _navigateToDashboard(role, email);
+
         } else {
           _showError("Login failed. Please check your credentials.");
         }
@@ -75,33 +95,30 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _navigateToDashboard(String role, String email) {
-    Widget nextPage;
+  void _navigateToDashboard(int role, String email) {
+  Widget nextPage;
 
-    switch (role) {
-      case "Admin":
-        nextPage = AdminMainPage(email: email);
-        break;
-      case "Farmer":
-        nextPage = FarmerMainPage(email: email);
-        break;
-      case "Inspector":
-        nextPage = InspectorMainPage(email: email);
-        break;
-      case "ShopOwner":
-        nextPage = ShopOwnerMainPage(email: email);
-        break;
-      default:
-        _showError("Unauthorized role: $role");
-        return;
-    }
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => nextPage),
-          (Route<dynamic> route) => false,
-    );
+  switch (role) {
+    case 0:
+      nextPage = FarmerMainPage(email: email);
+      break;
+    case 1:
+      nextPage = InspectorMainPage(email: email);
+      break;
+    case 2:
+      nextPage = ShopOwnerMainPage(email: email);
+      break;
+    default:
+      _showError("Unauthorized role: $role");
+      return;
   }
+
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => nextPage),
+    (Route<dynamic> route) => false,
+  );
+}
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
