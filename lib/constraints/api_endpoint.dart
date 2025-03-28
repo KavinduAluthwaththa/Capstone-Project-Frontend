@@ -1,5 +1,5 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://10.0.2.2:44320";
+  static const String baseUrl = "https://localhost:44320";
 
   // Crop
   static const String getCrops = "$baseUrl/api/Crop";

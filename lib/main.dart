@@ -16,7 +16,10 @@ class BottomNavigationBarExampleApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
         home: Container(
           child: Splashscreen(
-        child: BottomNavigationBarExample())));
+        child: BottomNavigationBarExample()
+          )
+        )
+      );
   }
 }
 
