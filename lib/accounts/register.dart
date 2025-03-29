@@ -193,18 +193,18 @@ class _RegisterPageState extends State<RegisterPage> {
         headers: {"Content-Type": "application/json; charset=UTF-8"},
         body: jsonEncode(registerData),
       );
-
+      
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        final jsonData = json.decode(response.body);
-        if (!jsonData.containsKey('token') || jsonData['token'] == null || jsonData['token'].isEmpty) {
-          _showError("Invalid token received.");
-          return;
-        }
+        // ✅ Registration is successful. No need to check for a token.
+        print("✅ Registration Successful.");
 
+        // Optionally, navigate to login or show a success message
       } else {
+        // Extract error message from response
         final errorMessage = json.decode(response.body)['message'] ?? "Registration failed.";
         _showError(errorMessage);
       }
+
     } catch (e) {
       _showError("An unexpected error occurred: $e");
     }

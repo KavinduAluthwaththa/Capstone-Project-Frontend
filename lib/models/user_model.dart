@@ -1,4 +1,4 @@
-import '../enums/user_types.dart';
+
 
 class ApplicationUser {
   final String id;
@@ -6,7 +6,6 @@ class ApplicationUser {
   final String lastName;
   final String telephoneNo;
   final String address;
-  final UserTypes userType;
 
   ApplicationUser({
     required this.id,
@@ -14,7 +13,6 @@ class ApplicationUser {
     required this.lastName,
     required this.telephoneNo,
     required this.address,
-    required this.userType,
   });
 
   factory ApplicationUser.fromJson(Map<String, dynamic> json) {
@@ -24,7 +22,6 @@ class ApplicationUser {
       lastName: json['lastName'],
       telephoneNo: json['telephoneNo'],
       address: json['address'],
-      userType: userTypesFromJson(json['userType']),
     );
   }
 
@@ -35,7 +32,6 @@ class ApplicationUser {
       'lastName': lastName,
       'telephoneNo': telephoneNo,
       'address': address,
-      'userType': userTypesToJson(userType),
     };
   }
 }
