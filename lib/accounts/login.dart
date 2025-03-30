@@ -54,7 +54,6 @@ class _LoginPageState extends State<LoginPage> {
 
           TokenHandler().addToken(token);
           final decodedToken = JwtDecoder.decode(token);
-          print(decodedToken);  
 
 
           if (!decodedToken.containsKey('Role')) {
