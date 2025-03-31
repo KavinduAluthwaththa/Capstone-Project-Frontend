@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Splash.dart';
+import 'shared/Splash.dart';
 
 
 void main() => runApp(const BottomNavigationBarExampleApp());
