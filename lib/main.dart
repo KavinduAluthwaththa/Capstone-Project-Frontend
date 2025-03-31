@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'Splash.dart';
-import 'Home.dart';
-import 'Dashboard.dart';
-
 
 
 void main() => runApp(const BottomNavigationBarExampleApp());
@@ -35,12 +32,8 @@ class BottomNavigationBarExample extends StatefulWidget {
 class _BottomNavigationBarExampleState extends State<BottomNavigationBarExample> {
   int _selectedIndex = 0;
   static const List<Widget> _widgetOptions = <Widget>[
-    HomePage(),
     Text('Chatbot'),
     Text('Chat'),
-    DashboardPage(),
-
-
   ];
 
   void _onItemTapped(int index) {
