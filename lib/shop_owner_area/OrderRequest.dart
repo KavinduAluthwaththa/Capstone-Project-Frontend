@@ -62,7 +62,7 @@ class OrderRequestsPage extends StatelessWidget {
 
           // Bottom Navigation Bar
           BottomNavigationBar(
-            backgroundColor: const Color(0xFF4E7033),
+            backgroundColor: const Color(0xFF4A6B3E),
             selectedItemColor: Colors.white,
             unselectedItemColor: Colors.white,
             showUnselectedLabels: true,
