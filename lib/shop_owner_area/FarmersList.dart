@@ -1,5 +1,21 @@
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: const FarmersList(),
+    );
+  }
+}
+
 class FarmersList extends StatelessWidget {
   const FarmersList({super.key});
 
@@ -34,7 +50,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
           "Farmers List",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        backgroundColor: const Color(0xFF91C16C), // Dark greenish header
+        backgroundColor: const Color(0xFF6ABC4D), // Dark greenish header
         centerTitle: true,
         toolbarHeight: 100, // Adjust the height as needed
         shape: const RoundedRectangleBorder(
@@ -52,7 +68,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF91C16C),
+                    backgroundColor: const Color(0xFFABD298),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -88,7 +104,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF91C16C), // Green button color
+                        color: const Color(0xFFABD298), // Green button color
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: ListTile(
@@ -109,32 +125,6 @@ class _FarmersListPageState extends State<FarmersListPage> {
           ],
         ),
       ),
-
-      // Bottom Navigation Bar
-      // bottomNavigationBar: BottomNavigationBar(
-      //   backgroundColor: const Color(0xFF4A6B3E),
-      //   selectedItemColor: Colors.white,
-      //   unselectedItemColor: Colors.white70,
-      //   showUnselectedLabels: true,
-      //   items: const [
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.home),
-      //       label: "Home",
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.cloud),
-      //       label: "Com.chat",
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.android),
-      //       label: "AI chat bot",
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.person),
-      //       label: "My account",
-      //     ),
-      //   ],
-      // ),
     );
   }
 

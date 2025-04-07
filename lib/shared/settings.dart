@@ -39,13 +39,13 @@ class _SettingsPageState extends State<SettingsPage> {
           onPressed: () {},
         ),
         title: Text("Settings"),
-        backgroundColor: Colors.green.shade300,
+        backgroundColor: Colors.green,
       ),
       body: Column(
         children: [
           Container(
             padding: EdgeInsets.all(16),
-            color: Colors.green.shade200,
+            color: Colors.green,
             child: Row(
               children: [
                 CircleAvatar(
@@ -82,15 +82,6 @@ class _SettingsPageState extends State<SettingsPage> {
             title: Text("Language"),
             subtitle: Text("EN"),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
-          ),
-          SwitchListTile(
-            title: Text("Dark mode"),
-            value: darkModeEnabled,
-            onChanged: (value) {
-              setState(() {
-                darkModeEnabled = value;
-              });
-            },
           ),
           ListTile(
             title: Text("Log out", style: TextStyle(color: Colors.red)),
