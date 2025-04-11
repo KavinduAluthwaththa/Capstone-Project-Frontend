@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/models/crop_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CropService {
-  final String apiUrl = "https://your-api.com/api/crop";  // .NET API URL
+  final String apiUrl = ApiEndpoints.getCrops;
 
   // Fetch crops for logged-in farmer
   Future<List<Crop>> getCrops() async {
