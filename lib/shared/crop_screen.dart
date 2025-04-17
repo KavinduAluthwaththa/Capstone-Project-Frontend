@@ -1,5 +1,5 @@
 import 'package:capsfront/models/crop_model.dart';
-import 'package:capsfront/shared/crop_services.dart';
+import 'package:capsfront/services/crop_services.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -29,6 +29,7 @@ class FarmerCropsPage extends StatefulWidget {
 }
 
 class _FarmerCropsPageState extends State<FarmerCropsPage> {
+  /// Instance of CropService to handle API calls
   final CropService _cropService = CropService();
   List<Crop> _crops = [];
   bool _isLoading = true;
@@ -39,6 +40,7 @@ class _FarmerCropsPageState extends State<FarmerCropsPage> {
     _fetchCrops();
   }
 
+  // Fetch crops from the server
   Future<void> _fetchCrops() async {
     try {
       List<Crop> crops = await _cropService.getCrops();
@@ -51,10 +53,12 @@ class _FarmerCropsPageState extends State<FarmerCropsPage> {
     }
   }
 
+  // Add a new crop
   Future<void> _addCrop() async {
     TextEditingController nameController = TextEditingController();
     TextEditingController seasonController = TextEditingController();
 
+    // Show dialog to add a new crop
     showDialog(
       context: context,
       builder: (context) {
@@ -62,11 +66,14 @@ class _FarmerCropsPageState extends State<FarmerCropsPage> {
           title: Text("Add New Crop"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            //controllers that will be used to get the crop name and planting season
             children: [
               TextField(controller: nameController, decoration: InputDecoration(labelText: "Crop Name")),
               TextField(controller: seasonController, decoration: InputDecoration(labelText: "Planting Season")),
             ],
           ),
+
+          //add crop button
           actions: [
             TextButton(
               onPressed: () async {
