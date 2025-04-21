@@ -5,6 +5,8 @@ import 'package:capsfront/shared/Chatbot.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+import '../farmer_area/notifications.dart';
+
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key, required BottomNavigationBarExample child});
@@ -23,7 +25,7 @@ class _State extends State<Splashscreen> {
       Navigator.pushReplacement(
         context,
 
-        MaterialPageRoute(builder: (context) => ChatPage()),
+        MaterialPageRoute(builder: (context) => Notifications()),
 
       );
     });
