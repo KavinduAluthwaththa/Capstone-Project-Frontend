@@ -27,7 +27,7 @@ class _FertilizingState extends State<Fertilizing> {
           onPressed: () {},
         ),
         title: Text("Fertilizing",style: TextStyle(fontWeight: FontWeight.bold),),
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: Color(0xFFA7DB8D),
       ),
       backgroundColor: Colors.white,
 
@@ -38,7 +38,7 @@ class _FertilizingState extends State<Fertilizing> {
           children: [
             Container(
 
-              //row eka thibbe
+
             ),
             const SizedBox(height: 40),
             Padding(
