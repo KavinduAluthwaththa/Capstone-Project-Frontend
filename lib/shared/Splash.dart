@@ -1,7 +1,9 @@
+import 'package:capsfront/Inspector_area/addDeseace.dart';
 import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/main.dart';
 import 'package:capsfront/shared/Chat.dart';
 import 'package:capsfront/shared/Chatbot.dart';
+import 'package:capsfront/shared/crop_disease_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -25,7 +27,7 @@ class _State extends State<Splashscreen> {
       Navigator.pushReplacement(
         context,
 
-        MaterialPageRoute(builder: (context) => Notifications()),
+        MaterialPageRoute(builder: (context) => AddDiseasePage()),
 
       );
     });

@@ -85,7 +85,7 @@ class _CropDiseasePageState extends State<CropDiseasePage> {
                   date: dateController.text,
                 );
                 if (isUpdating) {
-                  await service.updateCropDisease(disease, widget.token);
+                  await service.updateCropDisease(disease, widget.token as int, disease.cdid!.toString());
                 } else {
                   await service.addCropDisease(disease, widget.token);
                 }
