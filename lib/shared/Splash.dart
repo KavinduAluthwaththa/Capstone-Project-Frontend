@@ -1,5 +1,6 @@
 import 'package:capsfront/Inspector_area/addDeseace.dart';
 import 'package:capsfront/accounts/login.dart';
+import 'package:capsfront/farmer_area/MarketPrice.dart';
 import 'package:capsfront/main.dart';
 import 'package:capsfront/shared/Chat.dart';
 import 'package:capsfront/shared/Chatbot.dart';
@@ -27,7 +28,7 @@ class _State extends State<Splashscreen> {
       Navigator.pushReplacement(
         context,
 
-        MaterialPageRoute(builder: (context) => AddDiseasePage()),
+        MaterialPageRoute(builder: (context) => MarketPriceScreen()),
 
       );
     });
