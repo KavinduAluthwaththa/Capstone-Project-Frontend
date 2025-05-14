@@ -1,77 +1,71 @@
 import 'package:flutter/material.dart';
-import 'shared/Splash.dart';
+import 'package:capsfront/shared/Splash.dart';
+import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
+import 'package:capsfront/shared/Chat.dart';
+import 'package:capsfront/shared/Chatbot.dart';
+import 'package:capsfront/shared/profile_page.dart';
 
+void main() {
+  runApp(const MyApp());
+}
 
-void main() => runApp(const BottomNavigationBarExampleApp());
-
-class BottomNavigationBarExampleApp extends StatelessWidget {
-  const BottomNavigationBarExampleApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-        home: Container(
-          child: Splashscreen(
-        child: BottomNavigationBarExample()
-          )
-        )
-      );
+      theme: ThemeData(primarySwatch: Colors.green),
+      home: const Splashscreen(), // Set Splashscreen as the initial screen
+    );
   }
 }
 
-class BottomNavigationBarExample extends StatefulWidget {
-  const BottomNavigationBarExample({super.key});
+class BottomNavigationHandler extends StatefulWidget {
+  const BottomNavigationHandler({super.key});
 
   @override
-  State<BottomNavigationBarExample> createState() => _BottomNavigationBarExampleState();
+  State<BottomNavigationHandler> createState() => _BottomNavigationHandlerState();
 }
 
-
-//bottom navigation bar
-class _BottomNavigationBarExampleState extends State<BottomNavigationBarExample> {
+class _BottomNavigationHandlerState extends State<BottomNavigationHandler> {
   int _selectedIndex = 0;
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text('Chatbot'),
-    Text('Chat'),
+
+  // List of pages for each tab
+  final List<Widget> _pages = [
+    ShopOwnerMainPage(email: 'example@example.com'), // Home page
+    ChatPage(), // Chat page
+    ChatbotPage(), // AI Chatbot page
+    ProfilePage(), // My Account page
   ];
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _selectedIndex = index; // Update the selected index
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: IndexedStack(
+        index: _selectedIndex, // Show the selected page
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-            backgroundColor: Color(0xFF4A6B3E),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.cloud_outlined),
-            label: 'Chat',
-            backgroundColor: Color(0xFF4A6B3E),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Chatbot',
-            backgroundColor: Color(0xFF4A6B3E),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_customize_outlined),
-            label: 'MyAccount',
-            backgroundColor: Color(0xFF4A6B3E),
-          ),
-        ],
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        backgroundColor: Colors.green.shade800,
         onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
+          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
+        ],
       ),
     );
   }
