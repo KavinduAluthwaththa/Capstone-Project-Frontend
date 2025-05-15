@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'shared/Splash.dart';
+import 'package:device_preview/device_preview.dart';
 
 
-void main() => runApp(const BottomNavigationBarExampleApp());
+void main() => runApp(DevicePreview(
+  enabled: true,
+  tools: const [
+    ...DevicePreview.defaultTools,
+
+  ],
+  builder: (context) => const BottomNavigationBarExampleApp(),
+),);
 
 class BottomNavigationBarExampleApp extends StatelessWidget {
   const BottomNavigationBarExampleApp({super.key});
@@ -10,6 +18,8 @@ class BottomNavigationBarExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  MaterialApp(
+        locale: DevicePreview.locale(context),
+        builder: DevicePreview.appBuilder,
       debugShowCheckedModeBanner: false,
         home: Container(
           child: Splashscreen(

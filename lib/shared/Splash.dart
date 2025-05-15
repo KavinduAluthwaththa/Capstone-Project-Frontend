@@ -8,6 +8,8 @@ import 'package:capsfront/shared/crop_disease_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+import '../farmer_area/DailyAnalysis.dart';
+import '../farmer_area/crops.dart';
 import '../farmer_area/notifications.dart';
 
 
@@ -28,7 +30,7 @@ class _State extends State<Splashscreen> {
       Navigator.pushReplacement(
         context,
 
-        MaterialPageRoute(builder: (context) => MarketPriceScreen()),
+        MaterialPageRoute(builder: (context) => CropsPage()),
 
       );
     });
