@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
-
 import 'package:capsfront/shared/Splash.dart';
-import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
+import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart' hide MyApp;
 import 'package:capsfront/shared/Chat.dart';
 import 'package:capsfront/shared/Chatbot.dart';
 import 'package:capsfront/shared/profile_page.dart';
-
 import 'shared/Splash.dart';
 import 'package:device_preview/device_preview.dart';
-
-
-void main() {
-  runApp(const MyApp());
-}
 
 
 void main() => runApp(DevicePreview(
