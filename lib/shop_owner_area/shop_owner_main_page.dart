@@ -1,8 +1,9 @@
+import 'package:capsfront/shared/Chatbot.dart';
+import 'package:capsfront/shared/profile_page.dart';
 import 'package:capsfront/shop_owner_area/FarmersList.dart';
 import 'package:capsfront/shop_owner_area/OrderRequest.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 
 void main() {
   runApp(MyApp());
@@ -21,8 +22,7 @@ class MyApp extends StatelessWidget {
       home: ShopOwnerMainPage(email: 'example@example.com'),
     );
   }
-} 
-
+}
 
 class ShopOwnerMainPage extends StatefulWidget {
   final String email;
@@ -33,21 +33,52 @@ class ShopOwnerMainPage extends StatefulWidget {
 }
 
 class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
+  int _selectedIndex = 0; // Default to "Home"
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index; // Update the selected index
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Shop(shopOwnerEmail: widget.email),
+    return Shop(
+      shopOwnerEmail: widget.email,
+      selectedIndex: _selectedIndex,
+      onItemTapped: _onItemTapped,
     );
   }
 }
 
 class Shop extends StatelessWidget {
   final String shopOwnerEmail;
-  const Shop({super.key, required this.shopOwnerEmail});
+  final int selectedIndex;
+  final Function(int) onItemTapped;
+
+  const Shop({
+    super.key,
+    required this.shopOwnerEmail,
+    required this.selectedIndex,
+    required this.onItemTapped,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // bottomNavigationBar: BottomNavigationBar(
+      //   selectedItemColor: Colors.black,
+      //   unselectedItemColor: Colors.black54,
+      //   backgroundColor: const Color(0xFF8ABF6F),
+      //   currentIndex: selectedIndex, // Reflect the selected tab
+      //   onTap: onItemTapped, // Handle tab selection
+      //   items: const [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
+      //   ],
+      // ),
       body: SafeArea(
         child: Column(
           children: [
@@ -115,7 +146,6 @@ class Shop extends StatelessWidget {
     );
   }
 
-  // Updated buildButton method with navigation support
   Widget buildButton(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -133,12 +163,9 @@ class Shop extends StatelessWidget {
             if (text == 'Farmers List') {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FarmersList()),
+                MaterialPageRoute(builder: (context) => const FarmersListPage()),
               );
             } else if (text == 'Order Request') {
-              // ScaffoldMessenger.of(context).showSnackBar(
-              //   const SnackBar(content: Text('Order Request button clicked')),
-              // );
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const OrderRequestsPage()),
@@ -159,20 +186,4 @@ class Shop extends StatelessWidget {
   }
 }
 
-// Placeholder FarmersListPage
-class FarmersListPage extends StatelessWidget {
-  const FarmersListPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Farmers List'),
-        backgroundColor: Colors.green,
-      ),
-      body: const Center(
-        child: Text('This is the Farmers List page'),
-      ),
-    );
-  }
-}
