@@ -1,19 +1,7 @@
-<<<<<<< Updated upstream
-import 'package:capsfront/accounts/login.dart';
-import 'package:capsfront/main.dart';
-import 'package:capsfront/shared/Chat.dart';
-import 'package:capsfront/shared/Chatbot.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-
-import '../farmer_area/notifications.dart';
-=======
-import 'package:capsfront/main.dart';
-import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
-
 import '../farmer_area/crops.dart';
->>>>>>> Stashed changes
+
 
 
 class Splashscreen extends StatefulWidget {
@@ -29,12 +17,10 @@ class _State extends State<Splashscreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-
-        MaterialPageRoute(builder: (context) => Notifications()),
-
+    // Navigate to the next screen after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      Navigator.pushReplacement(context,
+      MaterialPageRoute(builder: (context) => CropsPage()),
       );
     });
   }

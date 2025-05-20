@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -165,4 +163,3 @@ class BarChartPainter extends CustomPainter {
     return oldDelegate.barHeights != barHeights;
   }
 }
->>>>>>> Stashed changes

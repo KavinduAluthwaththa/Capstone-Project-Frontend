@@ -1,12 +1,10 @@
-<<<<<<< Updated upstream
-=======
 import 'package:flutter/material.dart';
 
 class FertilizerScreen extends StatelessWidget {
   final List<String> crops = ['Rice', 'Wheat', 'Corn'];
   final String selectedCrop = 'Rice';
 
-  const FertilizerScreen({super.key});
+ FertilizerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -111,4 +109,3 @@ class FertilizerScreen extends StatelessWidget {
     );
   }
 }
->>>>>>> Stashed changes

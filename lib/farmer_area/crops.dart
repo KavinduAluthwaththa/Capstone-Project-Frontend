@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
 
@@ -138,4 +136,3 @@ class _CropsPageState extends State<CropsPage> {
     );
   }
 }
->>>>>>> Stashed changes
