@@ -1,6 +1,10 @@
+import 'package:capsfront/shared/DiseacesM.dart';
+import 'package:capsfront/shared/Fertilizing.dart';
+import 'package:capsfront/shared/crop_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
-
+import 'package:capsfront/farmer_area/farmer_main_page.dart';
+import 'package:capsfront/farmer_area/DailyAnalysis.dart';
 
 class CropsPage extends StatefulWidget {
   @override
@@ -28,7 +32,7 @@ class _CropsPageState extends State<CropsPage> {
               padding: EdgeInsets.all(16),
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.lightGreen[700],
+                color: Colors.green[400],
                 // color: Color(0xFFA8D08D),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(32),
@@ -37,7 +41,13 @@ class _CropsPageState extends State<CropsPage> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.arrow_back, size: 28),
+                  //Icon(Icons.arrow_back, size: 28),
+                    IconButton(
+                    icon: Icon(Icons.arrow_back, size: 28),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ), 
                   SizedBox(width: 16),
                   Text(
                     'Crops',
@@ -117,19 +127,40 @@ class _CropsPageState extends State<CropsPage> {
   Widget navButton(String title) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFFD9F2D9),
+        backgroundColor: const Color(0xFFD9F2D9),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        padding: EdgeInsets.all(5),
+        padding: const EdgeInsets.all(5),
       ),
       onPressed: () {
-
-      },
+        if (title == "Daily analysis") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const DailyAnalysisScreen()),
+          );
+        } else if (title == 'Crop prdiction') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FarmerCropsPage()),
+              );
+        } else if (title == 'Diseaces management') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DiseaseM()),
+              );
+        } else if (title == 'Fertilizer recomendation') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Fertilizing()),
+              );
+        }
+        // Add other navigation logic for other buttons if needed
+      } ,
       child: Text(
         title,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: const TextStyle(color: Colors.black),
       ),
     );
   }

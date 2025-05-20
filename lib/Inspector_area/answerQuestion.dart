@@ -14,40 +14,29 @@ class AnswerQuestionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: const Text(
+          "Answer Questions",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        backgroundColor: const Color(0xFF91C16C),
+        centerTitle: true,
+        toolbarHeight: 100,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header section
-              Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFA9D18E),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Icon(Icons.arrow_back, size: 28),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Answer questions',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 15),
 
               // Question box with image
@@ -73,7 +62,8 @@ class AnswerQuestionsPage extends StatelessWidget {
                     const SizedBox(height: 10),
                     const Text(
                       'How can overcome this issue',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -86,20 +76,6 @@ class AnswerQuestionsPage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-
-      // Bottom navigation bar
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF3D5D3D),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Com.chat'),
-          BottomNavigationBarItem(icon: Icon(Icons.android), label: 'AI chat bot'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
-        ],
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }
@@ -139,7 +115,8 @@ class _CommentSectionState extends State<CommentSection> {
                     hintText: 'Write your comment...',
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
@@ -175,4 +152,3 @@ class _CommentSectionState extends State<CommentSection> {
     );
   }
 }
-

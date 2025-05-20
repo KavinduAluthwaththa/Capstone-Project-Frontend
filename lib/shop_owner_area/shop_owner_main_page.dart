@@ -176,7 +176,7 @@ class Shop extends StatelessWidget {
             text,
             style: GoogleFonts.poppins(
               fontSize: 20,
-              color: Colors.green.shade900,
+              color: Colors.black,
               fontWeight: FontWeight.bold,
             ),
           ),

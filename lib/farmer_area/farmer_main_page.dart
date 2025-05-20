@@ -1,4 +1,6 @@
 import 'package:capsfront/farmer_area/MarketPrice.dart';
+import 'package:capsfront/farmer_area/ShopList.dart';
+import 'package:capsfront/farmer_area/crops.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -89,6 +91,8 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                   children: [
                     buildButton('My Crops'),
                     SizedBox(height: 50),
+                    buildButton('Shop List'),
+                    SizedBox(height: 50),
                     buildButton('Market Prices'),
                   ],
                 ),
@@ -108,17 +112,22 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
         height: 70,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.green[300],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
           ),
           onPressed: () {
             if (text == 'My Crops') {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => const MarketPriceScreen()),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CropsPage()),
+              );
+            } else if (text == 'Shop List') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Shoplist()),
+              );
             } else if (text == 'Market Prices') {
               Navigator.push(
                 context,
@@ -128,7 +137,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
           },
           child: Text(
             text,
-            style: GoogleFonts.poppins(fontSize: 20, color: Colors.green.shade900, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
           ),
         ),
       ),

@@ -23,24 +23,13 @@ class OrderRequestsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black54,
-        backgroundColor: const Color(0xFF8ABF6F),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
-        ],
-      ),
       body: Column(
         children: [
-          // Header Section
+          // Custom Header
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.only(left: 10, right: 10, top: 40, bottom: 20),
             decoration: const BoxDecoration(
-              color: Color(0xFF98D178),
+              color: Color(0xFF6ABC4D),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
@@ -49,18 +38,21 @@ class OrderRequestsPage extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back, size: 30),
+                  icon: const Icon(Icons.arrow_back, color: Colors.black, size: 30),
                   onPressed: () => Navigator.pop(context),
                 ),
                 const SizedBox(width: 20),
                 Text(
                   "Order Requests",
-                  style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
           ),
-
           // List of Order Requests
           Expanded(
             child: ListView.builder(

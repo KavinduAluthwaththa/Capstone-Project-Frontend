@@ -40,14 +40,19 @@ class _AddDiseasePageState extends State<AddDiseasePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFA1D58B),
+        backgroundColor: const Color(0xFF91C16C),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Add diseases",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          "Add Decease",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        centerTitle: true,
+        toolbarHeight: 100,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
       ),
       body: Padding(
@@ -96,18 +101,18 @@ class _AddDiseasePageState extends State<AddDiseasePage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        backgroundColor: const Color(0xFF2B4C1D),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.forum), label: "Com.chat"),
-          BottomNavigationBarItem(icon: Icon(Icons.android), label: "AI chat bot"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
-        ],
-        type: BottomNavigationBarType.fixed,
-      ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   selectedItemColor: Colors.white,
+      //   unselectedItemColor: Colors.white70,
+      //   backgroundColor: const Color(0xFF2B4C1D),
+      //   items: const [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.forum), label: "Com.chat"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.android), label: "AI chat bot"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
+      //   ],
+      //   type: BottomNavigationBarType.fixed,
+      // ),
     );
   }
 }

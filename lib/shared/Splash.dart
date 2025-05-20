@@ -1,4 +1,5 @@
 import 'package:capsfront/farmer_area/MarketPrice.dart';
+import 'package:capsfront/farmer_area/farmer_main_page.dart';
 import 'package:capsfront/main.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
@@ -24,9 +25,7 @@ class _SplashscreenState extends State<Splashscreen> {
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-
-        MaterialPageRoute(builder: (context) => CropsPage()),
-
+        MaterialPageRoute(builder: (context) => const BottomNavigationHandler()),
       );
     });
   }
