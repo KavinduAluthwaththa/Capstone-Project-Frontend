@@ -5,14 +5,13 @@ import '../farmer_area/crops.dart';
 
 
 class Splashscreen extends StatefulWidget {
-  const Splashscreen({super.key, required BottomNavigationBarExample child});
+  const Splashscreen({super.key});
 
   @override
-  State<Splashscreen> createState() => _State();
+  State<Splashscreen> createState() => _SplashscreenState();
 }
 
-class _State extends State<Splashscreen> {
-
+class _SplashscreenState extends State<Splashscreen> {
   @override
   void initState() {
     super.initState();
@@ -30,61 +29,46 @@ class _State extends State<Splashscreen> {
     return Scaffold(
       body: SafeArea(
         child: Container(
-
-
           width: double.infinity,
-
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.green.shade900, Colors.white10],
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.green.shade900, Colors.white10],
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+            ),
           ),
-        ),
-
-
-
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-
             children: [
-              Icon1(),
-              SizedBox(height: 20,),
-              Text(
+              _buildIcon(),
+              const SizedBox(height: 20),
+              const Text(
                 "Crop planning",
                 style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20,),
-              //ElevatedButton1(),
-              Expanded(child: Loading(),)
-
+              const SizedBox(height: 20),
+              Expanded(child: _buildLoadingAnimation()),
             ],
-
           ),
-
         ),
-            ),
-      );
+      ),
+    );
   }
 
-  Icon1() {
+  Widget _buildIcon() {
     return Container(
-
-      margin: EdgeInsets.only(top: 200, bottom: 10),
-
-        child: Icon(Icons.account_tree, size: 90),
-      );
+      margin: const EdgeInsets.only(top: 200, bottom: 10),
+      child: const Icon(Icons.account_tree, size: 90),
+    );
   }
 
-}
-
-Loading() {
-  return Container(
-
-    margin: EdgeInsets.symmetric(vertical: 50),
-
-    // child: Lottie.network('https://lottie.host/430eaba1-0722-4d09-893d-80fc747c75e5/mvvEzovt6M.json'),
-    child: Lottie.network('https://lottie.host/9f1a777d-fa08-4d3b-8c88-9e510ee525be/r1E9fn5G5E.json'),
-  );
+  Widget _buildLoadingAnimation() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 50),
+      child: Lottie.network(
+        'https://lottie.host/9f1a777d-fa08-4d3b-8c88-9e510ee525be/r1E9fn5G5E.json',
+      ),
+    );
+  }
 }
 

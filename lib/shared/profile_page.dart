@@ -1,3 +1,7 @@
+import 'package:capsfront/shared/Chat.dart';
+import 'package:capsfront/shared/Chatbot.dart';
+import 'package:capsfront/shared/settings.dart';
+import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
 
 // class Constants {
@@ -25,8 +29,46 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  //int _selectedIndex = 3; // Default to "My account"
+
+  // void _onItemTapped(int index) {
+  //   if (index == _selectedIndex) {
+  //     // Do nothing if the user taps the currently selected tab
+  //     return;
+  //   }
+
+  //   if (index == 0) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const ShopOwnerMainPage(email: 'example@mail.com',)),
+  //     );
+  //   } else if (index == 1) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const ChatbotPage()),
+  //     );
+  //   } else if (index == 2) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const ChatbotPage()),
+  //     );
+  //   } else if (index == 3) {
+  //     // Stay on the current page (My account)
+  //     return;
+  //   } else {
+  //     setState(() {
+  //       _selectedIndex = index; // Update the selected index
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -73,18 +115,20 @@ class ProfilePage extends StatelessWidget {
           ProfileOption(icon: Icons.settings, title: "Settings"),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.green.shade800,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Com.chat"),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: "AI chat bot"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
-        ],
-      ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   type: BottomNavigationBarType.fixed,
+      //   backgroundColor: Colors.green.shade800,
+      //   selectedItemColor: Colors.white,
+      //   unselectedItemColor: Colors.white70,
+      //   currentIndex: _selectedIndex, // Default to "My account"
+      //   onTap: _onItemTapped,
+      //   items: [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Com.chat"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: "AI chat bot"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
+      //   ],
+      // ),
     );
   }
 }

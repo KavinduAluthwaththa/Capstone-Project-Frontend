@@ -11,17 +11,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const FarmersList(),
+      home: const FarmersListPage(), // Directly use FarmersListPage
     );
-  }
-}
-
-class FarmersList extends StatelessWidget {
-  const FarmersList({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const FarmersListPage();
   }
 }
 
@@ -41,9 +32,9 @@ class _FarmersListPageState extends State<FarmersListPage> {
       backgroundColor: const Color(0xFFEAF4D3), // Light green background
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop(); // This will navigate back
+            Navigator.of(context).pop(); // Navigate back to ShopOwnerMainPage
           },
         ),
         title: const Text(
@@ -56,6 +47,20 @@ class _FarmersListPageState extends State<FarmersListPage> {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
+      ),
+
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.black54,
+        backgroundColor: const Color(0xFF8ABF6F),
+        //currentIndex: selectedIndex, // Reflect the selected tab
+        //onTap: onItemTapped, // Handle tab selection
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
+          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
+        ],
       ),
 
       body: Padding(
@@ -84,21 +89,13 @@ class _FarmersListPageState extends State<FarmersListPage> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildRadioButton("Crop type"),
-                    _buildRadioButton("Location"),
-                  ],
-                ),
               ],
             ),
-            const SizedBox(height: 20),
 
             // Farmers List
             Expanded(
               child: ListView.builder(
-                itemCount: 6,
+                itemCount: 6, // Number of farmers
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -109,7 +106,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
                       ),
                       child: ListTile(
                         title: Text(
-                          "Farmer ${index + 1}",
+                          "Farmer ${index + 1}", // Farmer name
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
