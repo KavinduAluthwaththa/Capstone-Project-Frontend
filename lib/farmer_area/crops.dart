@@ -3,6 +3,8 @@ import 'package:pie_chart/pie_chart.dart';
 
 
 class CropsPage extends StatefulWidget {
+  const CropsPage({super.key});
+
   @override
   _CropsPageState createState() => _CropsPageState();
 }

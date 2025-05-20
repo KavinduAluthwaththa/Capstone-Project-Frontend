@@ -54,7 +54,7 @@ class CropService {
     if (token == null) return false;
 
     final response = await http.delete(
-      Uri.parse("$deleteUrl"),
+      Uri.parse(deleteUrl),
       headers: {
         "Authorization": "Bearer $token",
       },

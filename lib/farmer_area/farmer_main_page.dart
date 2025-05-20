@@ -1,4 +1,5 @@
 import 'package:capsfront/farmer_area/MarketPrice.dart';
+import 'package:capsfront/farmer_area/crops.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -115,10 +116,10 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
           ),
           onPressed: () {
             if (text == 'My Crops') {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => const MarketPriceScreen()),
-              // );
+              Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CropsPage()),
+              );
             } else if (text == 'Market Prices') {
               Navigator.push(
                 context,
