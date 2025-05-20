@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class DiseaseM extends StatefulWidget {
+  const DiseaseM({super.key});
+
   @override
   _DiseaseMState createState() => _DiseaseMState();
 }
@@ -187,15 +189,15 @@ class DiseaseItem extends StatelessWidget {
           ElevatedButton(
             onPressed: () {  },
             child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Row(
                   children: [
                     Text("Read more"),
                     Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black)
                   ]),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
 
             ),
           )

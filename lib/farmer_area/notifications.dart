@@ -159,7 +159,7 @@ class Notifications extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _dateSection(entry.key),
-                      ...entry.value.map(_notificationTile).toList(),
+                      ...entry.value.map(_notificationTile),
                     ],
                   );
                 }).toList(),

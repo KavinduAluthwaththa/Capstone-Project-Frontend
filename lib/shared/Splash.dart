@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/main.dart';
 import 'package:capsfront/shared/Chat.dart';
@@ -6,6 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 import '../farmer_area/notifications.dart';
+=======
+import 'package:capsfront/main.dart';
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+
+import '../farmer_area/crops.dart';
+>>>>>>> Stashed changes
 
 
 class Splashscreen extends StatefulWidget {
