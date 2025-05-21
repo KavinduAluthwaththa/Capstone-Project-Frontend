@@ -1,4 +1,5 @@
 import 'package:capsfront/Inspector_area/addDeseace.dart';
+import 'package:capsfront/Inspector_area/answerQuestion.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -33,17 +34,17 @@ class _InspectorMainPageState extends State<InspectorMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black54,
-        backgroundColor: const Color(0xFF8ABF6F),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
-        ],
-      ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   selectedItemColor: Colors.black,
+      //   unselectedItemColor: Colors.black54,
+      //   backgroundColor: const Color(0xFF8ABF6F),
+      //   items: const [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
+      //   ],
+      // ),
       body: SafeArea(
         child: Column(
           children: [
@@ -134,10 +135,10 @@ class _InspectorMainPageState extends State<InspectorMainPage> {
               // ScaffoldMessenger.of(context).showSnackBar(
               //   const SnackBar(content: Text('Order Request button clicked')),
               // );
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => const AnswerQuestionsPage()),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AnswerQuestionsPage()),
+              );
             }
           },
           child: Text(

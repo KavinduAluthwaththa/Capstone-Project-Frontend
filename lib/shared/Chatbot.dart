@@ -23,7 +23,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   String _getBotResponse(String userMessage) {
-    // Simple bot logic (replace with real AI later)
     if (userMessage.toLowerCase().contains("hello")) {
       return "Hello! How can I assist you today?";
     } else if (userMessage.toLowerCase().contains("help")) {
@@ -37,12 +36,35 @@ class _ChatbotPageState extends State<ChatbotPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text("Chatbot"),
-        backgroundColor: const Color(0xFF4A6B3E),
-      ),
       body: Column(
         children: [
+          // Custom Header
+          Container(
+            padding: const EdgeInsets.only(left: 10, right: 10, top: 40, bottom: 20),
+            decoration: BoxDecoration(
+              color: Colors.green[400],
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.smart_toy, color: Colors.black, size: 30),
+                SizedBox(width: 20),
+                Text(
+                  "AI Chatbot",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Chatbot messages
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -67,7 +89,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
               },
             ),
           ),
-
           // Input Field & Send Button
           Padding(
             padding: const EdgeInsets.all(10.0),

@@ -34,27 +34,33 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFA1D58B),
+        backgroundColor: Colors.green[400],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Market price",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          "Market Price",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        centerTitle: true,
+        toolbarHeight: 100,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black54,
-        backgroundColor: Color(0xFF8ABF6F),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
-        ],
-      ),
+
+      // bottomNavigationBar: BottomNavigationBar(
+      //   selectedItemColor: Colors.black,
+      //   unselectedItemColor: Colors.black54,
+      //   backgroundColor: Color(0xFF8ABF6F),
+      //   items: const [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
+      //   ],
+      // ),
       body: Column(
         children: [
           Padding(

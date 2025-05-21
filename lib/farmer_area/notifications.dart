@@ -170,25 +170,25 @@ class Notifications extends StatelessWidget {
       ),
 
       // Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: const BoxDecoration(
-          color: Color(0xFF6D8C50),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(25),
-            topRight: Radius.circular(25),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _bottomNavItem(Icons.home, "Home"),
-            _bottomNavItem(Icons.chat, "Com.chat"),
-            _bottomNavItem(Icons.smart_toy, "AI chat bot"),
-            _bottomNavItem(Icons.person, "My account", active: true),
-          ],
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   padding: const EdgeInsets.symmetric(vertical: 10),
+      //   decoration: const BoxDecoration(
+      //     color: Color(0xFF6D8C50),
+      //     borderRadius: BorderRadius.only(
+      //       topLeft: Radius.circular(25),
+      //       topRight: Radius.circular(25),
+      //     ),
+      //   ),
+      //   child: Row(
+      //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //     children: [
+      //       _bottomNavItem(Icons.home, "Home"),
+      //       _bottomNavItem(Icons.chat, "Com.chat"),
+      //       _bottomNavItem(Icons.smart_toy, "AI chat bot"),
+      //       _bottomNavItem(Icons.person, "My account", active: true),
+      //     ],
+      //   ),
+      // ),
     );
   }
 }
