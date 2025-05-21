@@ -36,16 +36,18 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).pop(); // Navigate back
+          },
         ),
         title: Text("Settings"),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.green[400],
       ),
       body: Column(
         children: [
           Container(
             padding: EdgeInsets.all(16),
-            color: Colors.green,
+            color: Colors.green[400],
             child: Row(
               children: [
                 CircleAvatar(
@@ -90,18 +92,18 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.green.shade800,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Com.chat"),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: "AI chat bot"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
-        ],
-      ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   type: BottomNavigationBarType.fixed,
+      //   backgroundColor: Colors.green.shade800,
+      //   selectedItemColor: Colors.white,
+      //   unselectedItemColor: Colors.white70,
+      //   items: [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Com.chat"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: "AI chat bot"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
+      //   ],
+      // ),
     );
   }
 }

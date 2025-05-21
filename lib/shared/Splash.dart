@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '../farmer_area/crops.dart';
 
 
 
@@ -17,11 +16,7 @@ class _SplashscreenState extends State<Splashscreen> {
     super.initState();
 
     // Navigate to the next screen after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(context,
-      MaterialPageRoute(builder: (context) => CropsPage()),
-      );
-    });
+    Future.delayed(const Duration(seconds: 2), () {});
   }
 
   @override

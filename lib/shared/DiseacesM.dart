@@ -40,12 +40,19 @@ class _DiseaseMState extends State<DiseaseM> {
                   decoration: const BoxDecoration(
                     color: Color(0xFFA7DB8D),
                     borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(40),
+                      bottomRight: Radius.circular(32),
+                      bottomLeft: Radius.circular(32),
                     ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.arrow_back, size: 28),
+                      //const Icon(Icons.arrow_back, size: 28),
+                      IconButton(
+                    icon: Icon(Icons.arrow_back, size: 28),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
                       const SizedBox(width: 16),
                       const Text(
                         'Diseaces Management',

@@ -27,26 +27,25 @@ class _ShopListPageState extends State<ShopListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4D3), // Light green background
+      backgroundColor: Colors.white, // Full page background set to white
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop(); // This will navigate back
+            Navigator.of(context).pop(); // Back navigation
           },
         ),
         title: const Text(
           "Shop List",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        backgroundColor: const Color(0xFF91C16C), // Dark greenish header
+        backgroundColor: Colors.green[400], // Green header
         centerTitle: true,
-        toolbarHeight: 100, // Adjust the height as needed
+        toolbarHeight: 100, // Custom height
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -57,7 +56,7 @@ class _ShopListPageState extends State<ShopListPage> {
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF91C16C),
+                    backgroundColor: Colors.green[400],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -84,7 +83,7 @@ class _ShopListPageState extends State<ShopListPage> {
             ),
             const SizedBox(height: 20),
 
-            // Farmers List
+            // Shop List
             Expanded(
               child: ListView.builder(
                 itemCount: 6,
@@ -93,7 +92,7 @@ class _ShopListPageState extends State<ShopListPage> {
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF91C16C), // Green button color
+                        color: Colors.green[300],
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: ListTile(
@@ -115,7 +114,8 @@ class _ShopListPageState extends State<ShopListPage> {
         ),
       ),
 
-      // Bottom Navigation Bar
+      // Optional Bottom Navigation Bar
+      // Uncomment if needed
       // bottomNavigationBar: BottomNavigationBar(
       //   backgroundColor: const Color(0xFF4A6B3E),
       //   selectedItemColor: Colors.white,
@@ -143,7 +143,7 @@ class _ShopListPageState extends State<ShopListPage> {
     );
   }
 
-  // Radio Button Widget
+  // Helper to build radio buttons
   Widget _buildRadioButton(String title) {
     return Row(
       children: [
