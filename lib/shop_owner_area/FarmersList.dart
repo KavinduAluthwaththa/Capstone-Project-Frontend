@@ -38,7 +38,8 @@ class _FarmersListPageState extends State<FarmersListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4D3), // Light green background
+      backgroundColor: const Color(0xFFEAF4D3),
+
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -50,7 +51,8 @@ class _FarmersListPageState extends State<FarmersListPage> {
           "Farmers List",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        backgroundColor: const Color(0xFF6ABC4D), // Dark greenish header
+        // backgroundColor: const Color(0xFF6ABC4D), // Dark greenish header
+        backgroundColor: Colors.lightGreen[700],
         centerTitle: true,
         toolbarHeight: 100, // Adjust the height as needed
         shape: const RoundedRectangleBorder(

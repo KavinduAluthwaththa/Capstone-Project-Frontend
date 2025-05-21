@@ -35,9 +35,9 @@ class _DiseaseMState extends State<DiseaseM> {
                 Container(
                   height: 120,
                   padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFA7DB8D),
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    color: Colors.lightGreen[700],
+                    borderRadius: const BorderRadius.only(
                       bottomRight: Radius.circular(40),
                     ),
                   ),

@@ -27,7 +27,7 @@ class _FertilizingState extends State<Fertilizing> {
           onPressed: () {},
         ),
         title: Text("Fertilizing",style: TextStyle(fontWeight: FontWeight.bold),),
-        backgroundColor: Color(0xFFA7DB8D),
+        backgroundColor: Colors.lightGreen[700],
       ),
       backgroundColor: Colors.white,
 

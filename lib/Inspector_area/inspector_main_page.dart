@@ -39,7 +39,7 @@ class _InspectorMainPageState extends State<InspectorMainPage> {
               height: 200,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.green[400],
+                color: Colors.lightGreen[700],
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),

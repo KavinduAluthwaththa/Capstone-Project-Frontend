@@ -39,7 +39,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Chatbot"),
-        backgroundColor: const Color(0xFF4A6B3E),
+        // backgroundColor: const Color(0xFF4A6B3E),
+        backgroundColor: Colors.lightGreen[700],
       ),
       body: Column(
         children: [

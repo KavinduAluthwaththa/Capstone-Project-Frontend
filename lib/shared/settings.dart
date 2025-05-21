@@ -45,7 +45,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           Container(
             padding: EdgeInsets.all(16),
-            color: Colors.green,
+            color: Colors.lightGreen[700],
             child: Row(
               children: [
                 CircleAvatar(

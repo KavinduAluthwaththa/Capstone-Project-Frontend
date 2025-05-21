@@ -39,7 +39,10 @@ class _ShopListPageState extends State<ShopListPage> {
           "Shop List",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        backgroundColor: const Color(0xFF91C16C), // Dark greenish header
+        // backgroundColor: const Color(0xFF91C16C),
+        backgroundColor: Colors.lightGreen[700],
+
+        // Dark greenish header
         centerTitle: true,
         toolbarHeight: 100, // Adjust the height as needed
         shape: const RoundedRectangleBorder(

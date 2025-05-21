@@ -28,9 +28,9 @@ class OrderRequestsPage extends StatelessWidget {
           // Header Section
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Color(0xFF98D178),
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: Colors.lightGreen[700],
+              borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),

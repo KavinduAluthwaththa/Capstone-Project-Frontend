@@ -33,7 +33,8 @@ class _ChatPageState extends State<ChatPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Chat"),
-        backgroundColor: const Color(0xFF4A6B3E),
+        // backgroundColor: const Color(0xFF4A6B3E),
+        backgroundColor: Colors.lightGreen[700],
       ),
       body: Column(
         children: [
