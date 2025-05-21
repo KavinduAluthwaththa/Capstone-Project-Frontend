@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-
-
 class DailyAnalysisScreen extends StatelessWidget {
   const DailyAnalysisScreen({super.key});
 
@@ -11,22 +9,30 @@ class DailyAnalysisScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
+            // --- Header matching CropsPage ---
             Container(
               padding: const EdgeInsets.all(16),
+              width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.lightGreen[700],
+                color: Colors.green[400],
                 borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
                 ),
               ),
               child: Row(
-                children: const [
-                  Icon(Icons.arrow_back),
-                  SizedBox(width: 16),
-                  Text(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, size: 28),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 16),
+                  const Text(
                     'Daily analysis',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -57,7 +63,7 @@ class DailyAnalysisScreen extends StatelessWidget {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            RainForecast(),
+            const RainForecast(),
           ],
         ),
       ),
