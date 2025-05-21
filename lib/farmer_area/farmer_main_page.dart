@@ -120,6 +120,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
           onPressed: () {
             if (text == 'My Crops') {
               Navigator.push(
+
                 context,
                 MaterialPageRoute(builder: (context) => CropsPage()),
               );
@@ -127,6 +128,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => Shoplist()),
+
               );
             } else if (text == 'Market Prices') {
               Navigator.push(

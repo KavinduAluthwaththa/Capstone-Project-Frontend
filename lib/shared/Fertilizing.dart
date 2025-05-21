@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Fertilizing extends StatefulWidget {
+  const Fertilizing({super.key});
+
   @override
   _FertilizingState createState() => _FertilizingState();
 }

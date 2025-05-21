@@ -4,6 +4,8 @@ class FertilizerScreen extends StatelessWidget {
   final List<String> crops = ['Rice', 'Wheat', 'Corn'];
   final String selectedCrop = 'Rice';
 
+ FertilizerScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

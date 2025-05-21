@@ -7,6 +7,8 @@ import 'package:capsfront/farmer_area/farmer_main_page.dart';
 import 'package:capsfront/farmer_area/DailyAnalysis.dart';
 
 class CropsPage extends StatefulWidget {
+  const CropsPage({super.key});
+
   @override
   _CropsPageState createState() => _CropsPageState();
 }
