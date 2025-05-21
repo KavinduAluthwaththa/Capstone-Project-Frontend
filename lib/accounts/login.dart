@@ -7,7 +7,6 @@ import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/constraints/token_handler.dart';
 import 'package:capsfront/models/login_model.dart';
 import 'package:capsfront/farmer_area/farmer_main_page.dart';
-import 'package:capsfront/Inspector_area/inspector_main_page.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -70,11 +69,8 @@ class _LoginPageState extends State<LoginPage> {
             case "farmer":
               role = 0;
               break;
-            case "inspector":
-              role = 1;
-              break;
             case "shopowner":
-              role = 2;
+              role = 1;
               break;
             default:
               _showError("Unknown role: $role");
@@ -102,9 +98,6 @@ class _LoginPageState extends State<LoginPage> {
       nextPage = FarmerMainPage(email: email);
       break;
     case 1:
-      nextPage = InspectorMainPage(email: email);
-      break;
-    case 2:
       nextPage = ShopOwnerMainPage(email: email);
       break;
     default:

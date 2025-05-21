@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(MyApp());
@@ -33,22 +34,46 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop(); // Navigate back
-          },
-        ),
-        title: Text("Settings"),
-        backgroundColor: Colors.green[400],
-      ),
       body: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(16),
-            color: Colors.green[400],
-            child: Row(
+            width: double.infinity,
+            padding: const EdgeInsets.only(top: 30, bottom: 30),
+            decoration: const BoxDecoration(
+              color: Color(0xFF98D178),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
+              ),
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+              // Back button aligned to the left
+              Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, size: 30),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            // Centered notification icon and text
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.settings, size: 40),
+                const SizedBox(height: 8),
+                Text(
+                  "Settings",
+                  style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ],
+            ),
+          ),
+          ListTile(
+            title: Row(
               children: [
                 CircleAvatar(
                   child: Text("U"),
@@ -61,10 +86,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text("user@gmail.com", style: TextStyle(color: Colors.grey)),
                   ],
                 ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios, size: 16),
               ],
             ),
+            trailing: Icon(Icons.arrow_forward_ios, size: 16),
           ),
           ListTile(
             title: Text("Location"),
