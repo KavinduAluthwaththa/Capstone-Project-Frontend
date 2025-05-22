@@ -1,10 +1,7 @@
 import 'package:capsfront/farmer_area/MyOrders.dart';
-import 'package:capsfront/shared/Chat.dart';
-import 'package:capsfront/shared/Chatbot.dart';
 import 'package:capsfront/shared/settings.dart';
-import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:flutter/material.dart';
-import 'package:capsfront/farmer_area/notifications.dart'; // Import Notifications
+import 'package:capsfront/shared/notifications.dart'; // Import Notifications
 
 void main() {
   runApp(MyApp());
