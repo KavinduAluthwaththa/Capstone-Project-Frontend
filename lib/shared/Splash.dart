@@ -14,11 +14,12 @@ class _SplashscreenState extends State<Splashscreen> {
   void initState() {
     super.initState();
 
-    // Navigate to the next screen after 2 seconds
+    // Navigate to the login page after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const BottomNavigationHandler()),
+        MaterialPageRoute(builder: (context) => const LoginPage()),
       );
     });
   }

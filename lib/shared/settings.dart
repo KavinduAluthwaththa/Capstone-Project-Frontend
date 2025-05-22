@@ -217,9 +217,9 @@ class _SettingsPageState extends State<SettingsPage> {
         activeTrackColor: Colors.black, // Color of the track when active
         inactiveThumbColor: Colors.grey[300],
         inactiveTrackColor: Colors.grey[400],
-        thumbIcon: MaterialStateProperty.resolveWith<Icon?>(
-          (Set<MaterialState> states) {
-            if (states.contains(MaterialState.selected)) {
+        thumbIcon: WidgetStateProperty.resolveWith<Icon?>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.selected)) {
               // Icon for active state (thumb)
               return const Icon(Icons.check, color: Colors.black);
             }
