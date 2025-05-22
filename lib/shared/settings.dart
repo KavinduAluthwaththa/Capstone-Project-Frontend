@@ -34,7 +34,7 @@ class _SettingsPageState extends State<SettingsPage> {
   int _selectedIndex = 3; // Default to "My account"
 
   // Define colors from the image
-  static const Color headerGreen = Color(0xFFA5D6A7); // A light, slightly desaturated green
+  static const Color headerGreen = Color(0xFF98D178); // Match notifications page
   static const Color itemGreen = Color(0xFFE8F5E9); // Very light green for items
   static const Color bottomNavGreen = Color(0xFF558B2F); // Darker green for bottom nav
   static const Color iconColor = Colors.black87;
@@ -79,14 +79,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 15, // Status bar height + padding
-        bottom: 50, // Increased padding for the curve effect
-        left: 20,
-        right: 20,
-      ),
+      padding: const EdgeInsets.only(top: 30, bottom: 30),
       decoration: const BoxDecoration(
-        color: headerGreen,
+        color: Color(0xFF98D178), // Match notifications page
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
@@ -95,31 +90,33 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // Back button aligned to the left
           Align(
             alignment: Alignment.centerLeft,
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  // Handle back navigation
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-                },
-              ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, size: 30, color: Colors.black),
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+              },
             ),
           ),
-          const Text(
-            'Settings',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+          // Centered settings icon and text
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.settings, size: 40, color: Colors.black),
+              const SizedBox(width: 8),
+              Text(
+                "Settings",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -293,35 +290,4 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
   }
-
-  // Widget _buildBottomNavigationBar() {
-  //   return BottomNavigationBar(
-  //     type: BottomNavigationBarType.fixed, // Ensures all items are visible
-  //     backgroundColor: bottomNavGreen,
-  //     selectedItemColor: Colors.white,
-  //     unselectedItemColor: Colors.white.withOpacity(0.7),
-  //     currentIndex: _selectedIndex,
-  //     onTap: _onItemTapped,
-  //     selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-  //     unselectedLabelStyle: const TextStyle(fontSize: 12),
-  //     items: const <BottomNavigationBarItem>[
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.home_filled), // Using filled icon as in image
-  //         label: 'Home',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.cloud_outlined), // Using outlined as in image
-  //         label: 'Com.chat',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.smart_toy_outlined), // A robot/AI icon
-  //         label: 'AI chat bot',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: SizedBox.shrink(), // No icon for "My account" as per image
-  //         label: 'My account',
-  //       ),
-  //     ],
-  //   );
-  //}
 }

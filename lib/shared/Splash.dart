@@ -1,3 +1,4 @@
+import 'package:capsfront/main.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -16,7 +17,12 @@ class _SplashscreenState extends State<Splashscreen> {
     super.initState();
 
     // Navigate to the next screen after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {});
+    Future.delayed(const Duration(seconds: 2), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const BottomNavigationHandler()),
+      );
+    });
   }
 
   @override

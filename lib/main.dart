@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
-      home: const SettingsPage(), // Set Splashscreen as the initial page
+      home: const Splashscreen(), // Set Splashscreen as the initial page
     );
   }
 }
