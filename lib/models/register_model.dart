@@ -5,6 +5,7 @@ class RegisterModel {
   final String password;
   final String confirmedPassword;
   final int userTypes;
+  final String location;
 
   RegisterModel({
     required this.firstName,
@@ -13,6 +14,7 @@ class RegisterModel {
     required this.password,
     required this.confirmedPassword,
     required this.userTypes,
+    required this.location,
   });
 
   factory RegisterModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class RegisterModel {
       password: json['password'],
       confirmedPassword: json['confirmedPassword'],
       userTypes: json['userTypes'],
+      location: json['Address']
     );
   }
 
@@ -34,6 +37,7 @@ class RegisterModel {
       'password': password,
       'confirmedPassword': confirmedPassword,
       'userTypes': userTypes,
+      'Address': location,
     };
   }
 }

@@ -7,6 +7,7 @@ import 'package:capsfront/models/login_model.dart';
 import 'package:capsfront/farmer_area/farmer_main_page.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:capsfront/accounts/register.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -44,6 +45,10 @@ class _LoginPageState extends State<LoginPage> {
         if (response.statusCode >= 200 && response.statusCode < 300) {
           final jsonData = json.decode(response.body);
           final token = jsonData['token'];
+          await SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('auth_token', token); // Save token
+            });
+            
           if (token == null || token.isEmpty) {
             _showError("Invalid token received.");
             return;

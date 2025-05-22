@@ -1,4 +1,6 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:capsfront/models/shop_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -15,7 +17,7 @@ class ShopListPage extends StatefulWidget {
 }
 
 class _ShopListPageState extends State<ShopListPage> {
-  late Future<List<dynamic>> _shopsFuture;
+  late Future<List<Shop>> _shopsFuture;
 
   @override
   void initState() {
@@ -23,22 +25,29 @@ class _ShopListPageState extends State<ShopListPage> {
     _shopsFuture = fetchShops();
   }
 
-  Future<List<dynamic>> fetchShops() async {
+  Future<List<Shop>> fetchShops() async {
   try {
-    final response = await http.get(Uri.parse(ApiEndpoints.getShops));
-    print('Status code: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    
+    final response = await http.get(
+      Uri.parse(ApiEndpoints.getShops),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final List<dynamic> jsonData = json.decode(response.body);
+      return jsonData.map((json) => Shop.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load shops');
+      throw Exception('Failed to load shops: ${response.statusCode} - ${response.body}');
     }
   } catch (e) {
-    throw Exception('Error fetching data: $e');
+    throw Exception('Failed to fetch shops: $e');
   }
 }
-
 
   @override
   Widget build(BuildContext context) {
@@ -67,54 +76,40 @@ class _ShopListPageState extends State<ShopListPage> {
             const SizedBox(height: 20),
             // List Section
             Expanded(
-              child: FutureBuilder<List<dynamic>>(
+              child: FutureBuilder<List<Shop>>(
                 future: _shopsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No shops found.'));
                   }
 
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      setState(() {
-                        _shopsFuture = fetchShops();
-                      });
-                    },
-                    child: ListView.builder(
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        final shop = snapshot.data![index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.green[300],
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.all(16),
-                              title: Text(
-                                shop['name'] ?? "Shop ${index + 1}",
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 8),
-                                  Text("Crop Type: ${shop['crop_type'] ?? 'N/A'}"),
-                                  Text("Location: ${shop['location'] ?? 'N/A'}"),
-                                ],
-                              ),
-                            ),
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No shops available'));
+                  }
+
+                  return ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      final shop = snapshot.data![index];
+                      return Card(
+                        margin: const EdgeInsets.all(8),
+                        child: ListTile(
+                          title: Text(shop.name),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Phone: ${shop.phoneNumber}'),
+                              Text('Location: ${shop.location}'),
+                            ],
                           ),
-                        );
-                      },
-                    ),
+                          leading: Text(shop.shopID.toString()),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

@@ -1,7 +1,7 @@
 class Shop {
   final int shopID;
   final String name;
-  final int phoneNumber;
+  final String phoneNumber;
   final String location;
 
   Shop({
@@ -15,8 +15,8 @@ class Shop {
     return Shop(
       shopID: json['shopID'],
       name: json['name'],
-      phoneNumber: json['phoneNumber'],
-      location: json['location'],
+      phoneNumber: json['phoneNumber']?.toString() ?? json['phone_number']?.toString() ?? '',
+      location: json['location'] ?? '',
     );
   }
 }
