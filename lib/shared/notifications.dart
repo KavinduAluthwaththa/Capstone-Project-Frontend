@@ -113,7 +113,7 @@ class Notifications extends StatelessWidget {
           // Header
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 60, bottom: 30),
+            padding: const EdgeInsets.only(top: 30, bottom: 30),
             decoration: const BoxDecoration(
               color: Color(0xFF98D178),
               borderRadius: BorderRadius.only(

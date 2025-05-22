@@ -69,11 +69,8 @@ class _LoginPageState extends State<LoginPage> {
             case "farmer":
               role = 0;
               break;
-            case "inspector":
-              role = 1;
-              break;
             case "shopowner":
-              role = 2;
+              role = 1;
               break;
             default:
               _showError("Unknown role: $role");

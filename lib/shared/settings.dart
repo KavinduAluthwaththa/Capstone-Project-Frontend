@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,7 +51,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Column(
         children: [
           _buildHeader(),
@@ -72,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      //bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -294,34 +294,34 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed, // Ensures all items are visible
-      backgroundColor: bottomNavGreen,
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.white.withOpacity(0.7),
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
-      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-      unselectedLabelStyle: const TextStyle(fontSize: 12),
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_filled), // Using filled icon as in image
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.cloud_outlined), // Using outlined as in image
-          label: 'Com.chat',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.smart_toy_outlined), // A robot/AI icon
-          label: 'AI chat bot',
-        ),
-        BottomNavigationBarItem(
-          icon: SizedBox.shrink(), // No icon for "My account" as per image
-          label: 'My account',
-        ),
-      ],
-    );
-  }
+  // Widget _buildBottomNavigationBar() {
+  //   return BottomNavigationBar(
+  //     type: BottomNavigationBarType.fixed, // Ensures all items are visible
+  //     backgroundColor: bottomNavGreen,
+  //     selectedItemColor: Colors.white,
+  //     unselectedItemColor: Colors.white.withOpacity(0.7),
+  //     currentIndex: _selectedIndex,
+  //     onTap: _onItemTapped,
+  //     selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+  //     unselectedLabelStyle: const TextStyle(fontSize: 12),
+  //     items: const <BottomNavigationBarItem>[
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.home_filled), // Using filled icon as in image
+  //         label: 'Home',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.cloud_outlined), // Using outlined as in image
+  //         label: 'Com.chat',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.smart_toy_outlined), // A robot/AI icon
+  //         label: 'AI chat bot',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: SizedBox.shrink(), // No icon for "My account" as per image
+  //         label: 'My account',
+  //       ),
+  //     ],
+  //   );
+  //}
 }

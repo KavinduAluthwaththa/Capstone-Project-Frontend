@@ -1,3 +1,4 @@
+import 'package:capsfront/shared/Fertilizing.dart';
 import 'package:flutter/material.dart';
 
 class DailyAnalysisScreen extends StatelessWidget {
@@ -51,7 +52,12 @@ class DailyAnalysisScreen extends StatelessWidget {
                 backgroundColor: Colors.lightGreen[300],
                 padding: const EdgeInsets.symmetric(horizontal: 120, vertical: 16),
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Fertilizing()),
+              );
+              },
               child: const Text(
                 'Fertilizing',
                 style: TextStyle(fontSize: 16, color: Colors.black),
