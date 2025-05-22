@@ -127,7 +127,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
             } else if (text == 'Shop List') {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Shoplist()),
+                MaterialPageRoute(builder: (context) => ShopListPage()),
 
               );
             } else if (text == 'Market Prices') {

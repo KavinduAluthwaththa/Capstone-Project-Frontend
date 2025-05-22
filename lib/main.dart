@@ -1,5 +1,5 @@
+import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
-import 'package:capsfront/shared/Splash.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
-      home: const Splashscreen(), // Set Splashscreen as the initial page
+      home: const LoginPage(), // Set Splashscreen as the initial page
     );
   }
 }

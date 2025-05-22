@@ -84,25 +84,6 @@ class Notifications extends StatelessWidget {
     );
   }
 
-  Widget _bottomNavItem(IconData icon, String label, {bool active = false}) {
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: active ? Colors.white : Colors.black),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: active ? Colors.white : Colors.black,
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final groupedNotifications = _groupByDate(notifications);
