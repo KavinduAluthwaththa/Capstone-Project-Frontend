@@ -3,7 +3,6 @@ import 'package:capsfront/shared/Fertilizing.dart';
 import 'package:capsfront/shared/crop_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
-import 'package:capsfront/farmer_area/farmer_main_page.dart';
 import 'package:capsfront/farmer_area/DailyAnalysis.dart';
 
 class CropsPage extends StatefulWidget {

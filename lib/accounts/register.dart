@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../constraints/api_endpoint.dart';
 import 'login.dart';
 
-enum UserTypes { farmer, inspector, shopOwner }
+enum UserTypes { farmer, shopOwner }
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -20,6 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
   UserTypes? _selectedUserType;
   final List<UserTypes> _userTypes = UserTypes.values;
@@ -72,6 +73,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? 'Passwords do not match'
                     : null,
               ),
+
+                const SizedBox(height: 12.0),
+                _buildTextField(
+                _locationController,
+                'Location',
+                keyboardType: TextInputType.text,
+                validator: (value) => (value == null || value.isEmpty) ? 'Please enter your Location' : null,
+                ),
 
               const SizedBox(height: 12.0),
               DropdownButtonFormField<UserTypes>(
@@ -151,11 +160,9 @@ class _RegisterPageState extends State<RegisterPage> {
     switch (type) {
       case UserTypes.farmer:
         return 'Farmer';
-      case UserTypes.inspector:
-        return 'Inspector';
       case UserTypes.shopOwner:
         return 'Shop Owner';
-    }
+      }
   }
 
   void _registerUser() {
@@ -184,7 +191,8 @@ class _RegisterPageState extends State<RegisterPage> {
       "userName": _emailController.text.trim(),
       "password": _passwordController.text.trim(),
       "confirmedPassword": _confirmPasswordController.text.trim(),
-      "userTypes": _selectedUserType?.index, // Convert enum to int
+      "userTypes": _selectedUserType?.index,
+      "address": _locationController.text.trim(),
     };
 
     try {

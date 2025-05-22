@@ -24,7 +24,6 @@ class FarmersListPage extends StatefulWidget {
 }
 
 class _FarmersListPageState extends State<FarmersListPage> {
-  String _selectedSort = "Crop type";
 
   @override
   Widget build(BuildContext context) {
@@ -123,28 +122,6 @@ class _FarmersListPageState extends State<FarmersListPage> {
           ),
         ],
       ),
-    );
-  }
-
-  // Radio Button Widget
-  Widget _buildRadioButton(String title) {
-    return Row(
-      children: [
-        Radio(
-          value: title,
-          groupValue: _selectedSort,
-          activeColor: const Color(0xFF4A6B3E),
-          onChanged: (value) {
-            setState(() {
-              _selectedSort = value.toString();
-            });
-          },
-        ),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ],
     );
   }
 }

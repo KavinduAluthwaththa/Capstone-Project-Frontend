@@ -116,17 +116,17 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
           ),
 
           // Bottom Navigation Bar
-          // BottomNavigationBar(
-          //   backgroundColor: const Color(0xFF4E7033),
-          //   selectedItemColor: Colors.white,
-          //   unselectedItemColor: Colors.white,
-          //   showUnselectedLabels: true,
-          //   items: const [
-          //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          //     BottomNavigationBarItem(icon: Icon(Icons.android), label: "AI chat bot"),
-          //     BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
-          //   ],
-          // ),
+          BottomNavigationBar(
+            backgroundColor: const Color(0xFF4E7033),
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.white,
+            showUnselectedLabels: true,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+              BottomNavigationBarItem(icon: Icon(Icons.android), label: "AI chat bot"),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: "My account"),
+            ],
+          ),
         ],
       ),
     );
