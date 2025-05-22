@@ -61,48 +61,48 @@ class _CropsPageState extends State<CropsPage> {
               ),
             ),
 
-            SizedBox(height: 10,),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _cropController,
-                      decoration: InputDecoration(
-                        hintText: '+ Add crop',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onPressed: () {
-                      // Add crop logic here
-                    },
-                    child: Text("Add"),
-                  ),
-                ],
-              ),
-            ),
+            // SizedBox(height: 10,),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            //   child: Row(
+            //     children: [
+            //       Expanded(
+            //         child: TextField(
+            //           controller: _cropController,
+            //           decoration: InputDecoration(
+            //             hintText: '+ Add crop',
+            //             border: OutlineInputBorder(
+            //               borderRadius: BorderRadius.circular(24),
+            //             ),
+            //             contentPadding: EdgeInsets.symmetric(horizontal: 16),
+            //           ),
+            //         ),
+            //       ),
+            //       SizedBox(width: 10),
+            //       ElevatedButton(
+            //         style: ElevatedButton.styleFrom(
+            //           backgroundColor: Colors.green,
+            //           shape: RoundedRectangleBorder(
+            //             borderRadius: BorderRadius.circular(16),
+            //           ),
+            //         ),
+            //         onPressed: () {
+            //           // Add crop logic here
+            //         },
+            //         child: Text("Add"),
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
-            SizedBox(height: 5,),
-            PieChart(
-              dataMap: dataMap,
-              chartType: ChartType.disc,
-              chartRadius: 120,
-              legendOptions: LegendOptions(showLegends: true),
-              chartValuesOptions: ChartValuesOptions(showChartValues: false),
-            ),
+            // SizedBox(height: 5,),
+            // PieChart(
+            //   dataMap: dataMap,
+            //   chartType: ChartType.disc,
+            //   chartRadius: 120,
+            //   legendOptions: LegendOptions(showLegends: true),
+            //   chartValuesOptions: ChartValuesOptions(showChartValues: false),
+            // ),
 
 
             Expanded(
