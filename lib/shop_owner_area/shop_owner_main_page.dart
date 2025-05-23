@@ -1,5 +1,3 @@
-import 'package:capsfront/shared/Chatbot.dart';
-import 'package:capsfront/shared/profile_page.dart';
 import 'package:capsfront/shop_owner_area/FarmersList.dart';
 import 'package:capsfront/shop_owner_area/OrderRequest.dart';
 import 'package:flutter/material.dart';

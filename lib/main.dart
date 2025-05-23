@@ -1,3 +1,4 @@
+import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:capsfront/farmer_area/farmer_main_page.dart';
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
-      home: const Splashscreen(), // Set Splashscreen as the initial page
+      home: const LoginPage(), // Set Splashscreen as the initial page
     );
   }
 }
