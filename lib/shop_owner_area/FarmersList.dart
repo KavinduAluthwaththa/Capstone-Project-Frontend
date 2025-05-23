@@ -30,103 +30,95 @@ class _FarmersListPageState extends State<FarmersListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          // Custom Header
-          Container(
-            padding: const EdgeInsets.only(left: 10, right: 10, top: 40, bottom: 20),
-            decoration: const BoxDecoration(
-              color: Color(0xFF6ABC4D),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black, size: 30),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                const SizedBox(width: 20),
-                const Text(
-                  "Farmers List",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // ...rest of your body (sort button, list, etc.)...
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // Sort Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFABD298),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {},
-                        child: const Text(
-                          "sort by >",
-                          style: TextStyle(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        title: const Text(
+          "Farmers List",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        backgroundColor: Colors.green[400], // Match ShopListPage
+        centerTitle: true,
+        toolbarHeight: 100, // Custom height
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Sort Section (optional, uncomment if needed)
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.start,
+            //   children: [
+            //     ElevatedButton(
+            //       style: ElevatedButton.styleFrom(
+            //         backgroundColor: Colors.green[400],
+            //         shape: RoundedRectangleBorder(
+            //           borderRadius: BorderRadius.circular(12),
+            //         ),
+            //       ),
+            //       onPressed: () {},
+            //       child: const Text(
+            //         "sort by >",
+            //         style: TextStyle(
+            //           fontWeight: FontWeight.bold,
+            //           fontSize: 16,
+            //           color: Colors.black,
+            //         ),
+            //       ),
+            //     ),
+            //     const SizedBox(width: 16),
+            //     Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         _buildRadioButton("Crop type"),
+            //         _buildRadioButton("Location"),
+            //       ],
+            //     ),
+            //   ],
+            // ),
+            const SizedBox(height: 20),
+
+            // Farmers List
+            Expanded(
+              child: ListView.builder(
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green[300],
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          "Farmer ${index + 1}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.black,
+                            fontSize: 18,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                    ],
-                  ),
-                  // Farmers List
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: 6,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFABD298),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: ListTile(
-                              title: Text(
-                                "Farmer ${index + 1}",
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  // Radio Button Widget
+  // Helper to build radio buttons (if you want to use sort section)
   Widget _buildRadioButton(String title) {
     return Row(
       children: [
