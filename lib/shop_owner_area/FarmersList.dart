@@ -158,12 +158,12 @@ class _FarmersListPageState extends State<FarmersListPage> {
                                               children: [
                                                 const SizedBox(height: 4),
                                                 Text(
-                                                  '${farmer.farmLocation ?? "Location not specified"}',
+                                                  farmer.farmLocation ?? "Location not specified",
                                                   style: const TextStyle(fontSize: 14),
                                                 ),
                                                 const SizedBox(height: 2),
                                                 Text(
-                                                  '${farmer.phoneNumber ?? "Phone not available"}',
+                                                  farmer.phoneNumber ?? "Phone not available",
                                                   style: const TextStyle(fontSize: 14),
                                                 ),
                                               ],

@@ -1,6 +1,6 @@
 import 'package:capsfront/farmer_area/MarketPrice.dart';
 import 'package:capsfront/farmer_area/ShopList.dart';
-import 'package:capsfront/farmer_area/crops.dart';
+import 'package:capsfront/farmer_area/Crops.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

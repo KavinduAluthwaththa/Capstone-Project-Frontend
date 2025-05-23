@@ -1,5 +1,6 @@
+import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,10 +12,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Settings Page Demo',
+      title: 'Settings Page',
       theme: ThemeData(
         primarySwatch: Colors.green,
-        fontFamily: 'Roboto', // Or any preferred font
+        fontFamily: 'Roboto',
       ),
       home: const SettingsPage(),
       debugShowCheckedModeBanner: false,
@@ -31,21 +32,49 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _notificationsEnabled = true;
-  int _selectedIndex = 3; // Default to "My account"
-
-  // Define colors from the image
-  static const Color headerGreen = Color(0xFF98D178); // Match notifications page
-  static const Color itemGreen = Color(0xFFE8F5E9); // Very light green for items
-  static const Color bottomNavGreen = Color(0xFF558B2F); // Darker green for bottom nav
+  bool _isLoggingOut = false;
+  static const Color itemGreen = Color(0xFFE8F5E9);
   static const Color iconColor = Colors.black87;
   static const Color textColor = Colors.black87;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    // Handle navigation to other pages if needed
-    // e.g., if (index == 0) Navigator.pushNamed(context, '/home');
+  Future<void> _logout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Log Out'),
+          content: const Text('Are you sure you want to log out?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: const Text('Log Out', style: TextStyle(color: Colors.red)),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+
+    if (shouldLogout) {
+      setState(() => _isLoggingOut = true);
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+      } finally {
+        if (mounted) {
+          setState(() => _isLoggingOut = false);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+            (Route<dynamic> route) => false,
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -64,7 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildNotificationSetting(),
                   const SizedBox(height: 15),
                   _buildLanguageSetting(),
-                  const SizedBox(height: 30), // More space before Log out
+                  const SizedBox(height: 30),
                   _buildLogoutButton(),
                 ],
               ),
@@ -72,7 +101,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
-      //bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -81,7 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 30, bottom: 30),
       decoration: const BoxDecoration(
-        color: Color(0xFF98D178), // Match notifications page
+        color: Color(0xFF98D178),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
@@ -90,19 +118,13 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Back button aligned to the left
           Align(
             alignment: Alignment.centerLeft,
             child: IconButton(
               icon: const Icon(Icons.arrow_back, size: 30, color: Colors.black),
-              onPressed: () {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
-              },
+              onPressed: () => Navigator.maybePop(context),
             ),
           ),
-          // Centered settings icon and text
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -125,17 +147,14 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildUserProfile() {
     return InkWell(
-      onTap: () {
-        // Navigate to profile edit page
-        print("User profile tapped");
-      },
+      onTap: () {},
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10.0),
         child: Row(
           children: [
             const CircleAvatar(
               radius: 28,
-              backgroundColor: Color(0xFFD3CFCF), // Greyish color for avatar
+              backgroundColor: Color(0xFFD3CFCF),
               child: Text(
                 'U',
                 style: TextStyle(fontSize: 24, color: Colors.black54, fontWeight: FontWeight.bold),
@@ -213,17 +232,16 @@ class _SettingsPageState extends State<SettingsPage> {
             _notificationsEnabled = value;
           });
         },
-        activeColor: Colors.white, // Color of the thumb when active
-        activeTrackColor: Colors.black, // Color of the track when active
+        activeColor: Colors.white,
+        activeTrackColor: Colors.black,
         inactiveThumbColor: Colors.grey[300],
         inactiveTrackColor: Colors.grey[400],
-        thumbIcon: WidgetStateProperty.resolveWith<Icon?>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.selected)) {
-              // Icon for active state (thumb)
+        thumbIcon: MaterialStateProperty.resolveWith<Icon?>(
+          (Set<MaterialState> states) {
+            if (states.contains(MaterialState.selected)) {
               return const Icon(Icons.check, color: Colors.black);
             }
-            return null; // No icon for inactive state
+            return null;
           },
         ),
       ),
@@ -248,46 +266,21 @@ class _SettingsPageState extends State<SettingsPage> {
           Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 20),
         ],
       ),
-      onTap: () {
-        // Navigate to language selection page
-        print("Language setting tapped");
-      },
+      onTap: () {},
     );
   }
 
   Widget _buildLogoutButton() {
     return _buildSettingItem(
       title: 'Log out',
-      trailing: const Icon(Icons.logout, color: iconColor, size: 28),
-      onTap: () {
-        // Handle log out
-        print("Log out tapped");
-        // Example: show confirmation dialog
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Log Out'),
-              content: const Text('Are you sure you want to log out?'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                TextButton(
-                  child: const Text('Log Out', style: TextStyle(color: Colors.red)),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    // Perform actual logout logic here
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      },
+      trailing: _isLoggingOut
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.logout, color: iconColor, size: 28),
+      onTap: _isLoggingOut ? null : _logout,
     );
   }
 }
