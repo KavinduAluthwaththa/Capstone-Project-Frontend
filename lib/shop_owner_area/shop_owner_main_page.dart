@@ -64,19 +64,6 @@ class Shop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // bottomNavigationBar: BottomNavigationBar(
-      //   selectedItemColor: Colors.black,
-      //   unselectedItemColor: Colors.black54,
-      //   backgroundColor: const Color(0xFF8ABF6F),
-      //   currentIndex: selectedIndex, // Reflect the selected tab
-      //   onTap: onItemTapped, // Handle tab selection
-      //   items: const [
-      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-      //     BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Com.chat'),
-      //     BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'AI chat bot'),
-      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My account'),
-      //   ],
-      // ),
       body: SafeArea(
         child: Column(
           children: [
