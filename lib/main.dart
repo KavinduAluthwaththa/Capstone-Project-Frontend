@@ -1,5 +1,12 @@
 import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
+import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
+import 'package:capsfront/farmer_area/farmer_main_page.dart';
+import 'package:capsfront/shared/Chat.dart';
+import 'package:capsfront/shared/Chatbot.dart';
+import 'package:capsfront/shared/profile_page.dart';
+import 'package:capsfront/shared/Splash.dart';
+import 'package:capsfront/shared/settings.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +35,10 @@ class _BottomNavigationHandlerState extends State<BottomNavigationHandler> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
+    ShopOwnerMainPage(email: 'shopowner@mail.com'),
+    FarmerMainPage(email: 'farmer@mail.com'),
+    ChatbotPage(),
+    ProfilePage(),
   ];
 
   @override

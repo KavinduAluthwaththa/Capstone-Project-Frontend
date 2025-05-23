@@ -99,6 +99,25 @@ class _OrderRequestsPageState extends State<OrderRequestsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        title: const Text(
+          "Order Requests",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        backgroundColor: Colors.green[400], // Match FarmersListPage
+        centerTitle: true,
+        toolbarHeight: 100, // Custom height
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+      ),
       body: Column(
         children: [
           Container(
