@@ -1,9 +1,9 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://localhost:44320";
+  static const String baseUrl = "https://localhost:44320/api";
 
   // Crop
-  static const String getCrops = "$baseUrl/api/Crop";
-  static const String postCrop = "$baseUrl/api/Crop";
+  static const String getCrops = "$baseUrl/Crop";
+  static const String postCrop = "$baseUrl/Crop";
   static String deleteCrop(String cropId) => "$baseUrl/Crop/$cropId";
   static String updateCrop(String cropId) => "$baseUrl/Crop/$cropId";
 
@@ -28,7 +28,7 @@ class ApiEndpoints {
   static String deleteDisease(String id) => "$baseUrl/Disease/$id";
 
   // Farmer
-  static const String getFarmers = "$baseUrl/Farmer";
+  static const String getFarmers = "$baseUrl/Farmer/full";
   static const String postFarmer = "$baseUrl/Farmer";
   static String deleteFarmer(String farmerID) => "$baseUrl/Farmer/$farmerID";
   static String updateFarmer(String farmerID) => "$baseUrl/Farmer/$farmerID";
@@ -85,12 +85,11 @@ class ApiEndpoints {
 
   // Shop
   static const String getShops = "$baseUrl/Shop";
-  static const String postShop = "$baseUrl/Shop";
   static String getShopById(String id) => "$baseUrl/Shop/$id";
   static String updateShop(String id) => "$baseUrl/Shop/$id";
   static String deleteShop(String id) => "$baseUrl/Shop/$id";
 
   // User
-  static const String registerUser = "$baseUrl/api/User/Register";
-  static const String loginUser = "$baseUrl/api/User/Login";
+  static const String registerUser = "$baseUrl/User/Register";
+  static const String loginUser = "$baseUrl/User/Login";
 }

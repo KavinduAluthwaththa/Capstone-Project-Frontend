@@ -1,9 +1,6 @@
-import 'package:capsfront/shared/DiseacesM.dart';
+import 'package:capsfront/shared/DiseasesM.dart';
 import 'package:capsfront/shared/Fertilizing.dart';
-import 'package:capsfront/shared/crop_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:pie_chart/pie_chart.dart';
-import 'package:capsfront/farmer_area/farmer_main_page.dart';
 import 'package:capsfront/farmer_area/DailyAnalysis.dart';
 
 class CropsPage extends StatefulWidget {
@@ -62,48 +59,48 @@ class _CropsPageState extends State<CropsPage> {
               ),
             ),
 
-            SizedBox(height: 10,),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _cropController,
-                      decoration: InputDecoration(
-                        hintText: '+ Add crop',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onPressed: () {
-                      // Add crop logic here
-                    },
-                    child: Text("Add"),
-                  ),
-                ],
-              ),
-            ),
+            // SizedBox(height: 10,),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            //   child: Row(
+            //     children: [
+            //       Expanded(
+            //         child: TextField(
+            //           controller: _cropController,
+            //           decoration: InputDecoration(
+            //             hintText: '+ Add crop',
+            //             border: OutlineInputBorder(
+            //               borderRadius: BorderRadius.circular(24),
+            //             ),
+            //             contentPadding: EdgeInsets.symmetric(horizontal: 16),
+            //           ),
+            //         ),
+            //       ),
+            //       SizedBox(width: 10),
+            //       ElevatedButton(
+            //         style: ElevatedButton.styleFrom(
+            //           backgroundColor: Colors.green,
+            //           shape: RoundedRectangleBorder(
+            //             borderRadius: BorderRadius.circular(16),
+            //           ),
+            //         ),
+            //         onPressed: () {
+            //           // Add crop logic here
+            //         },
+            //         child: Text("Add"),
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
-            SizedBox(height: 5,),
-            PieChart(
-              dataMap: dataMap,
-              chartType: ChartType.disc,
-              chartRadius: 120,
-              legendOptions: LegendOptions(showLegends: true),
-              chartValuesOptions: ChartValuesOptions(showChartValues: false),
-            ),
+            // SizedBox(height: 5,),
+            // PieChart(
+            //   dataMap: dataMap,
+            //   chartType: ChartType.disc,
+            //   chartRadius: 120,
+            //   legendOptions: LegendOptions(showLegends: true),
+            //   chartValuesOptions: ChartValuesOptions(showChartValues: false),
+            // ),
 
 
             Expanded(
@@ -115,7 +112,7 @@ class _CropsPageState extends State<CropsPage> {
                 children: [
                   navButton("Daily analysis"),
                   navButton("Crop prdiction"),
-                  navButton("Diseaces management"),
+                  navButton("Disease management"),
                   navButton("Fertilizer recomendation"),
                 ],
               ),
@@ -141,12 +138,12 @@ class _CropsPageState extends State<CropsPage> {
             context,
             MaterialPageRoute(builder: (context) => const DailyAnalysisScreen()),
           );
-        } else if (title == 'Crop prdiction') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => FarmerCropsPage()),
-              );
-        } else if (title == 'Diseaces management') {
+        } //else if (title == 'Crop prediction') {
+              //Navigator.push(
+                //context,
+                //MaterialPageRoute(),
+              //);} 
+          else if (title == 'Disease management') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => DiseaseM()),

@@ -54,7 +54,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                 Icon(Icons.smart_toy, color: Colors.black, size: 30),
                 SizedBox(width: 20),
                 Text(
-                  "AI Chatbot",
+                  "Ask me",
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -66,28 +66,40 @@ class _ChatbotPageState extends State<ChatbotPage> {
           ),
           // Chatbot messages
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                bool isUser = _messages[index].containsKey("user");
-                return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isUser ? Colors.green[200] : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+            child: _messages.isEmpty
+                ? Center(
                     child: Text(
-                      isUser ? _messages[index]["user"]! : _messages[index]["bot"]!,
-                      style: const TextStyle(fontSize: 16),
+                      "Ask Your agriculture problems",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 18,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      bool isUser = _messages[index].containsKey("user");
+                      return Align(
+                        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 5),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isUser ? Colors.green[200] : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            isUser ? _messages[index]["user"]! : _messages[index]["bot"]!,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
           // Input Field & Send Button
           Padding(
