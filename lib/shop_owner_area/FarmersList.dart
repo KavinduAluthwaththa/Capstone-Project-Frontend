@@ -149,7 +149,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            farmer.phoneNumber ?? "Phone not available",
+                                            (farmer.phoneNumber ?? "Phone not available").toString(),
                                             style: const TextStyle(fontSize: 14),
                                           ),
                                         ],

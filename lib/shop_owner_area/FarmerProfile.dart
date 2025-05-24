@@ -1,28 +1,17 @@
-// lib/FarmerProfile.dart
-
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Troubleshooting steps for "Connection closed before full header was received" error:
-// 1. Restart the Flutter development environment (VS Code, Android Studio, etc.).
-// 2. Ensure that no other processes are using the same port as the Flutter app.
-// 3. Check your internet connection.
-// 4. Try running `flutter clean` and then `flutter run` again.
-// 5. Update Flutter to the latest version.
-
-// Color Palette - It's good practice to define these at the top or in a separate theme file
-const Color appBackgroundColor = Colors.white; // Dark background for the overall app screen
-const Color topBarColor = Color(0xFFAED581); // Light green for the top bar
-const Color mainCardBackgroundColor = Color(0xFFDCEBCB); // Main green for info and harvest list bg
-const Color harvestItemBackgroundColor = Color(0xFFEFF3ED); // Very light bg for individual harvest items
-const Color bottomNavBarColor = Color(0xFF5B8C5A); // Darker green for bottom nav
+const Color appBackgroundColor = Colors.white;
+const Color topBarColor = Color(0xFFAED581); 
+const Color mainCardBackgroundColor = Color(0xFFDCEBCB); 
+const Color harvestItemBackgroundColor = Color(0xFFEFF3ED); 
+const Color bottomNavBarColor = Color(0xFF5B8C5A); 
 const Color primaryTextColor = Colors.black;
-const Color secondaryTextColor = Colors.black54; // For subtitles like FRM ID, kg, price
+const Color secondaryTextColor = Colors.black54; 
 const Color bottomNavIconSelectedColor = Colors.white;
-const Color bottomNavIconUnselectedColor = Color(0xFF3D533D); // Dark, desaturated green/black for unselected icons and text
+const Color bottomNavIconUnselectedColor = Color(0xFF3D533D);
 
-// If this is the main entry point of your app, you can keep MyApp here.
-// Otherwise, you might just export FarmerProfileScreen and use it in your main.dart's MaterialApp.
-// For this example, I'll include MyApp to make it runnable directly.
 void main() {
   runApp(const MyApp());
 }
@@ -208,7 +197,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Available Harvests",
+            "Farming Crops",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
@@ -220,29 +209,26 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           _buildHarvestItem(
             "Rice",
             "50 kg",
-            "LKR 5000",
-            "assets/plant.png", // Using profile image as a placeholder
+            "LKR 5000"
           ),
           const SizedBox(height: 10),
           _buildHarvestItem(
             "Corn",
             "30 kg",
-            "LKR 3000",
-            "assets/plant.png", // Using profile image as a placeholder
+            "LKR 3000"
           ),
           const SizedBox(height: 10),
           _buildHarvestItem(
             "Wheat",
             "20 kg",
-            "LKR 2000",
-            "assets/plant.png", // Using profile image as a placeholder
+            "LKR 2000"
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHarvestItem(String title, String quantity, String price, String imagePath) {
+  Widget _buildHarvestItem(String title, String quantity, String price) {
     return Container(
       padding: const EdgeInsets.all(15.0),
       decoration: BoxDecoration(
@@ -261,12 +247,6 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.asset(
-              imagePath,
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-            ),
           ),
           const SizedBox(width: 15),
           Expanded(
