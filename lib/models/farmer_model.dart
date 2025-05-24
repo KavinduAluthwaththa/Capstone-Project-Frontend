@@ -1,22 +1,25 @@
 class Farmer {
-  final int? farmerID;
-  final String? name;
-  final String? farmLocation;
-  final String? phoneNumber;
+  final int farmerID;
+  final String name;
+  final String farmLocation;
+  final int phoneNumber;
+  final String Email;
 
   Farmer({
-    this.farmerID,
-    this.name,
-    this.farmLocation,
-    this.phoneNumber,
+    required this.farmerID,
+    required this.name,
+    required this.farmLocation,
+    required this.phoneNumber,
+    required this.Email,
   });
 
   factory Farmer.fromJson(Map<String, dynamic> json) {
-    return Farmer(
-      farmerID: json['farmerID'] as int?,
-      name: json['name'] as String? ?? 'Unknown', // Provide default value
-      farmLocation: json['farmLocation'] as String? ?? 'Location not specified',
-      phoneNumber: json['phoneNumber']?.toString() ?? 'Phone not available',
-    );
-  }
+  return Farmer(
+    farmerID: json['farmerID'],
+    name: json['name'],
+    farmLocation: json['farmLocation'],
+    phoneNumber: json['phoneNumber'],
+    Email: json['email'] ?? '',
+  );
+}
 }

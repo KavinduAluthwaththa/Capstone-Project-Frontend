@@ -1,5 +1,3 @@
-// lib/AddHarvest.dart
-
 import 'package:flutter/material.dart';
 
 // Color Palette - Reusing from AddRequest

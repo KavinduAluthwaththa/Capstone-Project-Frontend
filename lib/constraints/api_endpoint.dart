@@ -30,6 +30,7 @@ class ApiEndpoints {
   // Farmer
   static const String getFarmers = "$baseUrl/Farmer/full";
   static const String postFarmer = "$baseUrl/Farmer";
+  static String getFarmer(String Email) => "$baseUrl/Farmer/$Email";
   static String deleteFarmer(String farmerID) => "$baseUrl/Farmer/$farmerID";
   static String updateFarmer(String farmerID) => "$baseUrl/Farmer/$farmerID";
 

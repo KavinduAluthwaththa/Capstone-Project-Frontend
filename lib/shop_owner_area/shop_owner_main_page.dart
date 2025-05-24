@@ -83,16 +83,6 @@ class Shop extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Now', style: GoogleFonts.poppins(fontSize: 20)),
-                          const SizedBox(height: 5),
-                          Text('26°', style: GoogleFonts.poppins(fontSize: 30, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 10),
-                          const Icon(Icons.cloud, color: Colors.white),
-                        ],
-                      ),
                       Row(
                         children: [
                           const Icon(Icons.location_pin, color: Colors.red),
@@ -100,7 +90,7 @@ class Shop extends StatelessWidget {
                         ],
                       ),
                     ],
-                  ),
+                  ),// Pass context
                   Padding(
                     padding: const EdgeInsets.only(top: 40),
                     child: Column(
