@@ -36,156 +36,142 @@ class _FertilizingState extends State<Fertilizing> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Fertilizing',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        backgroundColor: Colors.green[400],
+        centerTitle: true,
+        toolbarHeight: 100,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Custom header matching CropsPage
-            Container(
-              padding: const EdgeInsets.all(16),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.green[400],
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 40),
+                Text("Crop type", style: TextStyle(fontWeight: FontWeight.bold)),
+                DropdownButtonFormField<String>(
+                  decoration: _inputDecoration(),
+                  value: selectedCrop,
+                  hint: Text("select"),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedCrop = value;
+                    });
+                  },
+                  items: crops
+                      .map((crop) => DropdownMenuItem(
+                            value: crop,
+                            child: Text(crop),
+                          ))
+                      .toList(),
                 ),
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, size: 28),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const SizedBox(width: 16),
-                  const Text(
-                    'Fertilizing',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Crop type", style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButtonFormField<String>(
-                    decoration: _inputDecoration(),
-                    value: selectedCrop,
-                    hint: Text("select"),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCrop = value;
-                      });
-                    },
-                    items: crops
-                        .map((crop) => DropdownMenuItem(
-                              value: crop,
-                              child: Text(crop),
-                            ))
-                        .toList(),
-                  ),
-                  SizedBox(height: 30),
-                  Text("Fertilizer type", style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButtonFormField<String>(
-                    decoration: _inputDecoration(),
-                    value: selectedFertilizer,
-                    hint: const Text("select"),
-                    enableFeedback: false,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedFertilizer = value;
-                      });
-                    },
-                    items: fertilizers
-                        .map((fertilizer) => DropdownMenuItem(
-                              value: fertilizer,
-                              child: Text(fertilizer),
-                            ))
-                        .toList(),
-                  ),
-                  SizedBox(height: 30),
-                  Text("Added Area", style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextField(
-                    controller: areaController,
-                    keyboardType: TextInputType.number,
-                    decoration: _inputDecoration(),
-                  ),
-                  SizedBox(height: 40),
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                SizedBox(height: 30),
+                Text("Fertilizer type", style: TextStyle(fontWeight: FontWeight.bold)),
+                DropdownButtonFormField<String>(
+                  decoration: _inputDecoration(),
+                  value: selectedFertilizer,
+                  hint: const Text("select"),
+                  enableFeedback: false,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedFertilizer = value;
+                    });
+                  },
+                  items: fertilizers
+                      .map((fertilizer) => DropdownMenuItem(
+                            value: fertilizer,
+                            child: Text(fertilizer),
+                          ))
+                      .toList(),
+                ),
+                SizedBox(height: 30),
+                Text("Added Area", style: TextStyle(fontWeight: FontWeight.bold)),
+                TextField(
+                  controller: areaController,
+                  keyboardType: TextInputType.number,
+                  decoration: _inputDecoration(),
+                ),
+                SizedBox(height: 40),
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          onPressed: () {
-                            if (selectedCrop != null &&
-                                selectedFertilizer != null &&
-                                areaController.text.isNotEmpty) {
-                              double? area = double.tryParse(areaController.text);
-                              if (area != null) {
-                                setState(() {
-                                  amountToUse = calculateAmount(selectedCrop!, selectedFertilizer!, area);
-                                  taskCompleted = true;
-                                });
-                              }
+                        ),
+                        onPressed: () {
+                          if (selectedCrop != null &&
+                              selectedFertilizer != null &&
+                              areaController.text.isNotEmpty) {
+                            double? area = double.tryParse(areaController.text);
+                            if (area != null) {
+                              setState(() {
+                                amountToUse = calculateAmount(selectedCrop!, selectedFertilizer!, area);
+                                taskCompleted = true;
+                              });
                             }
-                          },
-                          child: Text("Generate", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black)),
-                        ),
-                        const SizedBox(width: 16),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[300],
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                          }
+                        },
+                        child: Text("Generate", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black)),
+                      ),
+                      const SizedBox(width: 16),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[300],
+                          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              selectedCrop = null;
-                              selectedFertilizer = null;
-                              areaController.clear();
-                              amountToUse = null;
-                              taskCompleted = false;
-                            });
-                          },
-                          child: Text("Refresh", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
                         ),
-                      ],
-                    ),
+                        onPressed: () {
+                          setState(() {
+                            selectedCrop = null;
+                            selectedFertilizer = null;
+                            areaController.clear();
+                            amountToUse = null;
+                            taskCompleted = false;
+                          });
+                        },
+                        child: Text("Refresh", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 30),
-                  Text("Amount to use", style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextField(
-                    readOnly: true,
-                    controller: TextEditingController(
-                      text: amountToUse != null
-                          ? amountToUse!.toStringAsFixed(2)
-                          : '',
-                    ),
-                    decoration: _inputDecoration().copyWith(
-                      hintText: "Calculated amount will appear here",
-                    ),
+                ),
+                SizedBox(height: 30),
+                Text("Amount to use", style: TextStyle(fontWeight: FontWeight.bold)),
+                TextField(
+                  readOnly: true,
+                  controller: TextEditingController(
+                    text: amountToUse != null
+                        ? amountToUse!.toStringAsFixed(2)
+                        : '',
                   ),
-                  SizedBox(height: 24),
-                  if (taskCompleted) Task(),
-                ],
-              ),
+                  decoration: _inputDecoration().copyWith(
+                    hintText: "Calculated amount will appear here",
+                  ),
+                ),
+                SizedBox(height: 24),
+                if (taskCompleted) Task(),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
