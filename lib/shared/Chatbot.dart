@@ -10,6 +10,7 @@ class ChatbotPage extends StatefulWidget {
 class _ChatbotPageState extends State<ChatbotPage> {
   final List<Map<String, String>> _messages = [];
   final TextEditingController _controller = TextEditingController();
+  int _selectedIndex = 1; // 1 for 'Ask me' tab
 
   void _sendMessage() {
     String message = _controller.text.trim();
@@ -29,6 +30,19 @@ class _ChatbotPageState extends State<ChatbotPage> {
       return "I can help with general queries. Ask me anything!";
     } else {
       return "I'm still learning. Can you ask something else?";
+    }
+  }
+
+  void _onItemTapped(int index) {
+    if (index == _selectedIndex) return;
+    setState(() {
+      _selectedIndex = index;
+    });
+    // Navigation logic: Replace with your actual navigation if needed
+    if (index == 0) {
+      Navigator.pushReplacementNamed(context, '/shopOwnerHome');
+    } else if (index == 2) {
+      Navigator.pushReplacementNamed(context, '/profile');
     }
   }
 

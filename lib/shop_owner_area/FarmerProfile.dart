@@ -67,16 +67,41 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appBackgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: primaryTextColor),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          },
+        ),
+        title: const Text(
+          "Farmer Profile",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: primaryTextColor,
+          ),
+        ),
+        backgroundColor: Colors.green[400], // Match ShopListPage
+        centerTitle: true,
+        toolbarHeight: 100, // Custom height
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+        iconTheme: const IconThemeData(color: primaryTextColor),
+      ),
       body: Column(
         children: [
-          _buildTopBar(context),
+          // Remove _buildTopBar(context),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0), // Adjusted top padding
+              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
               child: Column(
                 children: [
                   _buildFarmerInfoCardContent(),
-                  const SizedBox(height: 20), // Space between the two cards
+                  const SizedBox(height: 20),
                   _buildAvailableHarvestsSectionContent(),
                 ],
               ),
@@ -84,46 +109,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 10,
-        bottom: 20,
-        left: 10,
-        right: 20,
-      ),
-      decoration: const BoxDecoration(
-        color: topBarColor,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back, color: primaryTextColor, size: 28),
-            onPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              }
-            },
-          ),
-          const SizedBox(width: 10),
-          Text(
-            "Farmer Profile",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: primaryTextColor,
-            ),
-          ),
-        ],
-      ),
+      // bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -320,32 +306,32 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.cloud),
-          label: 'Com.chat',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'AI chat bot',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'My account',
-        ),
-      ],
-      currentIndex: _selectedIndex,
-      selectedItemColor: bottomNavIconSelectedColor,
-      unselectedItemColor: bottomNavIconUnselectedColor,
-      onTap: _onItemTapped,
-      backgroundColor: bottomNavBarColor,
-      type: BottomNavigationBarType.fixed,
-    );
-  }
+  // Widget _buildBottomNavigationBar() {
+  //   return BottomNavigationBar(
+  //     items: const <BottomNavigationBarItem>[
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.home),
+  //         label: 'Home',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.cloud),
+  //         label: 'Com.chat',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.person),
+  //         label: 'AI chat bot',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.person),
+  //         label: 'My account',
+  //       ),
+  //     ],
+  //     currentIndex: _selectedIndex,
+  //     selectedItemColor: bottomNavIconSelectedColor,
+  //     unselectedItemColor: bottomNavIconUnselectedColor,
+  //     onTap: _onItemTapped,
+  //     backgroundColor: bottomNavBarColor,
+  //     type: BottomNavigationBarType.fixed,
+  //   );
+  // }
 }

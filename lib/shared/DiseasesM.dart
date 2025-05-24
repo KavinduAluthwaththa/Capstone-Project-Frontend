@@ -26,153 +26,139 @@ class _DiseaseMState extends State<DiseaseM> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Header
-                Container(
-                  height: 120,
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFA7DB8D),
-                    borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(32),
-                      bottomLeft: Radius.circular(32),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      //const Icon(Icons.arrow_back, size: 28),
-                      IconButton(
-                    icon: Icon(Icons.arrow_back, size: 28),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                      const SizedBox(width: 16),
-                      const Text(
-                        'Diseaces Management',
-                        style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Diseases Management',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        backgroundColor: Colors.green[400],
+        centerTitle: true,
+        toolbarHeight: 100,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
 
-                const SizedBox(height: 20),
-
-                // Upload Photo (Clickable)
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(12),
+              // Upload Photo (Clickable)
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _image != null
+                      ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      _image!,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
                     ),
-                    child: _image != null
-                        ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        _image!,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                        : const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.upload, size: 30),
-                          SizedBox(height: 8),
-                          Text('Upload photo', style: TextStyle(fontSize: 16)),
-                        ],
-                      ),
+                  )
+                      : const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.upload, size: 30),
+                        SizedBox(height: 8),
+                        Text('Upload photo', style: TextStyle(fontSize: 16)),
+                      ],
                     ),
                   ),
                 ),
-                SizedBox(height: 30,),
+              ),
+              SizedBox(height: 30,),
 
-                Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Text here',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            contentPadding:  EdgeInsets.symmetric(horizontal: 16),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade700,
-                          shape: RoundedRectangleBorder(
+              Padding(
+                padding:  EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Text here',
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
+                          contentPadding:  EdgeInsets.symmetric(horizontal: 16),
                         ),
-                        child:  Text('Upload',style: TextStyle(color: Colors.black),),
                       ),
-                    ],
-                  ),
-                ),
-
-                SizedBox(height: 20),
-
-                // Comments Button
-                Container(
-                  margin:  EdgeInsets.symmetric(horizontal: 20),
-                  width: double.infinity,
-                  padding:  EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child:  ElevatedButton(
-
-                    onPressed: () {  },
-
-                    child: Text(
-                      'Comments',
-                      style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ),
-
-
-                SizedBox(height: 10),
-
-                // Common diseases label
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Common diseaces',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child:  Text('Upload',style: TextStyle(color: Colors.black),),
                     ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 20),
+
+              // Comments Button
+              Container(
+                margin:  EdgeInsets.symmetric(horizontal: 20),
+                width: double.infinity,
+                padding:  EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child:  ElevatedButton(
+
+                  onPressed: () {  },
+
+                  child: Text(
+                    'Comments',
+                    style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
                   ),
                 ),
+              ),
 
-                SizedBox(height: 10),
 
-                // Diseases List
-                DiseaseItem(name: 'Anthracnose'),
-                DiseaseItem(name: 'Rice Blast'),
-              ],
-            ),
+              SizedBox(height: 10),
+
+              // Common diseases label
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Common diseaces',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              // Diseases List
+              DiseaseItem(name: 'Anthracnose'),
+              DiseaseItem(name: 'Rice Blast'),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 

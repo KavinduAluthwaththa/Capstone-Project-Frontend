@@ -111,7 +111,7 @@ class _OrderRequestsPageState extends State<OrderRequestsPage> {
           "Order Requests",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        backgroundColor: Colors.green[400], // Match FarmersListPage
+        backgroundColor: Colors.green[400], // Match ShopListPage
         centerTitle: true,
         toolbarHeight: 100, // Custom height
         shape: const RoundedRectangleBorder(
@@ -120,34 +120,8 @@ class _OrderRequestsPageState extends State<OrderRequestsPage> {
       ),
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.only(left: 10, right: 10, top: 40, bottom: 20),
-            decoration: const BoxDecoration(
-              color: Color(0xFF6ABC4D),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black, size: 30),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const SizedBox(width: 20),
-                Text(
-                  "Order Requests",
-                  style: GoogleFonts.poppins(
-                    color: Colors.black,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // List of Order Requests
+          // Remove the old Container header here!
+          // ...rest of your body...
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
