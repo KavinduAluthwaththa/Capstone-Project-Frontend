@@ -1,33 +1,15 @@
-
-import 'package:capsfront/farmer_area/Fertilizer_Reccomendation.dart';
+import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/farmer_area/MarketPrice.dart';
 import 'package:capsfront/farmer_area/ShopList.dart';
-import 'package:capsfront/farmer_area/Crops.dart';
-import 'package:capsfront/shared/Chatbot.dart';
-import 'package:capsfront/shared/DiseasesM.dart';
-import 'package:capsfront/shared/Fertilizing.dart';
-import 'package:capsfront/shared/profile_page.dart';
+import 'package:capsfront/farmer_area/crops.dart';
+import 'package:capsfront/models/farmer_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: const FarmerMainPage(email: 'example@example.com'),
-    );
-  }
-}
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// Your imports...
 
 class FarmerMainPage extends StatefulWidget {
   final String email;
@@ -38,7 +20,6 @@ class FarmerMainPage extends StatefulWidget {
 }
 
 class _FarmerMainPageState extends State<FarmerMainPage> {
-
   Farmer? _currentFarmer;
   bool _isLoading = true;
   String _errorMessage = '';
@@ -246,88 +227,21 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                           ),
                         ),
             ),
-          ),
-        ],
-      );
-    } else if (index == 1) {
-      return const ChatbotPage();
-    } else if (index == 2) {
-      return const ProfilePage();
-    }
-    return Container();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(child: _getPage(_selectedIndex)),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        backgroundColor: Colors.green[400],
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Ask me'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+          ],
+        ),
       ),
     ); // <-- FIXED: Closing parenthesis and brace for Scaffold
   }
-  Widget buildButton(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: SizedBox(
-        width: double.infinity,
-        height: 70,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green[300],
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          onPressed: () {
-            if (text == 'My Crops') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CropsPage()),
-              );
-            } else if (text == 'Shop List') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ShopListPage()),
-              );
-            } else if (text == 'Market Prices') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MarketPriceScreen()),
-              );
-            }
-            else if (text == 'Crop prediction') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MarketPriceScreen()),
-              );
-            }
-            else if (text == 'Diseases management') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DiseaseM()),
-              );
-            }
-            else if (text == 'Fertilizer recommendation') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) =>  Fertilizing()),
-              );
-            }
-          },
-          child: Text(
-            text,
-            style: GoogleFonts.poppins(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
+
+  Widget _buildActionButton(
+      String text, IconData icon, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green[300],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
