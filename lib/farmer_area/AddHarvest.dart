@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Color Palette - Reusing from AddRequest
 const Color appBackgroundColor = Colors.white;
 const Color topBarColor = Color(0xFFAED581);
 const Color formCardBackgroundColor = Color(0xFFE7F0E2);
@@ -14,9 +13,6 @@ const Color labelTextColor = Colors.black87;
 const Color bottomNavIconSelectedColor = Colors.white;
 const Color bottomNavIconUnselectedColor = Color(0xFF3D533D);
 
-
-// If this is the main entry point of your app, you can keep MyApp here.
-// For this example, I'll include MyApp to make it runnable directly.
 void main() {
   runApp(const MyApp());
 }
@@ -27,7 +23,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Add Harvest Demo',
+      title: 'Add Crop',
       theme: ThemeData(
         primarySwatch: Colors.green,
         fontFamily: 'Roboto',
@@ -46,9 +42,8 @@ class AddHarvestScreen extends StatefulWidget {
 }
 
 class _AddHarvestScreenState extends State<AddHarvestScreen> {
-  int _selectedIndex = 0; // Default to Home or as appropriate
+  int _selectedIndex = 0;
 
-  // Text editing controllers for the form fields
   final _nameController = TextEditingController();
   final _locationController = TextEditingController();
   final _contactController = TextEditingController();
@@ -68,15 +63,10 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      // Add navigation logic here if needed
     });
   }
 
   void _submitHarvest() {
-    // Handle the harvest submission logic here
-    print('Name: ${_nameController.text}');
-    print('Location: ${_locationController.text}');
-    print('Contact: ${_contactController.text}');
     print('Crop: ${_cropController.text}');
     print('Amount: ${_amountController.text}');
 
@@ -99,14 +89,14 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
           },
         ),
         title: const Text(
-          "Add Harvest",
+          "Add Crop",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
             color: primaryTextColor,
           ),
         ),
-        backgroundColor: Colors.green[400], // Match ShopListPage
+        backgroundColor: Colors.green[400],
         centerTitle: true,
         toolbarHeight: 100,
         shape: const RoundedRectangleBorder(
@@ -121,7 +111,6 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
               padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
               child: Column(
                 children: [
-                  _buildUserInfoFormCard(),
                   const SizedBox(height: 20),
                   _buildHarvestDetailsFormCard(),
                   const SizedBox(height: 25),
@@ -206,22 +195,11 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
       ),
     );
   }
-
-  Widget _buildUserInfoFormCard() {
-    return _buildFormCard(
-      children: [
-        _buildTextFieldWithLabel(label: "Name :", controller: _nameController),
-        _buildTextFieldWithLabel(label: "Location :", controller: _locationController),
-        _buildTextFieldWithLabel(label: "Contact :", controller: _contactController, keyboardType: TextInputType.phone),
-      ],
-    );
-  }
-
-  Widget _buildHarvestDetailsFormCard() { // Renamed method
+  Widget _buildHarvestDetailsFormCard() {
     return _buildFormCard(
       children: [
         const Text(
-          "Harvest", // Changed section title
+          "Crop Details", // Changed section title
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -230,12 +208,12 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
         ),
         const SizedBox(height: 10),
         _buildTextFieldWithLabel(label: "Crop :", controller: _cropController),
-        _buildTextFieldWithLabel(label: "Amount :", controller: _amountController, hintText: "e.g., 500 kg or 20 units"),
+        _buildTextFieldWithLabel(label: "Yield :", controller: _amountController, hintText: "e.g., 500 kg or 20 units"),
       ],
     );
   }
 
-  Widget _buildPostButton() { // Renamed method
+  Widget _buildPostButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -249,7 +227,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
           elevation: 3,
         ),
         child: const Text(
-          "Post", // Changed button text
+          "Post", 
           style: TextStyle(
             color: postButtonTextColor,
             fontSize: 18,
@@ -259,38 +237,4 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
       ),
     );
   }
-
-  // Widget _buildBottomNavigationBar() {
-  //   return BottomNavigationBar(
-  //     backgroundColor: bottomNavBarColor,
-  //     items: const <BottomNavigationBarItem>[
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.home_outlined),
-  //         label: 'Home',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.cloud_outlined),
-  //         label: 'Com.chat',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.support_agent_outlined),
-  //         label: 'AI chat bot',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.person_outline),
-  //         label: 'My account',
-  //       ),
-  //     ],
-  //     currentIndex: _selectedIndex,
-  //     selectedItemColor: bottomNavIconSelectedColor,
-  //     unselectedItemColor: bottomNavIconUnselectedColor,
-  //     onTap: _onItemTapped,
-  //     type: BottomNavigationBarType.fixed,
-  //     showUnselectedLabels: true,
-  //     selectedFontSize: 12,
-  //     unselectedFontSize: 12,
-  //     selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-  //     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-  //   );
-  // }
 }
