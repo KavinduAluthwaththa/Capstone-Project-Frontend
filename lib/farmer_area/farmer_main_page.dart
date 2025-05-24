@@ -3,6 +3,10 @@ import 'package:capsfront/farmer_area/MarketPrice.dart';
 import 'package:capsfront/farmer_area/ShopList.dart';
 import 'package:capsfront/farmer_area/crops.dart';
 import 'package:capsfront/models/farmer_model.dart';
+import 'package:capsfront/shared/DiseasesM.dart';
+import 'package:capsfront/shared/Fertilizing.dart';
+import 'package:capsfront/shared/Chatbot.dart';         // <-- Import ChatbotPage
+import 'package:capsfront/shared/profile_page.dart';   // <-- Import ProfilePage
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -26,6 +30,8 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
   String _temperature = '--°';
   String _weatherIcon = '☀️';
   String _humidity = '--%';
+
+  int _selectedIndex = 0; // <-- Add this
 
   @override
   void initState() {
@@ -104,93 +110,95 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
     return '🌈';
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Weather Header Section
-            Container(
-              height: 220,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green[400],
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
+  // Add this method to switch between pages
+  Widget _getPage(int index) {
+    if (index == 0) {
+      // Home page (your current content)
+      return Column(
+        children: [
+          // Weather Header Section
+          Container(
+            height: 220,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.green[400],
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            DateFormat('EEEE, MMM d').format(DateTime.now()),
-                            style: GoogleFonts.poppins(fontSize: 16),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Text(
-                                _temperature,
-                                style: GoogleFonts.poppins(
-                                    fontSize: 30, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(_weatherIcon,
-                                  style: const TextStyle(fontSize: 24)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.water_drop,
-                                  size: 16, color: Colors.blue),
-                              const SizedBox(width: 4),
-                              Text('Humidity: $_humidity',
-                                  style: GoogleFonts.poppins(fontSize: 14)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      if (_currentFarmer != null) ...[
-                        Column(
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DateFormat('EEEE, MMM d').format(DateTime.now()),
+                          style: GoogleFonts.poppins(fontSize: 16),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
                           children: [
-                            const Icon(Icons.location_pin, color: Colors.red),
-                            const SizedBox(height: 4),
                             Text(
-                              _currentFarmer!.farmLocation,
-                              style: GoogleFonts.poppins(fontSize: 14),
+                              _temperature,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 30, fontWeight: FontWeight.bold),
                             ),
+                            const SizedBox(width: 8),
+                            Text(_weatherIcon,
+                                style: const TextStyle(fontSize: 24)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.water_drop,
+                                size: 16, color: Colors.blue),
+                            const SizedBox(width: 4),
+                            Text('Humidity: $_humidity',
+                                style: GoogleFonts.poppins(fontSize: 14)),
                           ],
                         ),
                       ],
+                    ),
+                    if (_currentFarmer != null) ...[
+                      Column(
+                        children: [
+                          const Icon(Icons.location_pin, color: Colors.red),
+                          const SizedBox(height: 4),
+                          Text(
+                            _currentFarmer!.farmLocation,
+                            style: GoogleFonts.poppins(fontSize: 14),
+                          ),
+                        ],
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Hi, ${_currentFarmer?.name ?? widget.email}!',
-                    style: GoogleFonts.poppins(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Hi, ${_currentFarmer?.name ?? widget.email}!',
+                  style: GoogleFonts.poppins(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-            // Main Content with Buttons
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _errorMessage.isNotEmpty
-                      ? Center(child: Text(_errorMessage))
-                      : Padding(
-                          padding: const EdgeInsets.all(20.0),
+          ),
+          // Main Content with Buttons
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage.isNotEmpty
+                    ? Center(child: Text(_errorMessage))
+                    : Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: SingleChildScrollView( // <-- Add this
                           child: Column(
+                            mainAxisSize: MainAxisSize.min, // <-- Add this
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               _buildActionButton(
@@ -223,14 +231,76 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                                           MarketPriceScreen()),
                                 ),
                               ),
+                              const SizedBox(height: 20),
+                              _buildActionButton(
+                                'Crop Suggestion',
+                                Icons.android,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          MarketPriceScreen()),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildActionButton(
+                                'Diseases Identification',
+                                Icons.crop,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          DiseaseM()),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildActionButton(
+                                'Fertilizer Calculation',
+                                Icons.medical_information,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          Fertilizing()),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-            ),
-          ],
-        ),
+                      ),
+          ),
+        ],
+      );
+    } else if (index == 1) {
+      return const ChatbotPage();
+    } else if (index == 2) {
+      return const ProfilePage();
+    }
+    return Container();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(child: _getPage(_selectedIndex)),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        backgroundColor: Colors.green[400],
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Ask me'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
-    ); // <-- FIXED: Closing parenthesis and brace for Scaffold
+    );
   }
 
   Widget _buildActionButton(

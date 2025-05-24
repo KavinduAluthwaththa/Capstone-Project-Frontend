@@ -33,8 +33,8 @@ class _ProfilePageState extends State<ProfilePage> {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            color: Color(0xFF98D178),
+          decoration: BoxDecoration(
+            color: Colors.green[400],
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(50),
               bottomRight: Radius.circular(50),
