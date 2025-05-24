@@ -7,6 +7,7 @@ import 'package:capsfront/shared/Chatbot.dart';
 import 'package:capsfront/shared/profile_page.dart';
 import 'package:capsfront/shared/Splash.dart';
 import 'package:capsfront/shared/settings.dart';
+import 'package:capsfront/shop_owner_area/FarmerProfile.dart'; // Import FarmerProfileScreen
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
-      home: const LoginPage(), // Set Splashscreen as the initial page
+      home: const FarmerProfileScreen(), // Set FarmerProfileScreen as the initial page
     );
   }
 }
@@ -68,4 +69,3 @@ class _BottomNavigationHandlerState extends State<BottomNavigationHandler> {
     );
   }
 }
-
