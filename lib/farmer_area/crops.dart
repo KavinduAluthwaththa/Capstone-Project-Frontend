@@ -41,7 +41,7 @@ class _CropsPageState extends State<CropsPage> {
           crops = data.map((crop) => {
                 'id': crop['id'],
                 'name': crop['cropName'],
-                'amount': crop['yieldAmount'],
+                'amount': crop['Amount'],
                 'price': crop['price']?.toString() ?? 'N/A',
               }).toList();
           _isLoading = false;
@@ -171,12 +171,12 @@ class CropTile extends StatelessWidget {
   final VoidCallback onDelete;
 
   const CropTile({
-    Key? key,
+    super.key,
     required this.cropName,
     required this.amount,
     required this.price,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

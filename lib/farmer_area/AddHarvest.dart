@@ -95,8 +95,8 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
         body: jsonEncode({
           'farmerId': _farmerId,
           'cropName': _cropController.text,
-          'yieldAmount': _amountController.text,
-          'postedDate': DateTime.now().toIso8601String(),
+          'amount': _amountController.text,
+          'date': DateTime.now().toIso8601String(),
         }),
       );
 
