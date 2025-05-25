@@ -1,5 +1,3 @@
-// lib/ShopProfile.dart
-
 import 'package:flutter/material.dart';
 
 // Color Palette - Reusing from the previous style

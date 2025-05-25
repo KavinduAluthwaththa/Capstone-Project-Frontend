@@ -45,7 +45,7 @@ class ApiEndpoints {
   // Growing Crop
   static const String getGrowingCrops = "$baseUrl/GrowingCrop";
   static const String postGrowingCrop = "$baseUrl/GrowingCrop";
-  static String getGrowingCropById(String id) => "$baseUrl/GrowingCrop/$id";
+  static String getGrowingCropById(int farmerID) => "$baseUrl/GrowingCrop/$farmerID";
   static String updateGrowingCrop(String id) => "$baseUrl/GrowingCrop/$id";
   static String deleteGrowingCrop(String id) => "$baseUrl/GrowingCrop/$id";
 

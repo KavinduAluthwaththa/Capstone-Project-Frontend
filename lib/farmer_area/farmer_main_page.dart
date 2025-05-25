@@ -5,15 +5,14 @@ import 'package:capsfront/farmer_area/crops.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:capsfront/shared/DiseasesM.dart';
 import 'package:capsfront/shared/Fertilizing.dart';
-import 'package:capsfront/shared/Chatbot.dart';         // <-- Import ChatbotPage
-import 'package:capsfront/shared/profile_page.dart';   // <-- Import ProfilePage
+import 'package:capsfront/shared/Chatbot.dart';         
+import 'package:capsfront/shared/profile_page.dart'; 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// Your imports...
 
 class FarmerMainPage extends StatefulWidget {
   final String email;
@@ -110,13 +109,10 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
     return '🌈';
   }
 
-  // Add this method to switch between pages
   Widget _getPage(int index) {
     if (index == 0) {
-      // Home page (your current content)
       return Column(
         children: [
-          // Weather Header Section
           Container(
             height: 220,
             padding: const EdgeInsets.all(16),
@@ -207,7 +203,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                                 () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => CropsPage()),
+                                      builder: (context) => CropsPage(farmerId: (_currentFarmer?.farmerID is int ? _currentFarmer!.farmerID : 0))),
                                 ),
                               ),
                               const SizedBox(height: 20),
