@@ -1,5 +1,3 @@
-// lib/ShopProfile.dart
-
 import 'package:flutter/material.dart';
 
 // Color Palette - Reusing from the previous style
@@ -13,10 +11,7 @@ const Color secondaryTextColor = Colors.black54;
 const Color tertiaryTextColor = Colors.black38; // For "ID:", "Quantity:", "Deadline:" labels
 const Color bottomNavIconSelectedColor = Colors.white;
 const Color bottomNavIconUnselectedColor = Color(0xFF3D533D);
-const Color pendingStatusColor = Color(0xFFFFEEA2); // Light yellow for pending badge
-
-// If this is the main entry point of your app, you can keep MyApp here.
-// For this example, I'll include MyApp to make it runnable directly.
+const Color pendingStatusColor = Color(0xFFFFEEA2); 
 void main() {
   runApp(const MyApp());
 }

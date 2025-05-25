@@ -1,40 +1,89 @@
+import 'dart:convert';
+import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/farmer_area/AddHarvest.dart';
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const CropsPage(),
-    );
-  }
-}
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class CropsPage extends StatefulWidget {
-  const CropsPage({super.key});
+  final int farmerId;
+  const CropsPage({super.key, required this.farmerId});
 
   @override
   State<CropsPage> createState() => _CropsPageState();
 }
 
 class _CropsPageState extends State<CropsPage> {
-  List<Map<String, dynamic>> crops = [
-    {"name": "Crop 1", "amount": "Amount", "price": "Price"},
-    {"name": "Crop 2", "amount": "Amount", "price": "Price"},
-    {"name": "Crop 3", "amount": "Amount", "price": "Price"},
-    {"name": "Crop 4", "amount": "Amount", "price": "Price"},
-    {"name": "Crop 5", "amount": "Amount", "price": "Price"},
-  ];
+  List<Map<String, dynamic>> crops = [];
+  bool _isLoading = true;
 
-  void _deleteCrop(int index) {
-    setState(() {
-      crops.removeAt(index);
-    });
+  @override
+  void initState() {
+    super.initState();
+    _fetchCrops();
+  }
+
+  Future<void> _fetchCrops() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getGrowingCropById(widget.farmerId)),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          crops = data.map((crop) => {
+                'id': crop['id'],
+                'name': crop['cropName'],
+                'amount': crop['Amount'],
+                'price': crop['price']?.toString() ?? 'N/A',
+              }).toList();
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load crops');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
+  Future<void> _deleteCrop(String cropId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.delete(
+        Uri.parse('${ApiEndpoints.baseUrl}/api/Crops/$cropId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _fetchCrops(); // Refresh the list
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Crop deleted successfully')),
+        );
+      } else {
+        throw Exception('Failed to delete crop');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
   }
 
   @override
@@ -56,24 +105,26 @@ class _CropsPageState extends State<CropsPage> {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
-      ),
+      ), 
       body: Column(
         children: [
           Expanded(
-            child: crops.isEmpty
-                ? const Center(child: Text('No crops found'))
-                : ListView.builder(
-                    itemCount: crops.length,
-                    itemBuilder: (context, index) {
-                      final crop = crops[index];
-                      return CropTile(
-                        cropName: crop["name"],
-                        amount: crop["amount"],
-                        price: crop["price"],
-                        onDelete: () => _deleteCrop(index),
-                      );
-                    },
-                  ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : crops.isEmpty
+                    ? const Center(child: Text('No crops found'))
+                    : ListView.builder(
+                        itemCount: crops.length,
+                        itemBuilder: (context, index) {
+                          final crop = crops[index];
+                          return CropTile(
+                            cropName: crop["name"],
+                            amount: crop["amount"],
+                            price: crop["price"],
+                            onDelete: () => _deleteCrop(crop["id"]),
+                          );
+                        },
+                      ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -88,10 +139,16 @@ class _CropsPageState extends State<CropsPage> {
                   ),
                 ),
                 onPressed: () {
-                  // TODO: Add navigation to Add Harvest page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AddHarvestScreen(farmerId: widget.farmerId),
+                    ),
+                  );
                 },
                 child: const Text(
-                  "Add Harvest",
+                  "Add Crop",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.white,
@@ -109,7 +166,7 @@ class _CropsPageState extends State<CropsPage> {
 
 class CropTile extends StatelessWidget {
   final String cropName;
-  final String amount;
+  final dynamic amount;
   final String price;
   final VoidCallback onDelete;
 
@@ -123,61 +180,18 @@ class CropTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: const Color(0xFFD8EBC2),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Crop name
-          Text(
-            cropName,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          // Amount/Price button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              textStyle: const TextStyle(fontSize: 14),
-            ),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Amount & Price'),
-                  content: Text('Amount: $amount\nPrice: $price'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                ),
-              );
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(amount, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(price),
-              ],
-            ),
-          ),
-          // Delete icon
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: onDelete,
-          ),
-        ],
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ListTile(
+        title: Text(
+          cropName,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        subtitle: Text('Amount: $amount\nPrice: $price'),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: onDelete,
+        ),
       ),
     );
   }

@@ -12,7 +12,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  int _selectedIndex = 2; // Profile tab
+  final int _selectedIndex = 2; // Profile tab
 
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;

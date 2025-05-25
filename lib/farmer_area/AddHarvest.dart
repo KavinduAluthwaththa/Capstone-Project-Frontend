@@ -1,17 +1,18 @@
+import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 const Color appBackgroundColor = Colors.white;
 const Color topBarColor = Color(0xFFAED581);
 const Color formCardBackgroundColor = Color(0xFFE7F0E2);
 const Color textFieldFillColor = Color(0xFFF5F5F5);
 const Color textFieldBorderColor = Color(0xFFDCDCDC);
-const Color postButtonColor = Color(0xFF67A36F); // Same green as request button
+const Color postButtonColor = Color(0xFF67A36F);
 const Color postButtonTextColor = Colors.white;
-const Color bottomNavBarColor = Color(0xFF5B8C5A);
 const Color primaryTextColor = Colors.black;
 const Color labelTextColor = Colors.black87;
-const Color bottomNavIconSelectedColor = Colors.white;
-const Color bottomNavIconUnselectedColor = Color(0xFF3D533D);
 
 void main() {
   runApp(const MyApp());
@@ -19,60 +20,104 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Add Crop',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Roboto',
-      ),
-      home: const AddHarvestScreen(),
       debugShowCheckedModeBanner: false,
+      home: const AddHarvestScreen(farmerId: 0),
     );
   }
 }
 
 class AddHarvestScreen extends StatefulWidget {
-  const AddHarvestScreen({super.key});
+  final int farmerId;
+  const AddHarvestScreen({super.key, required this.farmerId});
 
   @override
   State<AddHarvestScreen> createState() => _AddHarvestScreenState();
 }
 
 class _AddHarvestScreenState extends State<AddHarvestScreen> {
-  int _selectedIndex = 0;
-
-  final _nameController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _contactController = TextEditingController();
   final _cropController = TextEditingController();
   final _amountController = TextEditingController();
+  String? _farmerId;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFarmerId();
+  }
+
+  Future<void> _loadFarmerId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _farmerId = prefs.getString('user_id');
+    });
+  }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _locationController.dispose();
-    _contactController.dispose();
     _cropController.dispose();
     _amountController.dispose();
     super.dispose();
   }
 
-  void _onItemTapped(int index) {
+  Future<void> _submitHarvest() async {
+    if (_farmerId == null || _farmerId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Farmer ID not found. Please login again.')),
+      );
+      return;
+    }
+
+    if (_cropController.text.isEmpty || _amountController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
     setState(() {
-      _selectedIndex = index;
+      _isLoading = true;
     });
-  }
 
-  void _submitHarvest() {
-    print('Crop: ${_cropController.text}');
-    print('Amount: ${_amountController.text}');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Harvest Posted!')),
-    );
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.postGrowingCrop),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'farmerId': _farmerId,
+          'cropName': _cropController.text,
+          'amount': _amountController.text,
+          'date': DateTime.now().toIso8601String(),
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Harvest posted successfully!')),
+        );
+        _cropController.clear();
+        _amountController.clear();
+      } else {
+        throw Exception('Failed to post harvest: ${response.statusCode}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -82,11 +127,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: primaryTextColor),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
+          onPressed: () => Navigator.maybePop(context),
         ),
         title: const Text(
           "Add Crop",
@@ -102,26 +143,26 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
-        iconTheme: const IconThemeData(color: primaryTextColor),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  _buildHarvestDetailsFormCard(),
-                  const SizedBox(height: 25),
-                  _buildPostButton(),
-                ],
-              ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildHarvestDetailsFormCard(),
+                        const SizedBox(height: 25),
+                        _buildPostButton(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-      // bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -151,7 +192,6 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
     required String label,
     required TextEditingController controller,
     String? hintText,
-    TextInputType keyboardType = TextInputType.text,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -169,7 +209,6 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
-            keyboardType: keyboardType,
             style: const TextStyle(color: primaryTextColor, fontSize: 16),
             decoration: InputDecoration(
               hintText: hintText,
@@ -185,21 +224,18 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: textFieldBorderColor, width: 1.0),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
-              ),
             ),
           ),
         ],
       ),
     );
   }
+
   Widget _buildHarvestDetailsFormCard() {
     return _buildFormCard(
       children: [
         const Text(
-          "Crop Details", // Changed section title
+          "Crop Details",
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -207,8 +243,16 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
           ),
         ),
         const SizedBox(height: 10),
-        _buildTextFieldWithLabel(label: "Crop :", controller: _cropController),
-        _buildTextFieldWithLabel(label: "Yield :", controller: _amountController, hintText: "e.g., 500 kg or 20 units"),
+        _buildTextFieldWithLabel(
+          label: "Crop:",
+          controller: _cropController,
+          hintText: "Enter crop name",
+        ),
+        _buildTextFieldWithLabel(
+          label: "Yield:",
+          controller: _amountController,
+          hintText: "e.g., 500 kg or 20 units",
+        ),
       ],
     );
   }
@@ -227,7 +271,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
           elevation: 3,
         ),
         child: const Text(
-          "Post", 
+          "Post",
           style: TextStyle(
             color: postButtonTextColor,
             fontSize: 18,

@@ -125,7 +125,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
                                       leading: CircleAvatar(
                                         backgroundColor: Colors.green[800],
                                         child: Text(
-                                          farmer.name?[0] ?? '?',
+                                          farmer.name[0] ?? '?',
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,

@@ -81,7 +81,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 12.0),
                     _buildTextField(
                     _locationController,
-                    'Location',
+                    'City',
                     keyboardType: TextInputType.text,
                     validator: (value) => (value == null || value.isEmpty) ? 'Please enter your Location' : null,
                     ),

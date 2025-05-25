@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 const Color appBackgroundColor = Colors.white;
 const Color topBarColor = Color(0xFFAED581); 
