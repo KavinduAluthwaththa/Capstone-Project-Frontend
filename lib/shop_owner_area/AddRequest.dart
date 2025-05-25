@@ -1,142 +1,143 @@
-// lib/AddRequest.dart
-
+import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/farmer_area/AddHarvest.dart';
+import 'package:capsfront/models/crop_model.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-// Color Palette
-const Color appBackgroundColor = Colors.white;
-const Color topBarColor = Color(0xFFAED581);
-const Color formCardBackgroundColor = Color(0xFFE7F0E2); // Lighter green for form cards
-const Color textFieldFillColor = Color(0xFFF5F5F5); // Very light grey for text field background
-const Color textFieldBorderColor = Color(0xFFDCDCDC); // Light grey for text field border
-const Color requestButtonColor = Color(0xFF67A36F); // Green for the request button
-const Color requestButtonTextColor = Colors.white;
-const Color bottomNavBarColor = Color(0xFF5B8C5A);
-const Color primaryTextColor = Colors.black;
-const Color labelTextColor = Colors.black87; // For "Name:", "Location:", etc.
-const Color bottomNavIconSelectedColor = Colors.white;
-const Color bottomNavIconUnselectedColor = Color(0xFF3D533D);
-
-// If this is the main entry point of your app, you can keep MyApp here.
-// For this example, I'll include MyApp to make it runnable directly.
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Add Request Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Roboto',
-      ),
-      home: const AddRequestScreen(),
-      debugShowCheckedModeBanner: false,
+      title: 'Market Price',
+      home: AddRequestScreen(shopId: 0,),
     );
   }
 }
 
 class AddRequestScreen extends StatefulWidget {
-  const AddRequestScreen({super.key});
+  final int shopId;
+  const AddRequestScreen({super.key, required this.shopId});
 
   @override
   State<AddRequestScreen> createState() => _AddRequestScreenState();
 }
 
 class _AddRequestScreenState extends State<AddRequestScreen> {
-  int _selectedIndex = 0; // Default to Home or as appropriate
-
-  // Text editing controllers for the form fields
-  final _nameController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _contactController = TextEditingController();
-  final _cropController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  int? _selectedCropId;
+  int? _shopId;
+  bool _isLoading = false;
+  bool _isLoadingCrops = false;
+  List<Crop> _crops = [];
 
   @override
-  void dispose() {
-    _nameController.dispose();
-    _locationController.dispose();
-    _contactController.dispose();
-    _cropController.dispose();
-    _amountController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadShopId();
+    _loadCrops();
   }
 
-  void _onItemTapped(int index) {
+  Future<void> _loadShopId() async {
     setState(() {
-      _selectedIndex = index;
-      // Add navigation logic here if needed
+      _shopId = widget.shopId;
     });
   }
 
-  void _submitRequest() {
-    // Handle the request submission logic here
-    // For example, print the values:
-    print('Name: ${_nameController.text}');
-    print('Location: ${_locationController.text}');
-    print('Contact: ${_contactController.text}');
-    print('Crop: ${_cropController.text}');
-    print('Amount: ${_amountController.text}');
+  Future<void> _loadCrops() async {
+    setState(() {
+      _isLoadingCrops = true;
+    });
 
-    // You might want to show a snackbar or navigate away
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Request Submitted!')),
-    );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getCrops),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _crops = data.map((crop) => Crop.fromJson(crop)).toList();
+        });
+      } else {
+        throw Exception('Failed to load crops');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load crops: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoadingCrops = false;
+      });
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appBackgroundColor,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: primaryTextColor, size: 28),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
-        ),
-        title: const Text(
-          "Add Request",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: primaryTextColor,
+  Future<void> _submitRequest() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedCropId == null || _shopId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a crop')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.postRequest),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'CropID': _selectedCropId,
+          'ShopID': _shopId,
+          'Date': DateTime.now().toIso8601String(),
+          'Amount': int.parse(_amountController.text),
+          'IsAvailable': true,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Request added successfully!'),
+            backgroundColor: Colors.green,
           ),
+        );
+        Navigator.pop(context, true);
+      } else {
+        throw Exception('Failed to add request: ${response.statusCode}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
         ),
-        backgroundColor: topBarColor, // Match ShopListPage
-        centerTitle: true,
-        toolbarHeight: 100,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-        ),
-        iconTheme: const IconThemeData(color: primaryTextColor),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
-              child: Column(
-                children: [
-                  _buildUserInfoFormCard(),
-                  const SizedBox(height: 20),
-                  _buildHarvestsFormCard(),
-                  const SizedBox(height: 25),
-                  _buildRequestButton(),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      //bottomNavigationBar: _buildBottomNavigationBar(),
-    );
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Widget _buildFormCard({required List<Widget> children}) {
@@ -147,7 +148,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.07),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 3),
@@ -161,11 +162,123 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
     );
   }
 
+  Widget _buildDropdownWithLabel() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Select Crop:",
+            style: TextStyle(
+              color: primaryTextColor,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<int>(
+            decoration: InputDecoration(
+              hintText: 'Select a crop',
+              filled: true,
+              fillColor: textFieldFillColor,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: textFieldBorderColor, width: 1.0),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: textFieldBorderColor, width: 1.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
+              ),
+            ),
+            value: _selectedCropId,
+            items: _crops.map((crop) {
+              return DropdownMenuItem<int>(
+                value: crop.id,
+                child: Text(
+                  crop.cropName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedCropId = value;
+              });
+            },
+            validator: (value) => value == null ? 'Please select a crop' : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: appBackgroundColor,
+      appBar: AppBar(
+        title: const Text(
+          'Add Request',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: primaryTextColor,
+          ),
+        ),
+        backgroundColor: topBarColor,
+        centerTitle: true,
+        toolbarHeight: 100,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+      ),
+      body: _isLoadingCrops
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    _buildFormCard(
+                      children: [
+                        _buildDropdownWithLabel(),
+                        _buildTextFieldWithLabel(
+                          label: "Amount (kg):",
+                          controller: _amountController,
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the amount';
+                            }
+                            if (int.tryParse(value) == null) {
+                              return 'Please enter a valid number';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        _buildSubmitButton(),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+
   Widget _buildTextFieldWithLabel({
     required String label,
     required TextEditingController controller,
-    String? hintText,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -175,7 +288,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           Text(
             label,
             style: const TextStyle(
-              color: labelTextColor,
+              color: primaryTextColor,
               fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
@@ -184,10 +297,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
-            style: const TextStyle(color: primaryTextColor, fontSize: 16),
+            validator: validator,
             decoration: InputDecoration(
-              hintText: hintText,
-              hintStyle: TextStyle(color: Colors.grey[400]),
               filled: true,
               fillColor: textFieldFillColor,
               contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
@@ -210,39 +321,11 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
     );
   }
 
-  Widget _buildUserInfoFormCard() {
-    return _buildFormCard(
-      children: [
-        _buildTextFieldWithLabel(label: "Name :", controller: _nameController),
-        _buildTextFieldWithLabel(label: "Location :", controller: _locationController),
-        _buildTextFieldWithLabel(label: "Contact :", controller: _contactController, keyboardType: TextInputType.phone),
-      ],
-    );
-  }
-
-  Widget _buildHarvestsFormCard() {
-    return _buildFormCard(
-      children: [
-        const Text(
-          "Harvests",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: primaryTextColor,
-          ),
-        ),
-        const SizedBox(height: 10),
-        _buildTextFieldWithLabel(label: "Crop :", controller: _cropController),
-        _buildTextFieldWithLabel(label: "Amount :", controller: _amountController, hintText: "e.g., 500 kg or 20 units"),
-      ],
-    );
-  }
-
-  Widget _buildRequestButton() {
+  Widget _buildSubmitButton() {
     return SizedBox(
-      width: double.infinity, // Make button take full width available in padding
+      width: double.infinity,
       child: ElevatedButton(
-        onPressed: _submitRequest,
+        onPressed: _isLoading ? null : _submitRequest,
         style: ElevatedButton.styleFrom(
           backgroundColor: requestButtonColor,
           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -251,49 +334,17 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           ),
           elevation: 3,
         ),
-        child: const Text(
-          "Request",
-          style: TextStyle(
-            color: requestButtonTextColor,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : const Text(
+                'SUBMIT REQUEST',
+                style: TextStyle(
+                  color: requestButtonTextColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }
-
-  // Widget _buildBottomNavigationBar() {
-  //   return BottomNavigationBar(
-  //     backgroundColor: bottomNavBarColor,
-  //     items: const <BottomNavigationBarItem>[
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.home),
-  //         label: 'Home',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.cloud),
-  //         label: 'Com.chat',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.person),
-  //         label: 'AI chat bot',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.person),
-  //         label: 'My account',
-  //       ),
-  //     ],
-  //     currentIndex: _selectedIndex,
-  //     selectedItemColor: bottomNavIconSelectedColor,
-  //     unselectedItemColor: bottomNavIconUnselectedColor,
-  //     onTap: _onItemTapped,
-  //     type: BottomNavigationBarType.fixed,
-  //     showUnselectedLabels: true,
-  //     selectedFontSize: 12,
-  //     unselectedFontSize: 12,
-  //     selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-  //     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-  //   );
-  // }
 }
