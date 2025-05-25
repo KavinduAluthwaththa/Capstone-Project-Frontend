@@ -30,6 +30,7 @@ class ApiEndpoints {
   // Farmer
   static const String getFarmers = "$baseUrl/Farmer/full";
   static const String postFarmer = "$baseUrl/Farmer";
+  static String getFarmer(String Email) => "$baseUrl/Farmer/$Email";
   static String deleteFarmer(String farmerID) => "$baseUrl/Farmer/$farmerID";
   static String updateFarmer(String farmerID) => "$baseUrl/Farmer/$farmerID";
 
@@ -44,7 +45,7 @@ class ApiEndpoints {
   // Growing Crop
   static const String getGrowingCrops = "$baseUrl/GrowingCrop";
   static const String postGrowingCrop = "$baseUrl/GrowingCrop";
-  static String getGrowingCropById(String id) => "$baseUrl/GrowingCrop/$id";
+  static String getGrowingCropById(int farmerID) => "$baseUrl/GrowingCrop/$farmerID";
   static String updateGrowingCrop(String id) => "$baseUrl/GrowingCrop/$id";
   static String deleteGrowingCrop(String id) => "$baseUrl/GrowingCrop/$id";
 

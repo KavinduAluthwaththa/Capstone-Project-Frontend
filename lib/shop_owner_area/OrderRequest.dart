@@ -1,5 +1,10 @@
+import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/models/request_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -17,8 +22,79 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class OrderRequestsPage extends StatelessWidget {
+class OrderRequestsPage extends StatefulWidget {
   const OrderRequestsPage({super.key});
+
+  @override
+  State<OrderRequestsPage> createState() => _OrderRequestsPageState();
+}
+
+class _OrderRequestsPageState extends State<OrderRequestsPage> {
+  List<Request> _requests = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRequests();
+  }
+
+  Future<void> _fetchRequests() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getRequests),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _requests = data.map((json) => Request.fromJson(json)).toList();
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load requests: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _deleteRequest(int requestId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiEndpoints.deleteRequest(requestId.toString())),
+      );
+
+      if (response.statusCode == 200) {
+        _fetchRequests(); // Refresh the list
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Request deleted successfully')),
+        );
+      } else {
+        throw Exception('Failed to delete request');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +111,7 @@ class OrderRequestsPage extends StatelessWidget {
           "Order Requests",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        backgroundColor: Colors.green[400], // Match FarmersListPage
+        backgroundColor: Colors.green[400], // Match ShopListPage
         centerTitle: true,
         toolbarHeight: 100, // Custom height
         shape: const RoundedRectangleBorder(
@@ -44,14 +120,26 @@ class OrderRequestsPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // List of Order Requests
+          // Remove the old Container header here!
+          // ...rest of your body...
           Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return OrderRequestTile(cropName: "Crop ${index + 1}", date: "2025.03.06");
-              },
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage.isNotEmpty
+                    ? Center(child: Text(_errorMessage))
+                    : _requests.isEmpty
+                        ? const Center(child: Text('No requests found'))
+                        : ListView.builder(
+                            itemCount: _requests.length,
+                            itemBuilder: (context, index) {
+                              final request = _requests[index];
+                              return OrderRequestTile(
+                                cropName: request.cropName ?? 'Crop',
+                                date: request.date,
+                                onDelete: () => _deleteRequest(request.requestID),
+                              );
+                            },
+                          ),
           ),
         ],
       ),
@@ -62,8 +150,14 @@ class OrderRequestsPage extends StatelessWidget {
 class OrderRequestTile extends StatelessWidget {
   final String cropName;
   final String date;
+  final VoidCallback onDelete;
 
-  const OrderRequestTile({super.key, required this.cropName, required this.date});
+  const OrderRequestTile({
+    super.key,
+    required this.cropName,
+    required this.date,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,17 +194,33 @@ class OrderRequestTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Amount Details'),
+                      content: const Text('Additional amount information here'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
                 child: const Text("Amount"),
               ),
               const SizedBox(width: 10),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {},
+                onPressed: onDelete,
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.blue),
-                onPressed: () {},
+                onPressed: () {
+                  // Navigate to farmer profile
+                },
               ),
             ],
           ),

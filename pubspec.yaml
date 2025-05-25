@@ -33,6 +33,7 @@ dependencies:
     sdk: flutter
   image_picker: ^1.0.4
   pie_chart: ^5.4.0
+  google_generative_ai: ^0.4.7
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -69,6 +70,7 @@ flutter:
   assets:
     - assets/profile.png
     - assets/img2.png
+    - assets/plant.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
