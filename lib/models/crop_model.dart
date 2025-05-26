@@ -1,26 +1,28 @@
 class Crop {
-  final int? id;
+  final int cropId;
   final String cropName;
   final String plantingSeason;
-  final String farmerId;
 
-  Crop({this.id, required this.cropName, required this.plantingSeason, required this.farmerId});
+  Crop({
+    required this.cropId,
+    required this.cropName,
+    required this.plantingSeason,
+  });
 
-  factory Crop.fromJson(Map<String, dynamic> json) {
+  factory Crop.fromJson(Map<String, dynamic>? json) {
+    json ??= {};
     return Crop(
-      id: json['CropID'],
-      cropName: json['CropName'],
-      plantingSeason: json['PlantingSeason'],
-      farmerId: json['FarmerID'],
+      cropId: json['cropID'] as int? ?? 0,
+      cropName: json['cropName']?.toString() ?? 'Unknown Crop',
+      plantingSeason: json['plantingSeason']?.toString() ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'CropID': id,
-      'CropName': cropName,
-      'PlantingSeason': plantingSeason,
-      'FarmerID': farmerId,
+      'cropID': cropId,
+      'cropName': cropName,
+      'plantingSeason': plantingSeason,
     };
   }
 }

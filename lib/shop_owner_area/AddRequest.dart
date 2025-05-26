@@ -1,5 +1,5 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/farmer_area/AddHarvest.dart';
+import 'package:capsfront/farmer_area/AddGrowingCrop.dart';
 import 'package:capsfront/models/crop_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -199,7 +199,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
             value: _selectedCropId,
             items: _crops.map((crop) {
               return DropdownMenuItem<int>(
-                value: crop.id,
+                value: crop.cropId,
                 child: Text(
                   crop.cropName,
                   style: const TextStyle(fontWeight: FontWeight.bold),

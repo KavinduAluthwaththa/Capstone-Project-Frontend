@@ -5,10 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-void main() {
-  runApp(const MaterialApp(home: AddHarvestScreen(farmerId: 0,)));
-}
-
 const Color appBackgroundColor = Colors.white;
 const Color topBarColor = Color(0xFFAED581);
 const Color formCardBackgroundColor = Color(0xFFE7F0E2);
@@ -18,22 +14,21 @@ const Color requestButtonColor = Color(0xFF67A36F);
 const Color requestButtonTextColor = Colors.white;
 const Color primaryTextColor = Colors.black;
 
-class AddHarvestScreen extends StatefulWidget {
+class AddGrowingCropScreen extends StatefulWidget {
   final int farmerId;
-  const AddHarvestScreen({super.key, required this.farmerId});
+  const AddGrowingCropScreen({super.key, required this.farmerId});
 
   @override
-  State<AddHarvestScreen> createState() => _AddHarvestScreenState();
+  State<AddGrowingCropScreen> createState() => _AddGrowingCropScreenState();
 }
 
-class _AddHarvestScreenState extends State<AddHarvestScreen> {
+class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   int? _selectedCropId;
   int? _farmerId;
   bool _isLoading = false;
   bool _isLoadingCrops = false;
-  DateTime _selectedDate = DateTime.now();
   List<Crop> _crops = [];
 
   @override
@@ -43,6 +38,12 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
     _loadCrops();
   }
 
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadFarmerId() async {
     setState(() {
       _farmerId = widget.farmerId;
@@ -50,108 +51,156 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
   }
 
   Future<void> _loadCrops() async {
-    setState(() {
-      _isLoadingCrops = true;
-    });
+  setState(() {
+    _isLoadingCrops = true;
+  });
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
-      final response = await http.get(
-        Uri.parse(ApiEndpoints.getCrops),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        setState(() {
-          _crops = data.map((crop) => Crop.fromJson(crop)).toList();
-        });
-      } else {
-        throw Exception('Failed to load crops');
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load crops: ${e.toString()}')),
-      );
-    } finally {
-      setState(() {
-        _isLoadingCrops = false;
-      });
-    }
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    
+    final response = await http.get(
+      Uri.parse(ApiEndpoints.getCrops),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
     );
-    if (picked != null && picked != _selectedDate) {
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
       setState(() {
-        _selectedDate = picked;
+        _crops = data.map((json) {
+          try {
+            if (json['text'] == null || json['value'] == null) {
+              print('Missing required fields in crop data: $json');
+              return null;
+            }
+
+            return Crop(
+              cropId: int.parse(json['value'].toString()),
+              cropName: json['text'].toString(),
+              plantingSeason: '',
+            );
+          } catch (e) {
+            print('Error parsing crop data: $json\nError: $e');
+            return null;
+          }
+        })
+        .whereType<Crop>()
+        .toList();
+        
+        _crops.sort((a, b) => a.cropName.compareTo(b.cropName));
       });
+    } else {
+      throw Exception('Failed to load crops: ${response.statusCode}');
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Failed to load crops: ${e.toString()}'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    setState(() {
+      _isLoadingCrops = false;
+    });
+  }
   }
 
-  Future<void> _submitHarvest() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedCropId == null || _farmerId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a crop')),
-      );
-      return;
-    }
+  Future<void> _submitGrowingCrop() async {
+  if (!_formKey.currentState!.validate()) return;
+  if (_selectedCropId == null || _farmerId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please select a crop and ensure farmer ID is set'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
 
-    setState(() {
-      _isLoading = true;
-    });
+  setState(() => _isLoading = true);
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    final amount = int.tryParse(_amountController.text) ?? 0;
 
-      final response = await http.post(
-        Uri.parse(ApiEndpoints.postGrowingCrop),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'CropID': _selectedCropId,
-          'FarmerID': _farmerId,
-          'Date': DateTime.now(),
-          'Amount': int.parse(_amountController.text),
-        }),
-      );
+    final selectedCrop = _crops.firstWhere(
+      (crop) => crop.cropId == _selectedCropId,
+      orElse: () => Crop(
+        cropId: 0,
+        cropName: 'Unknown',
+        plantingSeason: '',
+      ),
+    );
 
-      if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Harvest record added successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context, true);
-      } else {
-        throw Exception('Failed to add harvest: ${response.statusCode}');
+    final requestData = {
+      "cfid": 0, 
+      "cropID": _selectedCropId,
+      "farmerID": _farmerId,
+      "date": DateTime.now().toIso8601String(),
+      "amount": amount,
+      "crop": {
+        "cropID": selectedCrop.cropId,
+        "cropName": selectedCrop.cropName,
+        "plantingSeason": selectedCrop.plantingSeason,
+      },
+      "farmer": {
+        "farmerID": _farmerId,
+        "name": "", 
+        "farmLocation": "",
+        "phoneNumber": 0,
+        "email": ""
       }
-    } catch (e) {
+    };
+
+    debugPrint('API Endpoint: ${ApiEndpoints.postGrowingCrop}');
+    debugPrint('Full Request Body: ${jsonEncode(requestData)}');
+
+    final response = await http.post(
+      Uri.parse(ApiEndpoints.postGrowingCrop),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(requestData),
+    ).timeout(const Duration(seconds: 10));
+
+    debugPrint('Response Status: ${response.statusCode}');
+    debugPrint('Response Body: ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
+        const SnackBar(
+          content: Text('Harvest record added successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
         ),
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      Navigator.pop(context, true);
+    } else {
+      final errorResponse = jsonDecode(response.body);
+      final errorMessage = errorResponse['message'] ?? 
+                         errorResponse['error'] ?? 
+                         'Failed to add harvest record (Status: ${response.statusCode})';
+      
+      throw Exception(errorMessage);
     }
+  } catch (e) {
+    debugPrint('Error submitting growing crop: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString().replaceAll('Exception: ', '')),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    setState(() => _isLoading = false);
   }
+}
+
 
   Widget _buildFormCard({required List<Widget> children}) {
     return Container(
@@ -182,7 +231,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Crop :",
+            "Select Crop:",
             style: TextStyle(
               color: primaryTextColor,
               fontSize: 15,
@@ -212,10 +261,13 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
             value: _selectedCropId,
             items: _crops.map((crop) {
               return DropdownMenuItem<int>(
-                value: crop.id,
+                value: crop.cropId,
                 child: Text(
                   crop.cropName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
                 ),
               );
             }).toList(),
@@ -225,6 +277,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
               });
             },
             validator: (value) => value == null ? 'Please select a crop' : null,
+            isExpanded: true,
           ),
         ],
       ),
@@ -234,7 +287,6 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
   Widget _buildTextFieldWithLabel({
     required String label,
     required TextEditingController controller,
-    String? hintText,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
@@ -256,10 +308,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
             controller: controller,
             keyboardType: keyboardType,
             validator: validator,
-            style: const TextStyle(color: primaryTextColor, fontSize: 16),
             decoration: InputDecoration(
-              hintText: hintText,
-              hintStyle: TextStyle(color: Colors.grey[400]),
               filled: true,
               fillColor: textFieldFillColor,
               contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
@@ -286,7 +335,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _submitHarvest,
+        onPressed: _isLoading ? null : _submitGrowingCrop,
         style: ElevatedButton.styleFrom(
           backgroundColor: requestButtonColor,
           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -316,11 +365,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: primaryTextColor, size: 28),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Add Harvest Record',
@@ -350,7 +395,7 @@ class _AddHarvestScreenState extends State<AddHarvestScreen> {
                       children: [
                         _buildDropdownWithLabel(),
                         _buildTextFieldWithLabel(
-                          label: "Amount (kg) :",
+                          label: "Amount (kg):",
                           controller: _amountController,
                           keyboardType: TextInputType.number,
                           validator: (value) {

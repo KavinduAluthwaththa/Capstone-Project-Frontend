@@ -14,12 +14,22 @@ class Farmer {
   });
 
   factory Farmer.fromJson(Map<String, dynamic> json) {
-  return Farmer(
-    farmerID: json['farmerID'],
-    name: json['name'],
-    farmLocation: json['farmLocation'],
-    phoneNumber: json['phoneNumber'],
-    Email: json['email'] ?? '',
-  );
-}
+    return Farmer(
+      farmerID: json['farmerID'],
+      name: json['name'],
+      farmLocation: json['farmLocation'],
+      phoneNumber: json['phoneNumber'],
+      Email: json['email'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'farmerID': farmerID,
+      'name': name,
+      'farmLocation': farmLocation,
+      'phoneNumber': phoneNumber,
+      'email': Email,
+    };
+  }
 }

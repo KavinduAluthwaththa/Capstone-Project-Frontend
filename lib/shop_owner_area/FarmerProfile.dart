@@ -40,13 +40,11 @@ class FarmerProfileScreen extends StatefulWidget {
 }
 
 class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
-  int _selectedIndex = 0; // Assuming 'My account' might be the active tab initially or some other logic
+  int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      // Add navigation logic here if needed, e.g.,
-      // if (index == 0) Navigator.pushNamed(context, '/home');
     });
   }
 
