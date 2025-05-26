@@ -257,6 +257,8 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
               ),
+              // Add isDense to make dropdown more compact
+              isDense: true,
             ),
             value: _selectedCropId,
             items: _crops.map((crop) {
@@ -268,6 +270,8 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
+                  // Prevent text overflow in dropdown items
+                  overflow: TextOverflow.ellipsis,
                 ),
               );
             }).toList(),
@@ -383,39 +387,54 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
         ),
         iconTheme: const IconThemeData(color: primaryTextColor),
       ),
-      body: _isLoadingCrops
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    _buildFormCard(
-                      children: [
-                        _buildDropdownWithLabel(),
-                        _buildTextFieldWithLabel(
-                          label: "Amount (kg):",
-                          controller: _amountController,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter the amount';
-                            }
-                            if (int.tryParse(value) == null) {
-                              return 'Please enter a valid number';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        _buildSubmitButton(),
-                      ],
+      body: SafeArea(
+        child: _isLoadingCrops
+            ? const Center(child: CircularProgressIndicator())
+            : GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(), // Dismiss keyboard on tap outside
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: LayoutBuilder(
+                      builder: (BuildContext context, BoxConstraints constraints) {
+                        return SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: _buildFormCard(
+                              children: [
+                                _buildDropdownWithLabel(),
+                                _buildTextFieldWithLabel(
+                                  label: "Amount (kg):",
+                                  controller: _amountController,
+                                  keyboardType: TextInputType.number,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter the amount';
+                                    }
+                                    if (int.tryParse(value) == null) {
+                                      return 'Please enter a valid number';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                _buildSubmitButton(),
+                                // Add extra space at the bottom to avoid covered by keyboard
+                                SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 0),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+      ),
+      resizeToAvoidBottomInset: true,
     );
   }
 }
