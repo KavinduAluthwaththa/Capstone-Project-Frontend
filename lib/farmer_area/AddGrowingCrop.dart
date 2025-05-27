@@ -122,7 +122,7 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Harvest record added successfully!'),
+            content: Text('Crop record added successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -130,7 +130,7 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
       } else {
         final errorResponse = jsonDecode(response.body);
         final errorMessage = errorResponse['message'] ??
-            'Failed to add harvest record (Status: ${response.statusCode})';
+            'Failed to add crop record (Status: ${response.statusCode})';
         throw Exception(errorMessage);
       }
     } catch (e) {
@@ -270,7 +270,7 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
         child: _isLoading
             ? const CircularProgressIndicator(color: Colors.white)
             : const Text(
-                'SAVE HARVEST RECORD',
+                'SAVE CROP RECORD',
                 style: TextStyle(
                   color: requestButtonTextColor,
                   fontSize: 18,
@@ -291,7 +291,7 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Add Harvest Record',
+          'Add Crop Record',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
