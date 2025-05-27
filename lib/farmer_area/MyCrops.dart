@@ -37,8 +37,6 @@ class _CropsPageState extends State<CropsPage> {
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    debugPrint('Response body: ${response.body}');
-
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
 
@@ -165,112 +163,57 @@ class _CropsPageState extends State<CropsPage> {
   }
 
   Widget _buildCropGrid() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.9,
-        ),
-        itemCount: growingCrops.length,
-        itemBuilder: (context, index) => _buildCropCard(growingCrops[index]),
-      ),
-    );
-  }
+  return Padding(
+    padding: const EdgeInsets.all(12),
+    child: ListView.builder(
+      itemCount: growingCrops.length,
+      itemBuilder: (context, index) => _buildCropCard(growingCrops[index]),
+    ),
+  );
+}
 
   Widget _buildCropCard(GrowingCrop crop) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {}, // Add onTap functionality if needed
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      crop.crop.cropName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                    onPressed: () => _showDeleteConfirmation(crop.cfid),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              _buildCropDetail(Icons.scale, 'Amount: ${crop.amount} kg'),
-              _buildCropDetail(Icons.calendar_today, 'Planted: ${_formatDate(crop.date)}'),
-              _buildCropDetail(Icons.location_on, 'Location: ${crop.farmer.farmLocation}'),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Colors.green[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green[100]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.grass, size: 16, color: Colors.green[800]),
-                    const SizedBox(width: 6),
-                    Text(
-                      crop.crop.plantingSeason,
-                      style: TextStyle(
-                        color: Colors.green[800],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+  return Card(
+    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+    elevation: 2,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: ListTile(
+      contentPadding: const EdgeInsets.all(12),
+      leading: CircleAvatar(
+        backgroundColor: Colors.green[800],
+        child: Text(
+          crop.crop.cropName[0].toUpperCase(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildCropDetail(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
+      title: Text(
+        crop.crop.cropName,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: Colors.grey[600]),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[800],
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+          const SizedBox(height: 8),
+          Text('Amount: ${crop.amount} kg'),
+          Text('Planted: ${_formatDate(crop.date)}'),
+          Text('Location: ${crop.farmer.farmLocation}'),
         ],
       ),
-    );
-  }
+      trailing: IconButton(
+        icon: const Icon(Icons.delete, color: Colors.red),
+        onPressed: () => _showDeleteConfirmation(crop.cfid),
+      ),
+    ),
+  );
+}
 
   Widget _buildEmptyState() {
     return Center(
