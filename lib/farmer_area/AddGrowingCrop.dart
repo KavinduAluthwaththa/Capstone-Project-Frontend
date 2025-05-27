@@ -1,5 +1,4 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/models/crop_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -26,15 +25,12 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   int? _selectedCropId;
-  int? _farmerId;
   bool _isLoading = false;
-  bool _isLoadingCrops = false;
-  List<Crop> _crops = [];
+  List<Map<String, dynamic>> _crops = [];
 
   @override
   void initState() {
     super.initState();
-    _loadFarmerId();
     _loadCrops();
   }
 
@@ -44,184 +40,111 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
     super.dispose();
   }
 
-  Future<void> _loadFarmerId() async {
-    setState(() {
-      _farmerId = widget.farmerId;
-    });
-  }
-
   Future<void> _loadCrops() async {
-  setState(() {
-    _isLoadingCrops = true;
-  });
-
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
-    
-    final response = await http.get(
-      Uri.parse(ApiEndpoints.getCrops),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      setState(() {
-        _crops = data.map((json) {
-          try {
-            if (json['text'] == null || json['value'] == null) {
-              print('Missing required fields in crop data: $json');
-              return null;
-            }
-
-            return Crop(
-              cropId: int.parse(json['value'].toString()),
-              cropName: json['text'].toString(),
-              plantingSeason: '',
-            );
-          } catch (e) {
-            print('Error parsing crop data: $json\nError: $e');
-            return null;
-          }
-        })
-        .whereType<Crop>()
-        .toList();
-        
-        _crops.sort((a, b) => a.cropName.compareTo(b.cropName));
-      });
-    } else {
-      throw Exception('Failed to load crops: ${response.statusCode}');
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Failed to load crops: ${e.toString()}'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  } finally {
     setState(() {
-      _isLoadingCrops = false;
+      _isLoading = true;
     });
-  }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getCrops),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _crops = data.map((json) {
+            return {
+              'id': int.parse(json['value'].toString()),
+              'name': json['text'].toString(),
+            };
+          }).toList();
+        });
+      } else {
+        throw Exception('Failed to load crops');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to load crops: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _submitGrowingCrop() async {
-  if (!_formKey.currentState!.validate()) return;
-  if (_selectedCropId == null || _farmerId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please select a crop and ensure farmer ID is set'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  setState(() => _isLoading = true);
-
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
-    final amount = int.tryParse(_amountController.text) ?? 0;
-
-    final selectedCrop = _crops.firstWhere(
-      (crop) => crop.cropId == _selectedCropId,
-      orElse: () => Crop(
-        cropId: 0,
-        cropName: 'Unknown',
-        plantingSeason: '',
-      ),
-    );
-
-    final requestData = {
-      "cfid": 0, 
-      "cropID": _selectedCropId,
-      "farmerID": _farmerId,
-      "date": DateTime.now().toIso8601String(),
-      "amount": amount,
-      "crop": {
-        "cropID": selectedCrop.cropId,
-        "cropName": selectedCrop.cropName,
-        "plantingSeason": selectedCrop.plantingSeason,
-      },
-      "farmer": {
-        "farmerID": _farmerId,
-        "name": "", 
-        "farmLocation": "",
-        "phoneNumber": 0,
-        "email": ""
-      }
-    };
-
-    debugPrint('API Endpoint: ${ApiEndpoints.postGrowingCrop}');
-    debugPrint('Full Request Body: ${jsonEncode(requestData)}');
-
-    final response = await http.post(
-      Uri.parse(ApiEndpoints.postGrowingCrop),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(requestData),
-    ).timeout(const Duration(seconds: 10));
-
-    debugPrint('Response Status: ${response.statusCode}');
-    debugPrint('Response Body: ${response.body}');
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedCropId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Harvest record added successfully!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
+          content: Text('Please select a crop'),
+          backgroundColor: Colors.red,
         ),
       );
-      Navigator.pop(context, true);
-    } else {
-      final errorResponse = jsonDecode(response.body);
-      final errorMessage = errorResponse['message'] ?? 
-                         errorResponse['error'] ?? 
-                         'Failed to add harvest record (Status: ${response.statusCode})';
-      
-      throw Exception(errorMessage);
+      return;
     }
-  } catch (e) {
-    debugPrint('Error submitting growing crop: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(e.toString().replaceAll('Exception: ', '')),
-        backgroundColor: Colors.red,
-      ),
-    );
-  } finally {
-    setState(() => _isLoading = false);
-  }
-}
 
+    setState(() {
+      _isLoading = true;
+    });
 
-  Widget _buildFormCard({required List<Widget> children}) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: formCardBackgroundColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.07),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final requestData = {
+        "CropID": _selectedCropId,
+        "FarmerID": widget.farmerId,
+        "Date": DateTime.now().toIso8601String(),
+        "Amount": int.parse(_amountController.text),
+      };
+
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.postGrowingCrop),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(requestData),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Crop record added successfully!'),
+            backgroundColor: Colors.green,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
-      ),
-    );
+        );
+        Navigator.pop(context, true);
+      } else {
+        final errorResponse = jsonDecode(response.body);
+        final errorMessage = errorResponse['message'] ??
+            'Failed to add crop record (Status: ${response.statusCode})';
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Widget _buildDropdownWithLabel() {
@@ -263,9 +186,9 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
             value: _selectedCropId,
             items: _crops.map((crop) {
               return DropdownMenuItem<int>(
-                value: crop.cropId,
+                value: crop['id'],
                 child: Text(
-                  crop.cropName,
+                  crop['name'],
                   style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
@@ -351,7 +274,7 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
         child: _isLoading
             ? const CircularProgressIndicator(color: Colors.white)
             : const Text(
-                'SAVE HARVEST RECORD',
+                'SAVE CROP RECORD',
                 style: TextStyle(
                   color: requestButtonTextColor,
                   fontSize: 18,
@@ -372,7 +295,7 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Add Harvest Record',
+          'Add Crop Record',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -387,50 +310,34 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
         ),
         iconTheme: const IconThemeData(color: primaryTextColor),
       ),
-      body: SafeArea(
-        child: _isLoadingCrops
-            ? const Center(child: CircularProgressIndicator())
-            : GestureDetector(
-                onTap: () => FocusScope.of(context).unfocus(), // Dismiss keyboard on tap outside
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
-                  child: Form(
-                    key: _formKey,
-                    child: LayoutBuilder(
-                      builder: (BuildContext context, BoxConstraints constraints) {
-                        return SingleChildScrollView(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: constraints.maxHeight,
-                            ),
-                            child: _buildFormCard(
-                              children: [
-                                _buildDropdownWithLabel(),
-                                _buildTextFieldWithLabel(
-                                  label: "Amount (kg):",
-                                  controller: _amountController,
-                                  keyboardType: TextInputType.number,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter the amount';
-                                    }
-                                    if (int.tryParse(value) == null) {
-                                      return 'Please enter a valid number';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 20),
-                                _buildSubmitButton(),
-                                // Add extra space at the bottom to avoid covered by keyboard
-                                SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 0),
-                              ],
-                            ),
-                          ),
-                        );
+
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    _buildDropdownWithLabel(),
+                    _buildTextFieldWithLabel(
+                      label: "Amount (kg):",
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the amount';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
                       },
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    _buildSubmitButton(),
+                  ],
+
                 ),
               ),
       ),
