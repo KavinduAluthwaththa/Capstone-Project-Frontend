@@ -24,49 +24,50 @@ class _CropsPageState extends State<CropsPage> {
     super.initState();
     _fetchGrowingCrops();
   }
-
+  
   Future<void> _fetchGrowingCrops() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
+  setState(() => _isLoading = true);
 
-      final response = await http.get(
-        Uri.parse(ApiEndpoints.getGrowingCropById(widget.farmerId)),
-        headers: {'Authorization': 'Bearer $token'},
-      );
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
 
-      if (response.statusCode == 200) {
-        final dynamic data = jsonDecode(response.body);
-        final List<GrowingCrop> loadedCrops = [];
+    final response = await http.get(
+      Uri.parse(ApiEndpoints.getGrowingCropById(widget.farmerId)),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
-        if (data is List) {
-          loadedCrops.addAll(
-            data.map<GrowingCrop>((e) => GrowingCrop.fromJson(e as Map<String, dynamic>))
-                .where((crop) => crop.cropId != 0),
-          );
-        } else if (data is Map) {
-          final crop = GrowingCrop.fromJson(data as Map<String, dynamic>);
-          if (crop.cropId != 0) {
-            loadedCrops.add(crop);
-          }
-        }
+    debugPrint('Response body: ${response.body}');
 
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+
+      if (jsonResponse is Map<String, dynamic>) {
+        final GrowingCrop crop = GrowingCrop.fromJson(jsonResponse);
         setState(() {
-          growingCrops = loadedCrops;
-          _isLoading = false;
+          growingCrops = [crop];
           _errorMessage = null;
         });
-      } else {
-        throw Exception('Failed to load crops: ${response.statusCode}');
+      } else if (jsonResponse is List) {
+        final List<GrowingCrop> loadedCrops = jsonResponse
+            .map((e) => GrowingCrop.fromJson(e as Map<String, dynamic>))
+            .toList();
+        setState(() {
+          growingCrops = loadedCrops;
+          _errorMessage = null;
+        });
       }
-    } catch (e) {
-      debugPrint('Error fetching crops: $e');
-      setState(() {
-        _isLoading = false;
-        growingCrops = [];
-      });
+    } else {
+      throw Exception('Failed to load crops: ${response.statusCode}');
     }
+  } catch (e) {
+    setState(() {
+      growingCrops = [];
+    });
+  } finally {
+    setState(() => _isLoading = false);
   }
+}
 
   Future<void> _deleteGrowingCrop(int cfid) async {
     try {
@@ -92,9 +93,8 @@ class _CropsPageState extends State<CropsPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+          content: Text('Error: ${e.toString()}'),
           backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -127,27 +127,7 @@ class _CropsPageState extends State<CropsPage> {
       ),
       body: Column(
         children: [
-          if (_errorMessage != null)
-            Container(
-              padding: const EdgeInsets.all(8),
-              color: Colors.red[50],
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 18),
-                    onPressed: () => setState(() => _errorMessage = null),
-                  ),
-                ],
-              ),
-            ),
+          if (_errorMessage != null) _buildErrorBanner(),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -156,6 +136,29 @@ class _CropsPageState extends State<CropsPage> {
                     : _buildCropGrid(),
           ),
           _buildAddButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorBanner() {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      color: Colors.red[50],
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18),
+            onPressed: () => setState(() => _errorMessage = null),
+          ),
         ],
       ),
     );
@@ -214,7 +217,6 @@ class _CropsPageState extends State<CropsPage> {
                 ],
               ),
               const SizedBox(height: 8),
-              _buildCropDetail(Icons.agriculture, 'Crop ID: ${crop.cropId}'),
               _buildCropDetail(Icons.scale, 'Amount: ${crop.amount} kg'),
               _buildCropDetail(Icons.calendar_today, 'Planted: ${_formatDate(crop.date)}'),
               _buildCropDetail(Icons.location_on, 'Location: ${crop.farmer.farmLocation}'),

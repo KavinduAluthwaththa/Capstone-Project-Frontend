@@ -1,7 +1,7 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/farmer_area/MarketPrice.dart';
 import 'package:capsfront/farmer_area/ShopList.dart';
-import 'package:capsfront/farmer_area/crops.dart';
+import 'package:capsfront/farmer_area/MyCrops.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:capsfront/shared/DiseasesM.dart';
 import 'package:capsfront/shared/Fertilizing.dart';
