@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 class ChatbotPage extends StatefulWidget {
@@ -17,14 +18,19 @@ class _ChatbotPageState extends State<ChatbotPage> {
   late final GenerativeModel _model;
 
   @override
-  void initState() {
-    super.initState();
-    // Initialize the model
-    _model = GenerativeModel(
-      model: 'gemini-pro',
-      apiKey: '',
-    );
+void initState() {
+  super.initState();
+  final geminiApiKey = dotenv.env['geminiapi'];
+  if (geminiApiKey == null || geminiApiKey.isEmpty) {
+    throw Exception('Gemini API key not found in .env file');
   }
+  
+  // Initialize the model with the API key from .env
+  _model = GenerativeModel(
+    model: 'gemini-pro',
+    apiKey: geminiApiKey,
+  );
+}
 
   Future<void> _sendMessage() async {
     String message = _controller.text.trim();

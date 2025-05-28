@@ -22,8 +22,6 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    final weatherapi = dotenv.env['weatherapi'];
-    final geminiapi = dotenv.env['geminiapi'];
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
