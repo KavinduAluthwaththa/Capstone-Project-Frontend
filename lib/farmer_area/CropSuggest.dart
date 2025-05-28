@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-// You'll need to add http package to pubspec.yaml
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

@@ -4,9 +4,18 @@ import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
 import 'package:capsfront/farmer_area/farmer_main_page.dart';
 import 'package:capsfront/shared/Chatbot.dart';
 import 'package:capsfront/shared/profile_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  try {
+    // Load .env file
+    await dotenv.load(fileName: ".env");
+    runApp(const MyApp());
+  } catch (e) {
+    print('Error loading .env file: $e');
+    // Fallback to run app without env variables
+    runApp(const MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {

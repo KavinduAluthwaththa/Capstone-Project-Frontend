@@ -1,62 +1,61 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/farmer_area/AddGrowingCrop.dart';
 import 'package:capsfront/models/crop_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Market Price',
-      home: AddRequestScreen(shopId: 0,),
-    );
-  }
+void main() {
+  runApp(const MaterialApp(home: AddOrderPage(shopId: 1))); // Example shopId
 }
 
-class AddRequestScreen extends StatefulWidget {
+const Color appBackgroundColor = Colors.white;
+const Color topBarColor = Color(0xFFAED581);
+const Color formCardBackgroundColor = Color(0xFFE7F0E2);
+const Color textFieldFillColor = Color(0xFFF5F5F5);
+const Color textFieldBorderColor = Color(0xFFDCDCDC);
+const Color requestButtonColor = Color(0xFF67A36F);
+const Color requestButtonTextColor = Colors.white;
+const Color primaryTextColor = Colors.black;
+
+class AddOrderPage extends StatefulWidget {
   final int shopId;
-  const AddRequestScreen({super.key, required this.shopId});
+  const AddOrderPage({super.key, required this.shopId});
 
   @override
-  State<AddRequestScreen> createState() => _AddRequestScreenState();
+  State<AddOrderPage> createState() => _AddOrderPageState();
 }
 
-class _AddRequestScreenState extends State<AddRequestScreen> {
+class _AddOrderPageState extends State<AddOrderPage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _priceController = TextEditingController();
   int? _selectedCropId;
-  int? _shopId;
   bool _isLoading = false;
-  bool _isLoadingCrops = false;
   List<Crop> _crops = [];
 
   @override
   void initState() {
     super.initState();
-    _loadShopId();
     _loadCrops();
   }
 
-  Future<void> _loadShopId() async {
-    setState(() {
-      _shopId = widget.shopId;
-    });
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _priceController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCrops() async {
     setState(() {
-      _isLoadingCrops = true;
+      _isLoading = true;
     });
 
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
+
       final response = await http.get(
         Uri.parse(ApiEndpoints.getCrops),
         headers: {
@@ -74,20 +73,26 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load crops: ${e.toString()}')),
+        SnackBar(
+          content: Text('Failed to load crops: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       setState(() {
-        _isLoadingCrops = false;
+        _isLoading = false;
       });
     }
   }
 
   Future<void> _submitRequest() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedCropId == null || _shopId == null) {
+    if (_selectedCropId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a crop')),
+        const SnackBar(
+          content: Text('Please select a crop'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -100,19 +105,22 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
 
+      final requestData = {
+        "CropID": _selectedCropId,
+        "ShopID": widget.shopId,
+        "Date": DateTime.now().toIso8601String(), // Current date
+        "Amount": int.parse(_amountController.text),
+        "Price": int.parse(_priceController.text), // Expected price
+        "IsAvailable": true,
+      };
+
       final response = await http.post(
         Uri.parse(ApiEndpoints.postRequest),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          'CropID': _selectedCropId,
-          'ShopID': _shopId,
-          'Date': DateTime.now().toIso8601String(),
-          'Amount': int.parse(_amountController.text),
-          'IsAvailable': true,
-        }),
+        body: jsonEncode(requestData),
       );
 
       if (response.statusCode == 201) {
@@ -138,28 +146,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         _isLoading = false;
       });
     }
-  }
-
-  Widget _buildFormCard({required List<Widget> children}) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: formCardBackgroundColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.07),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
-      ),
-    );
   }
 
   Widget _buildDropdownWithLabel() {
@@ -215,62 +201,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appBackgroundColor,
-      appBar: AppBar(
-        title: const Text(
-          'Add Request',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: primaryTextColor,
-          ),
-        ),
-        backgroundColor: topBarColor,
-        centerTitle: true,
-        toolbarHeight: 100,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-        ),
-      ),
-      body: _isLoadingCrops
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    _buildFormCard(
-                      children: [
-                        _buildDropdownWithLabel(),
-                        _buildTextFieldWithLabel(
-                          label: "Amount (kg):",
-                          controller: _amountController,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter the amount';
-                            }
-                            if (int.tryParse(value) == null) {
-                              return 'Please enter a valid number';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        _buildSubmitButton(),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
     );
   }
 
@@ -345,6 +275,72 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                 ),
               ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: appBackgroundColor,
+      appBar: AppBar(
+        title: const Text(
+          'Add Request',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: primaryTextColor,
+          ),
+        ),
+        backgroundColor: topBarColor,
+        centerTitle: true,
+        toolbarHeight: 100,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    _buildDropdownWithLabel(),
+                    _buildTextFieldWithLabel(
+                      label: "Amount (kg):",
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the amount';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
+                    ),
+                    _buildTextFieldWithLabel(
+                      label: "Expected Price For the Order:",
+                      controller: _priceController,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the expected price';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _buildSubmitButton(),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }
