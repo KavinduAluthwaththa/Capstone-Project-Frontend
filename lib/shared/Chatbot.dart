@@ -22,7 +22,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
     // Initialize the model
     _model = GenerativeModel(
       model: 'gemini-pro',
-      apiKey: 'AIzaSyC1tsTgotq4gx5--p7svUczuD4nYmo53fU',
+      apiKey: '',
     );
   }
 

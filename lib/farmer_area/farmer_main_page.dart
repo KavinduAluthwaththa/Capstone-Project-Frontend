@@ -74,7 +74,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
   }
 
   Future<void> _fetchWeatherData(String location) async {
-    const apiKey = 'cdedb0023ef6210f81913fa963239f7f';
+    const weatherapi;
     try {
       final response = await http.get(
         Uri.parse('https://api.openweathermap.org/data/2.5/weather?q=$location&units=metric&appid=$apiKey'),
