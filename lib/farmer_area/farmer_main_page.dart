@@ -8,6 +8,7 @@ import 'package:capsfront/shared/Fertilizing.dart';
 import 'package:capsfront/shared/Chatbot.dart';         
 import 'package:capsfront/shared/profile_page.dart'; 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -39,14 +40,13 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
     _fetchFarmerData();
   }
 
-  Future<void> _fetchFarmerData() async {
+  // Fix 1: Move weatherApiKey to _fetchWeatherData method
+Future<void> _fetchFarmerData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
       
-
-
-    final email = Uri.encodeComponent(widget.email);
+      final email = Uri.encodeComponent(widget.email);
     
       final response = await http.get(
         Uri.parse(ApiEndpoints.getFarmer(email)),
@@ -71,13 +71,22 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
         _isLoading = false;
       });
     }
-  }
+}
 
-  Future<void> _fetchWeatherData(String location) async {
-    const weatherapi;
+// Fix 2: Add proper weather API key handling and error checking
+Future<void> _fetchWeatherData(String location) async {
+    final weatherApiKey = dotenv.env['weatherapi'];
+    if (weatherApiKey == null || weatherApiKey.isEmpty) {
+      setState(() {
+        _errorMessage = 'Weather API key not configured';
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
       final response = await http.get(
-        Uri.parse('https://api.openweathermap.org/data/2.5/weather?q=$location&units=metric&appid=$apiKey'),
+        Uri.parse('https://api.openweathermap.org/data/2.5/weather?q=$location,LK&units=metric&appid=$weatherApiKey'),
       );
 
       if (response.statusCode == 200) {
@@ -87,17 +96,18 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
           _humidity = '${data['main']['humidity']}%';
           _weatherIcon = _getWeatherIcon(data['weather'][0]['id']);
           _isLoading = false;
+          _errorMessage = '';
         });
       } else {
-        throw Exception('Failed to load weather data');
+        throw Exception('Weather API Error: ${response.statusCode}');
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Weather data unavailable';
+        _errorMessage = 'Weather data unavailable: ${e.toString()}';
         _isLoading = false;
       });
     }
-  }
+}
 
   String _getWeatherIcon(int conditionCode) {
     if (conditionCode < 300) return '⛈️';
