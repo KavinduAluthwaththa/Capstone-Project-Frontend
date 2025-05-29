@@ -1,4 +1,4 @@
-import 'package:capsfront/shared/Fertilizing.dart';
+import 'package:capsfront/shared/FertilizerCalculation.dart';
 import 'package:flutter/material.dart';
 
 class DailyAnalysisScreen extends StatelessWidget {

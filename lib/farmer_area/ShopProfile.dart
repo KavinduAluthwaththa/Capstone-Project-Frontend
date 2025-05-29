@@ -1,5 +1,3 @@
-// lib/ShopProfile.dart
-
 import 'package:flutter/material.dart';
 
 // Color Palette - Reusing from the previous style
@@ -13,10 +11,7 @@ const Color secondaryTextColor = Colors.black54;
 const Color tertiaryTextColor = Colors.black38; // For "ID:", "Quantity:", "Deadline:" labels
 const Color bottomNavIconSelectedColor = Colors.white;
 const Color bottomNavIconUnselectedColor = Color(0xFF3D533D);
-const Color pendingStatusColor = Color(0xFFFFEEA2); // Light yellow for pending badge
-
-// If this is the main entry point of your app, you can keep MyApp here.
-// For this example, I'll include MyApp to make it runnable directly.
+const Color pendingStatusColor = Color(0xFFFFEEA2); 
 void main() {
   runApp(const MyApp());
 }
@@ -59,9 +54,34 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appBackgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: primaryTextColor),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          },
+        ),
+        title: const Text(
+          "Shop Profile",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: primaryTextColor,
+          ),
+        ),
+        backgroundColor: Colors.green[400], // Match ShopListPage
+        centerTitle: true,
+        toolbarHeight: 100,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+        iconTheme: const IconThemeData(color: primaryTextColor),
+      ),
       body: Column(
         children: [
-          _buildTopBar(context),
+          // Remove _buildTopBar(context),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
@@ -76,46 +96,7 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 10,
-        bottom: 20,
-        left: 10,
-        right: 20,
-      ),
-      decoration: const BoxDecoration(
-        color: topBarColor,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: primaryTextColor, size: 28),
-            onPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              }
-            },
-          ),
-          const SizedBox(width: 10),
-          const Text(
-            "Shop Profile",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: primaryTextColor,
-            ),
-          ),
-        ],
-      ),
+      // bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -332,37 +313,37 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      backgroundColor: bottomNavBarColor,
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.cloud),
-          label: 'Com.chat',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'AI chat bot',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'My account',
-        ),
-      ],
-      currentIndex: _selectedIndex,
-      selectedItemColor: bottomNavIconSelectedColor,
-      unselectedItemColor: bottomNavIconUnselectedColor,
-      onTap: _onItemTapped,
-      type: BottomNavigationBarType.fixed,
-      showUnselectedLabels: true,
-      selectedFontSize: 12,
-      unselectedFontSize: 12,
-      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-    );
-  }
+  // Widget _buildBottomNavigationBar() {
+  //   return BottomNavigationBar(
+  //     backgroundColor: bottomNavBarColor,
+  //     items: const <BottomNavigationBarItem>[
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.home),
+  //         label: 'Home',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.cloud),
+  //         label: 'Com.chat',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.person),
+  //         label: 'AI chat bot',
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.person),
+  //         label: 'My account',
+  //       ),
+  //     ],
+  //     currentIndex: _selectedIndex,
+  //     selectedItemColor: bottomNavIconSelectedColor,
+  //     unselectedItemColor: bottomNavIconUnselectedColor,
+  //     onTap: _onItemTapped,
+  //     type: BottomNavigationBarType.fixed,
+  //     showUnselectedLabels: true,
+  //     selectedFontSize: 12,
+  //     unselectedFontSize: 12,
+  //     selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+  //     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+  //   );
+  // }
 }

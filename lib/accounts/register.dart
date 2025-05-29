@@ -28,108 +28,114 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true, // Ensures the keyboard doesn't cover fields
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Register',
-                style: TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w800),
-              ),
-
-              const SizedBox(height: 50.0),
-
-              _buildTextField(_firstNameController, 'First Name'),
-              const SizedBox(height: 12.0),
-              _buildTextField(_lastNameController, 'Last Name'),
-              const SizedBox(height: 12.0),
-
-              _buildTextField(
-                _emailController,
-                'Email',
-                keyboardType: TextInputType.emailAddress,
-                validator: _validateEmail,
-              ),
-
-              const SizedBox(height: 12.0),
-              _buildTextField(
-                _passwordController,
-                'Password',
-                obscureText: true,
-                validator: (value) => value != null && value.length < 6
-                    ? 'Password must be at least 6 characters'
-                    : null,
-              ),
-
-              const SizedBox(height: 12.0),
-              _buildTextField(
-                _confirmPasswordController,
-                'Confirm Password',
-                obscureText: true,
-                validator: (value) => value != _passwordController.text
-                    ? 'Passwords do not match'
-                    : null,
-              ),
-
-                const SizedBox(height: 12.0),
-                _buildTextField(
-                _locationController,
-                'Location',
-                keyboardType: TextInputType.text,
-                validator: (value) => (value == null || value.isEmpty) ? 'Please enter your Location' : null,
-                ),
-
-              const SizedBox(height: 12.0),
-              DropdownButtonFormField<UserTypes>(
-                decoration: const InputDecoration(
-                  labelText: 'User Type',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
-                ),
-                value: _selectedUserType,
-                onChanged: (newValue) => setState(() => _selectedUserType = newValue),
-                items: _userTypes.map((type) => DropdownMenuItem(
-                  value: type,
-                  child: Text(_getUserTypeLabel(type)),
-                )).toList(),
-                validator: (value) => value == null ? 'Please select a user type' : null,
-              ),
-
-              const SizedBox(height: 16.0),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  onPressed: _registerUser,
-                  child: Text(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Prevents unnecessary expansion
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
                     'Register',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w800),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 16.0),
+                  const SizedBox(height: 50.0),
 
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginPage()), // Replace with actual screen
-                  );
-                },
-                child: Text(
-                  'Already have an account?',
-                  style: TextStyle(fontSize: 15, color: Colors.black),
-                ),
+                  _buildTextField(_firstNameController, 'First Name'),
+                  const SizedBox(height: 12.0),
+                  _buildTextField(_lastNameController, 'Last Name'),
+                  const SizedBox(height: 12.0),
+
+                  _buildTextField(
+                    _emailController,
+                    'Email',
+                    keyboardType: TextInputType.emailAddress,
+                    validator: _validateEmail,
+                  ),
+
+                  const SizedBox(height: 12.0),
+                  _buildTextField(
+                    _passwordController,
+                    'Password',
+                    obscureText: true,
+                    validator: (value) => value != null && value.length < 6
+                        ? 'Password must be at least 6 characters'
+                        : null,
+                  ),
+
+                  const SizedBox(height: 12.0),
+                  _buildTextField(
+                    _confirmPasswordController,
+                    'Confirm Password',
+                    obscureText: true,
+                    validator: (value) => value != _passwordController.text
+                        ? 'Passwords do not match'
+                        : null,
+                  ),
+
+                    const SizedBox(height: 12.0),
+                    _buildTextField(
+                    _locationController,
+                    'City',
+                    keyboardType: TextInputType.text,
+                    validator: (value) => (value == null || value.isEmpty) ? 'Please enter your Location' : null,
+                    ),
+
+                  const SizedBox(height: 12.0),
+                  DropdownButtonFormField<UserTypes>(
+                    decoration: const InputDecoration(
+                      labelText: 'User Type',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+                    ),
+                    value: _selectedUserType,
+                    onChanged: (newValue) => setState(() => _selectedUserType = newValue),
+                    items: _userTypes.map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(_getUserTypeLabel(type)),
+                    )).toList(),
+                    validator: (value) => value == null ? 'Please select a user type' : null,
+                  ),
+
+                  const SizedBox(height: 16.0),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      onPressed: _registerUser,
+                      child: Text(
+                        'Register',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16.0),
+
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()), // Replace with actual screen
+                      );
+                    },
+                    child: Text(
+                      'Already have an account?',
+                      style: TextStyle(fontSize: 15, color: Colors.black),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -173,7 +179,6 @@ class _RegisterPageState extends State<RegisterPage> {
       }
 
       print('User Registered: ${_firstNameController.text}, Type: ${_selectedUserType.toString()}');
-
       submitForm();
     }
   }
