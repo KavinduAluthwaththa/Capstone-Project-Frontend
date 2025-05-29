@@ -1,4 +1,5 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/farmer_area/CropSuggest.dart';
 import 'package:capsfront/farmer_area/MarketPrice.dart';
 import 'package:capsfront/farmer_area/ShopList.dart';
 import 'package:capsfront/farmer_area/MyCrops.dart';
@@ -246,7 +247,7 @@ Future<void> _fetchWeatherData(String location) async {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                          MarketPriceScreen()),
+                                          CropSuggest()),
                                 ),
                               ),
                               const SizedBox(height: 20),

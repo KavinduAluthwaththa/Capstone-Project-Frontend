@@ -180,6 +180,8 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
               ),
+              // Add isDense to make dropdown more compact
+              isDense: true,
             ),
             value: _selectedCropId,
             items: _crops.map((crop) {
@@ -191,6 +193,8 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
+                  // Prevent text overflow in dropdown items
+                  overflow: TextOverflow.ellipsis,
                 ),
               );
             }).toList(),
@@ -306,6 +310,7 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
         ),
         iconTheme: const IconThemeData(color: primaryTextColor),
       ),
+
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -332,9 +337,11 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
                     const SizedBox(height: 20),
                     _buildSubmitButton(),
                   ],
+
                 ),
               ),
-            ),
+      ),
+      resizeToAvoidBottomInset: true,
     );
   }
 }
