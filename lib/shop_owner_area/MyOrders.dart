@@ -28,14 +28,6 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   }
 
 Future<void> _fetchRequests() async {
-  if (widget.shopID == null) {
-    setState(() {
-      _errorMessage = 'Shop ID is required';
-      _isLoading = false;
-    });
-    return;
-  }
-
   setState(() {
     _isLoading = true;
     _errorMessage = null;
@@ -72,16 +64,6 @@ Future<void> _fetchRequests() async {
 }
 
 Future<void> _navigateToAddOrder() async {
-  if (widget.shopID == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Shop ID is required to add orders'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
   final result = await Navigator.push(
     context,
     MaterialPageRoute(
