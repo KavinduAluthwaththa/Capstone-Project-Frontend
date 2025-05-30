@@ -1,13 +1,10 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/farmer_area/ShopProfile.dart'; // Import the ShopProfile page
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:capsfront/models/shop_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-void main() {
-  runApp(const MaterialApp(home: ShopListPage()));
-}
 
 class ShopListPage extends StatefulWidget {
   const ShopListPage({super.key});
@@ -26,28 +23,28 @@ class _ShopListPageState extends State<ShopListPage> {
   }
 
   Future<List<Shop>> fetchShops() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
-    
-    final response = await http.get(
-      Uri.parse(ApiEndpoints.getShops),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-    
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonData = json.decode(response.body);
-      return jsonData.map((json) => Shop.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load shops: ${response.statusCode} - ${response.body}');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+      
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getShops),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => Shop.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load shops: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch shops: $e');
     }
-  } catch (e) {
-    throw Exception('Failed to fetch shops: $e');
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -96,17 +93,88 @@ class _ShopListPageState extends State<ShopListPage> {
                     itemBuilder: (context, index) {
                       final shop = snapshot.data![index];
                       return Card(
-                        margin: const EdgeInsets.all(8),
-                        child: ListTile(
-                          title: Text(shop.name),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Phone: ${shop.phoneNumber}'),
-                              Text('Location: ${shop.location}'),
-                            ],
+                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ShopProfilePage(shop: shop),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                // const SizedBox(width: 16),
+                                // Shop Details
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        shop.name,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.phone,
+                                            size: 16,
+                                            color: Colors.grey,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            shop.phoneNumber,
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on,
+                                            size: 16,
+                                            color: Colors.grey,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              shop.location,
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Arrow Icon
+                                const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                              ],
+                            ),
                           ),
-                          leading: Text(shop.shopID.toString()),
                         ),
                       );
                     },

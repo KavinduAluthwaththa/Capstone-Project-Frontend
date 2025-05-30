@@ -230,17 +230,6 @@ Future<void> _fetchWeatherData(String location) async {
                               ),
                               const SizedBox(height: 20),
                               _buildActionButton(
-                                'Market Prices',
-                                Icons.attach_money,
-                                () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          MarketPriceScreen()),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              _buildActionButton(
                                 'Crop Suggestion',
                                 Icons.android,
                                 () => Navigator.push(
