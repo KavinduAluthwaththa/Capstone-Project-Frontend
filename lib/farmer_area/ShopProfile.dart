@@ -252,7 +252,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           else if (_orderRequests.isEmpty && !_isLoading)
             _buildEmptyStateWidget()
           else
-            ..._orderRequests.map((request) => _buildOrderRequestItem(request)).toList(),
+            ..._orderRequests.map((request) => _buildOrderRequestItem(request)),
         ],
       ),
     );

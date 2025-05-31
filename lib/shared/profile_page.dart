@@ -1,7 +1,6 @@
 import 'package:capsfront/farmer_area/MyOrders.dart';
 import 'package:capsfront/shared/settings.dart';
 import 'package:flutter/material.dart';
-import 'package:capsfront/shared/notifications.dart';
 import 'package:capsfront/shared/Chatbot.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -12,7 +11,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final int _selectedIndex = 2; // Profile tab
+  final int _selectedIndex = 2;
 
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
@@ -24,7 +23,6 @@ class _ProfilePageState extends State<ProfilePage> {
         MaterialPageRoute(builder: (context) => const ChatbotPage()),
       );
     }
-    // No action for index 2 (Profile), already here
   }
 
   Widget _buildProfileContent() {
@@ -64,16 +62,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         const SizedBox(height: 20),
-        ProfileOption(
-          icon: Icons.notifications,
-          title: "Notifications",
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Notifications()),
-            );
-          },
-        ),
         ProfileOption(
           icon: Icons.receipt_long,
           title: "My orders",
