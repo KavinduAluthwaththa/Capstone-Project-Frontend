@@ -1,54 +1,85 @@
+import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/models/shop_model.dart';
+import 'package:capsfront/models/request_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // Color Palette - Reusing from the previous style
 const Color appBackgroundColor = Colors.white;
 const Color topBarColor = Color(0xFFAED581);
-const Color mainCardBackgroundColor = Color(0xFFDCEBCB); // Very light green for main card backgrounds
-const Color orderItemBackgroundColor = Color(0xFFEFF3ED); // Even lighter for individual order items
+const Color mainCardBackgroundColor = Color(0xFFDCEBCB);
+const Color orderItemBackgroundColor = Color(0xFFEFF3ED);
 const Color bottomNavBarColor = Color(0xFF5B8C5A);
 const Color primaryTextColor = Colors.black;
 const Color secondaryTextColor = Colors.black54;
-const Color tertiaryTextColor = Colors.black38; // For "ID:", "Quantity:", "Deadline:" labels
+const Color tertiaryTextColor = Colors.black38;
 const Color bottomNavIconSelectedColor = Colors.white;
 const Color bottomNavIconUnselectedColor = Color(0xFF3D533D);
-const Color pendingStatusColor = Color(0xFFFFEEA2); 
-void main() {
-  runApp(const MyApp());
-}
+const Color pendingStatusColor = Color(0xFFFFEEA2);
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ShopProfilePage extends StatefulWidget {
+  final Shop shop;
+
+  const ShopProfilePage({super.key, required this.shop});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Shop Profile Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Roboto',
-      ),
-      home: const ShopProfileScreen(),
-      debugShowCheckedModeBanner: false,
-    );
+  State<ShopProfilePage> createState() => _ShopProfilePageState();
+}
+
+class _ShopProfilePageState extends State<ShopProfilePage> {
+  List<Request> _orderRequests = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrderRequests();
   }
-}
 
-class ShopProfileScreen extends StatefulWidget {
-  const ShopProfileScreen({super.key});
+  Future<void> _fetchOrderRequests() async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
 
-  @override
-  State<ShopProfileScreen> createState() => _ShopProfileScreenState();
-}
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
 
-class _ShopProfileScreenState extends State<ShopProfileScreen> {
-  int _selectedIndex = 3; // Assuming 'My account' might be the active tab for a profile page
+    final response = await http.get(
+      Uri.parse(ApiEndpoints.getRequestById(widget.shop.shopID)),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
 
-  void _onItemTapped(int index) {
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        _orderRequests = jsonData.map((json) => Request.fromJson(json)).toList();
+        _isLoading = false;
+      });
+    } else if (response.statusCode == 404) {
+      // Handle 404 - No requests found
+      setState(() {
+        _orderRequests = [];
+        _isLoading = false;
+        _errorMessage = null; // Clear error message for 404
+      });
+    } else {
+      throw Exception('Failed to load product requests: ${response.statusCode}');
+    }
+  } catch (e) {
     setState(() {
-      _selectedIndex = index;
-      // Add navigation logic here if needed
+      _errorMessage = e.toString();
+      _isLoading = false;
     });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -63,15 +94,15 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
             }
           },
         ),
-        title: const Text(
-          "Shop Profile",
-          style: TextStyle(
+        title: Text(
+          widget.shop.name,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
             color: primaryTextColor,
           ),
         ),
-        backgroundColor: Colors.green[400], // Match ShopListPage
+        backgroundColor: Colors.green[400],
         centerTitle: true,
         toolbarHeight: 100,
         shape: const RoundedRectangleBorder(
@@ -79,28 +110,24 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
         ),
         iconTheme: const IconThemeData(color: primaryTextColor),
       ),
-      body: Column(
-        children: [
-          // Remove _buildTopBar(context),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
-              child: Column(
-                children: [
-                  _buildShopInfoCardContent(),
-                  const SizedBox(height: 20),
-                  _buildOrderRequestsSectionContent(),
-                ],
-              ),
-            ),
+      body: RefreshIndicator(
+        onRefresh: _fetchOrderRequests,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
+          child: Column(
+            children: [
+              _buildShopInfoCard(),
+              const SizedBox(height: 20),
+              _buildOrderRequestsSection(),
+            ],
           ),
-        ],
+        ),
       ),
-      // bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
-  Widget _buildShopInfoCardContent() {
+  Widget _buildShopInfoCard() {
     return Container(
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
@@ -120,33 +147,45 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.store_mall_directory_outlined, size: 32, color: primaryTextColor),
+              CircleAvatar(
+                backgroundColor: Colors.green[400],
+                radius: 25,
+                child: Text(
+                  widget.shop.shopID.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
               const SizedBox(width: 15),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Green Valley Agro Supply",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: primaryTextColor,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.shop.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: primaryTextColor,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    "SHOP-2025-0456",
-                    style: TextStyle(color: secondaryTextColor, fontSize: 14),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      "SHOP-${widget.shop.shopID}",
+                      style: const TextStyle(color: secondaryTextColor, fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
           const SizedBox(height: 18),
-          _buildInfoRow(Icons.location_on_outlined, "Anuradhapuraya, Sri Lanka"),
-          _buildInfoRow(Icons.phone_outlined, "077 1234567"),
-          _buildInfoRow(Icons.access_time_outlined, "Mon-Sat: 8:00 AM - 6:00 PM"),
-          _buildInfoRow(Icons.person_outline, "Robert Anderson"),
+          _buildInfoRow(Icons.location_on_outlined, widget.shop.location),
+          _buildInfoRow(Icons.phone_outlined, widget.shop.phoneNumber),
+          _buildInfoRow(Icons.email_outlined, widget.shop.email),
         ],
       ),
     );
@@ -159,7 +198,7 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
         children: [
           Icon(icon, color: primaryTextColor, size: 22),
           const SizedBox(width: 12),
-          Expanded( // Added Expanded to prevent overflow if text is long
+          Expanded(
             child: Text(
               text,
               style: const TextStyle(color: primaryTextColor, fontSize: 15),
@@ -170,7 +209,7 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
     );
   }
 
-  Widget _buildOrderRequestsSectionContent() {
+  Widget _buildOrderRequestsSection() {
     return Container(
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
@@ -188,38 +227,109 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Order Requests",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: primaryTextColor,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Product Request",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
+              ),
+              if (_isLoading)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
           ),
           const SizedBox(height: 15),
-          _buildOrderRequestItem(
-            productName: "Organic Tomatoes",
-            id: "REQ-2505",
-            quantity: "500 kg",
-            deadline: "June 15, 2025",
+          if (_errorMessage != null)
+            _buildErrorWidget()
+          else if (_orderRequests.isEmpty && !_isLoading)
+            _buildEmptyStateWidget()
+          else
+            ..._orderRequests.map((request) => _buildOrderRequestItem(request)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.red[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.red[600]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Error loading requests',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
           ),
-          _buildOrderRequestItem(
-            productName: "Fresh Lettuce",
-            id: "REQ-2505", // Assuming ID can be same for different products if it's a batch request ID
-            quantity: "300 kg",
-            deadline: "June 18, 2025",
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _fetchOrderRequests,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildOrderRequestItem({
-    required String productName,
-    required String id,
-    required String quantity,
-    required String deadline,
-  }) {
+  Widget _buildEmptyStateWidget() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.shopping_cart_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No product requests found',
+              style: TextStyle(
+                fontSize: 16,
+                color: secondaryTextColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              onPressed: _fetchOrderRequests,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Refresh'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[400],
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderRequestItem(Request request) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Container(
@@ -245,7 +355,7 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    productName,
+                    'Crop ID: ${request.cropID}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 17,
@@ -262,7 +372,7 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
                   child: const Text(
                     "Pending",
                     style: TextStyle(
-                      color: Colors.black87, // Darker text for readability on yellow
+                      color: Colors.black87,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -272,22 +382,23 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              "ID: $id",
+              "Request ID: ${request.requestID}",
               style: const TextStyle(color: secondaryTextColor, fontSize: 13),
             ),
             const SizedBox(height: 10),
             Row(
               children: [
                 const Text(
-                  "Quantity: ",
+                  "Amount: ",
                   style: TextStyle(color: tertiaryTextColor, fontSize: 14),
                 ),
                 Text(
-                  quantity,
+                  "${request.amount} kg",
                   style: const TextStyle(
-                      color: primaryTextColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold),
+                    color: primaryTextColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -295,15 +406,33 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
             Row(
               children: [
                 const Text(
-                  "Deadline: ",
+                  "Price: ",
                   style: TextStyle(color: tertiaryTextColor, fontSize: 14),
                 ),
                 Text(
-                  deadline,
+                  "Rs. ${request.price}",
                   style: const TextStyle(
-                      color: primaryTextColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold),
+                    color: primaryTextColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Text(
+                  "Date: ",
+                  style: TextStyle(color: tertiaryTextColor, fontSize: 14),
+                ),
+                Text(
+                  request.date,
+                  style: const TextStyle(
+                    color: primaryTextColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -312,38 +441,4 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
       ),
     );
   }
-
-  // Widget _buildBottomNavigationBar() {
-  //   return BottomNavigationBar(
-  //     backgroundColor: bottomNavBarColor,
-  //     items: const <BottomNavigationBarItem>[
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.home),
-  //         label: 'Home',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.cloud),
-  //         label: 'Com.chat',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.person),
-  //         label: 'AI chat bot',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: Icon(Icons.person),
-  //         label: 'My account',
-  //       ),
-  //     ],
-  //     currentIndex: _selectedIndex,
-  //     selectedItemColor: bottomNavIconSelectedColor,
-  //     unselectedItemColor: bottomNavIconUnselectedColor,
-  //     onTap: _onItemTapped,
-  //     type: BottomNavigationBarType.fixed,
-  //     showUnselectedLabels: true,
-  //     selectedFontSize: 12,
-  //     unselectedFontSize: 12,
-  //     selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-  //     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-  //   );
-  // }
 }

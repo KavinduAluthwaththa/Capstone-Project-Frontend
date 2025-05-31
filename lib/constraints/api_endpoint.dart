@@ -8,10 +8,10 @@ class ApiEndpoints {
   static String updateCrop(String cropId) => "$baseUrl/Crop/$cropId";
 
   // Crop Disease
-  static const String getCropDiseases = "$baseUrl/CropDisease";
-  static const String postCropDisease = "$baseUrl/CropDisease";
-  static String deleteCropDisease(String cdid) => "$baseUrl/CropDisease/$cdid";
-  static String updateCropDisease(String cdid) => "$baseUrl/CropDisease/$cdid";
+  // static const String getCropDiseases = "$baseUrl/CropDisease";
+  // static const String postCropDisease = "$baseUrl/CropDisease";
+  // static String deleteCropDisease(String cdid) => "$baseUrl/CropDisease/$cdid";
+  // static String updateCropDisease(String cdid) => "$baseUrl/CropDisease/$cdid";
 
   // Crop Shop
   static const String getCropShops = "$baseUrl/CropShop";
@@ -21,11 +21,11 @@ class ApiEndpoints {
   static String deleteCropShop(String id) => "$baseUrl/CropShop/$id";
 
   // Disease
-  static const String getDiseases = "$baseUrl/Disease";
-  static const String postDisease = "$baseUrl/Disease";
-  static String getDiseaseById(String id) => "$baseUrl/Disease/$id";
-  static String updateDisease(String id) => "$baseUrl/Disease/$id";
-  static String deleteDisease(String id) => "$baseUrl/Disease/$id";
+  // static const String getDiseases = "$baseUrl/Disease";
+  // static const String postDisease = "$baseUrl/Disease";
+  // static String getDiseaseById(String id) => "$baseUrl/Disease/$id";
+  // static String updateDisease(String id) => "$baseUrl/Disease/$id";
+  // static String deleteDisease(String id) => "$baseUrl/Disease/$id";
 
   // Farmer
   static const String getFarmers = "$baseUrl/Farmer/full";
@@ -80,7 +80,7 @@ class ApiEndpoints {
   // Request
   static const String getRequests = "$baseUrl/Request";
   static const String postRequest = "$baseUrl/Request";
-  static String getRequestById(int shopid) => "$baseUrl/Request/$shopid";
+  static String getRequestById(int shopid) => "$baseUrl/Request/shop/$shopid";
   static String updateRequest(String id) => "$baseUrl/Request/$id";
   static String deleteRequest(String id) => "$baseUrl/Request/$id";
 

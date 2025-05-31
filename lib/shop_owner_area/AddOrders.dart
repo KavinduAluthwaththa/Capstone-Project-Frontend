@@ -5,10 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-void main() {
-  runApp(const MaterialApp(home: AddOrderPage(shopId: 1))); // Example shopId
-}
-
 const Color appBackgroundColor = Colors.white;
 const Color topBarColor = Color(0xFFAED581);
 const Color formCardBackgroundColor = Color(0xFFE7F0E2);

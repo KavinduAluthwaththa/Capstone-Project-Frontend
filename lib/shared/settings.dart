@@ -1,27 +1,7 @@
 import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Settings Page',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Roboto',
-      ),
-      home: const SettingsPage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
+import 'package:google_fonts/google_fonts.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -33,24 +13,39 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _notificationsEnabled = true;
   bool _isLoggingOut = false;
-  static const Color itemGreen = Color(0xFFE8F5E9);
-  static const Color iconColor = Colors.black87;
-  static const Color textColor = Colors.black87;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Log Out'),
-          content: const Text('Are you sure you want to log out?'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Text(
+            'Log Out',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Are you sure you want to log out?',
+            style: GoogleFonts.poppins(),
+          ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.poppins(color: Colors.grey[600]),
+              ),
               onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: const Text('Log Out', style: TextStyle(color: Colors.red)),
+              child: Text(
+                'Log Out',
+                style: GoogleFonts.poppins(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               onPressed: () => Navigator.of(context).pop(true),
             ),
           ],
@@ -80,26 +75,26 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-              child: Column(
-                children: [
-                  _buildUserProfile(),
-                  const SizedBox(height: 30),
-                  _buildNotificationSetting(),
-                  const SizedBox(height: 15),
-                  _buildLanguageSetting(),
-                  const SizedBox(height: 30),
-                  _buildLogoutButton(),
-                ],
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildUserProfile(),
+                    const SizedBox(height: 30),
+                    _buildSettingsSection(),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -107,37 +102,34 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 30, bottom: 30),
-      decoration: const BoxDecoration(
-        color: Color(0xFF98D178),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(40),
-          bottomRight: Radius.circular(40),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.green[400],
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
-      child: Stack(
-        alignment: Alignment.center,
+      child: Column(
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, size: 30, color: Colors.black),
-              onPressed: () => Navigator.maybePop(context),
-            ),
-          ),
           Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.settings, size: 40, color: Colors.black),
-              const SizedBox(width: 8),
-              Text(
-                "Settings",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.maybePop(context),
+              ),
+              Expanded(
+                child: Text(
+                  "Settings",
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
+              const SizedBox(width: 48), // Balance the back button
             ],
           ),
         ],
@@ -146,45 +138,136 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildUserProfile() {
-    return InkWell(
-      onTap: () {},
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 28,
-              backgroundColor: Color(0xFFD3CFCF),
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.green[400],
               child: Text(
                 'U',
-                style: TextStyle(fontSize: 24, color: Colors.black54, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            const SizedBox(width: 15),
-            const Expanded(
+            const SizedBox(width: 16),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "User's name",
-                    style: TextStyle(
+                    "User's Name",
+                    style: GoogleFonts.poppins(
                       fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: textColor,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     "user@gmail.com",
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: Colors.grey,
+                      color: Colors.grey[600],
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 20),
+            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsSection() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Preferences',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildSettingItem(
+              icon: Icons.notifications,
+              title: 'Notifications',
+              trailing: Switch(
+                value: _notificationsEnabled,
+                onChanged: (bool value) {
+                  setState(() {
+                    _notificationsEnabled = value;
+                  });
+                },
+                activeColor: Colors.white,
+                activeTrackColor: Colors.green[400],
+                inactiveThumbColor: Colors.grey[300],
+                inactiveTrackColor: Colors.grey[400],
+              ),
+            ),
+            const Divider(height: 30),
+            _buildSettingItem(
+              icon: Icons.language,
+              title: 'Language',
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'English',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+                ],
+              ),
+              onTap: () {
+                // Handle language selection
+              },
+            ),
+            const Divider(height: 30),
+            _buildSettingItem(
+              icon: Icons.privacy_tip,
+              title: 'Privacy Policy',
+              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+              onTap: () {
+                // Handle privacy policy
+              },
+            ),
+            const Divider(height: 30),
+            _buildSettingItem(
+              icon: Icons.help,
+              title: 'Help & Support',
+              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+              onTap: () {
+                // Handle help & support
+              },
+            ),
+            const SizedBox(height: 30),
+            _buildLogoutButton(),
           ],
         ),
       ),
@@ -192,27 +275,28 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSettingItem({
+    required IconData icon,
     required String title,
     Widget? trailing,
     VoidCallback? onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-        decoration: BoxDecoration(
-          color: itemGreen,
-          borderRadius: BorderRadius.circular(12),
-        ),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: textColor,
+            Icon(icon, color: Colors.green[400], size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
               ),
             ),
             if (trailing != null) trailing,
@@ -222,65 +306,41 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildNotificationSetting() {
-    return _buildSettingItem(
-      title: 'Notifications',
-      trailing: Switch(
-        value: _notificationsEnabled,
-        onChanged: (bool value) {
-          setState(() {
-            _notificationsEnabled = value;
-          });
-        },
-        activeColor: Colors.white,
-        activeTrackColor: Colors.black,
-        inactiveThumbColor: Colors.grey[300],
-        inactiveTrackColor: Colors.grey[400],
-        thumbIcon: WidgetStateProperty.resolveWith<Icon?>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.selected)) {
-              return const Icon(Icons.check, color: Colors.black);
-            }
-            return null;
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLanguageSetting() {
-    return _buildSettingItem(
-      title: 'Language',
-      trailing: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'EN',
-            style: TextStyle(
-              fontSize: 16,
-              color: textColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(width: 8),
-          Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 20),
-        ],
-      ),
-      onTap: () {},
-    );
-  }
-
   Widget _buildLogoutButton() {
-    return _buildSettingItem(
-      title: 'Log out',
-      trailing: _isLoggingOut
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : const Icon(Icons.logout, color: iconColor, size: 28),
-      onTap: _isLoggingOut ? null : _logout,
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red[50],
+          foregroundColor: Colors.red[700],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          elevation: 0,
+        ),
+        onPressed: _isLoggingOut ? null : _logout,
+        child: _isLoggingOut
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.logout, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Log Out',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

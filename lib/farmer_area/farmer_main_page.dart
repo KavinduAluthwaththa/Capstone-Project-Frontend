@@ -1,4 +1,5 @@
-import 'package:capsfront/farmer_area/MarketPrice.dart';
+import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/farmer_area/CropSuggest.dart';
 import 'package:capsfront/farmer_area/ShopList.dart';
 import 'package:capsfront/farmer_area/Crops.dart';
 import 'package:flutter/material.dart';
@@ -71,35 +72,117 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                         ],
                       ),
                     ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40),
-                    child: Column(
-                      children: [
-                        Text('Hi, ${widget.email}!', style: GoogleFonts.poppins(fontSize: 20)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 50),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    buildButton('My Crops'),
-                    SizedBox(height: 50),
-                    buildButton('Shop List'),
-                    SizedBox(height: 50),
-                    buildButton('Market Prices'),
                   ],
                 ),
-              ),
+                const SizedBox(height: 16),
+                Text(
+                  'Hi, ${_currentFarmer?.name ?? widget.email}!',
+                  style: GoogleFonts.poppins(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          // Main Content with Buttons
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage.isNotEmpty
+                    ? Center(child: Text(_errorMessage))
+                    : Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: SingleChildScrollView( // <-- Add this
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min, // <-- Add this
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildActionButton(
+                                'My Crops',
+                                Icons.grass,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => CropsPage(farmerId: (_currentFarmer?.farmerID is int ? _currentFarmer!.farmerID : 0))),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildActionButton(
+                                'Shop List',
+                                Icons.store,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ShopListPage()),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildActionButton(
+                                'Crop Suggestion',
+                                Icons.android,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          CropSuggest()),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildActionButton(
+                                'Diseases Identification',
+                                Icons.crop,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          DiseaseM()),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildActionButton(
+                                'Fertilizer Calculation',
+                                Icons.medical_information,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          Fertilizing()),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+          ),
+        ],
+      );
+    } else if (index == 1) {
+      return const ChatbotPage();
+    } else if (index == 2) {
+      return const ProfilePage();
+    }
+    return Container();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(child: _getPage(_selectedIndex)),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        backgroundColor: Colors.green[400],
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Ask me'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
     );
   }
