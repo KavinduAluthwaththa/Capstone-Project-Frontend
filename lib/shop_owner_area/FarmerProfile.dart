@@ -10,27 +10,6 @@ const Color secondaryTextColor = Colors.black54;
 const Color bottomNavIconSelectedColor = Colors.white;
 const Color bottomNavIconUnselectedColor = Color(0xFF3D533D);
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Farmer Profile Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.green, // This sets a base color scheme
-        fontFamily: 'Roboto', // A common, clean font
-        // You can further customize your theme here if needed
-      ),
-      home: const FarmerProfileScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
 
 class FarmerProfileScreen extends StatefulWidget {
   const FarmerProfileScreen({super.key});

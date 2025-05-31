@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-void main() {
-  runApp(const MaterialApp(
-    home: CropSuggest(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
-
 class CropSuggest extends StatefulWidget {
   const CropSuggest({super.key});
 
