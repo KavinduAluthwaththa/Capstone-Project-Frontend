@@ -1,25 +1,32 @@
-import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
+
 import 'package:lottie/lottie.dart';
 
+import '../farmer_area/notifications.dart';
+import '../main.dart';
+
+
+
+
+
+
 class Splashscreen extends StatefulWidget {
-  const Splashscreen({super.key});
+  const Splashscreen({super.key,required BottomNavigationBarExample child});
+
+
 
   @override
   State<Splashscreen> createState() => _SplashscreenState();
 }
 
-class _SplashscreenState extends State<Splashscreen> {
-  @override
+class _State extends State<Splashscreen> {
   void initState() {
     super.initState();
-
-    // Navigate to the login page after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
+    // Navigate to SecondPage after a delay of 3 seconds
+    Future.delayed(Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
+        MaterialPageRoute(builder: (context) => Notifications()),
       );
     });
   }
@@ -27,43 +34,77 @@ class _SplashscreenState extends State<Splashscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.green.shade900, Colors.white10],
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
+      body: SafeArea(
+
+        child: Container(
+
+          width: double.infinity,
+
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [ Colors.green.shade900, Colors.white10],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft
+              )
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.account_tree, size: 90, color: Colors.white),
-                const SizedBox(height: 20),
-                const Text(
-                  "Crop Planning",
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                SizedBox(
-                  height: 150,
-                  child: Lottie.network(
-                    'https://lottie.host/9f1a777d-fa08-4d3b-8c88-9e510ee525be/r1E9fn5G5E.json',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+
+
+            children: [
+              Icon1(),
+              SizedBox(height: 20,),
+              Text("Crop planning",
+                style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold),),
+              //ElevatedButton1(),
+              SizedBox(height: 20,),
+              Expanded(child: Loading1(),)
+
+
+
+            ],
+
           ),
+
         ),
       ),
     );
   }
+
+  Icon1() {
+    return Container(
+
+
+      margin: EdgeInsets.only(top: 200, bottom: 10),
+
+
+      child: Icon(Icons.account_tree, size: 90,),);
+  }
+
+// ElevatedButton1() {
+//   return Container(
+//       margin: EdgeInsets.only(top: 300),
+//       child: ElevatedButton(
+//           onPressed: () {},
+//           child: Text('Next', style: TextStyle(
+//               fontWeight: FontWeight.bold, color: Colors.black)),
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: Colors.green.shade700,
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(20.0),
+//             ),
+//
+//           )
+//
+//       )
+//   )
+//   ;
+}
+
+Loading1() {
+  return Container(
+    margin: EdgeInsets.symmetric(vertical: 50),
+
+    child: Lottie.network('https://lottie.host/9f1a777d-fa08-4d3b-8c88-9e510ee525be/r1E9fn5G5E.json'),
+  );
 }
