@@ -2,13 +2,14 @@ import 'dart:convert';
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/farmer_area/AddGrowingCrop.dart';
 import 'package:capsfront/models/growingCrop_model.dart';
+import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
 
 class CropsPage extends StatefulWidget {
-  final int farmerId;
-  const CropsPage({super.key, required this.farmerId});
+  const CropsPage({super.key});
 
   @override
   State<CropsPage> createState() => _CropsPageState();
@@ -18,122 +19,261 @@ class _CropsPageState extends State<CropsPage> {
   List<GrowingCrop> growingCrops = [];
   bool _isLoading = true;
   String? _errorMessage;
+  int? _farmerId;
+  String? _authToken;
 
   @override
   void initState() {
     super.initState();
-    _fetchGrowingCrops();
+    _loadSessionAndFetchCrops();
   }
-  
-  Future<void> _fetchGrowingCrops() async {
-  setState(() => _isLoading = true);
 
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
-
-    final response = await http.get(
-      Uri.parse(ApiEndpoints.getGrowingCropById(widget.farmerId)),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-
-      if (jsonResponse is Map<String, dynamic>) {
-        final GrowingCrop crop = GrowingCrop.fromJson(jsonResponse);
-        setState(() {
-          growingCrops = [crop];
-          _errorMessage = null;
-        });
-      } else if (jsonResponse is List) {
-        final List<GrowingCrop> loadedCrops = jsonResponse
-            .map((e) => GrowingCrop.fromJson(e as Map<String, dynamic>))
-            .toList();
-        setState(() {
-          growingCrops = loadedCrops;
-          _errorMessage = null;
-        });
-      }
-    } else {
-      throw Exception('Failed to load crops: ${response.statusCode}');
-    }
-  } catch (e) {
-    setState(() {
-      growingCrops = [];
-    });
-  } finally {
-    setState(() => _isLoading = false);
-  }
-}
-
-  Future<void> _deleteGrowingCrop(int cfid) async {
+  Future<void> _loadSessionAndFetchCrops() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
+      
+      _authToken = prefs.getString('auth_token');
+      _farmerId = prefs.getInt('farmer_id');
+      
+      print('Session data loaded - Farmer ID: $_farmerId, Token: ${_authToken?.isNotEmpty}');
+      
+      if (_authToken == null || _authToken!.isEmpty) {
+        await _handleSessionExpired('Authentication token missing');
+        return;
+      }
+      
+      if (_farmerId == null) {
+        setState(() {
+          _errorMessage = 'Farmer ID not found. Please log in again.';
+          _isLoading = false;
+        });
+        return;
+      }
+      
+      await _fetchGrowingCrops();
+    } catch (e) {
+      print('Error loading session: $e');
+      setState(() {
+        _errorMessage = 'Session error: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
+  Future<void> _handleSessionExpired(String reason) async {
+    print('Session expired: $reason');
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Session Expired'),
+            content: Text('Your session has expired. Please log in again.\n\nReason: $reason'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                    (route) => false,
+                  );
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> _fetchGrowingCrops() async {
+    if (_farmerId == null || _authToken == null) {
+      setState(() {
+        _errorMessage = 'Missing farmer ID or authentication token';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      print('Fetching crops for farmer ID: $_farmerId');
+      
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getGrowingCropById(_farmerId!)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_authToken',
+        },
+      );
+
+      print('API response status: ${response.statusCode}');
+      print('API response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+
+        if (jsonResponse is Map<String, dynamic>) {
+          final GrowingCrop crop = GrowingCrop.fromJson(jsonResponse);
+          setState(() {
+            growingCrops = [crop];
+            _errorMessage = null;
+          });
+        } else if (jsonResponse is List) {
+          final List<GrowingCrop> loadedCrops = jsonResponse
+              .map((e) => GrowingCrop.fromJson(e as Map<String, dynamic>))
+              .toList();
+          setState(() {
+            growingCrops = loadedCrops;
+            _errorMessage = null;
+          });
+        } else {
+          setState(() {
+            growingCrops = [];
+            _errorMessage = null;
+          });
+        }
+      } else if (response.statusCode == 401) {
+        await _handleSessionExpired('Authentication failed');
+        return;
+      } else if (response.statusCode == 404) {
+        setState(() {
+          growingCrops = [];
+          _errorMessage = null;
+        });
+      } else {
+        throw Exception('Failed to load crops: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching crops: $e');
+      setState(() {
+        growingCrops = [];
+        _errorMessage = 'Error loading crops: $e';
+      });
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _deleteGrowingCrop(int cfid) async {
+    if (_authToken == null) {
+      _showErrorSnackBar('Authentication token missing');
+      return;
+    }
+
+    try {
       final response = await http.delete(
         Uri.parse(ApiEndpoints.deleteGrowingCrop(cfid.toString())),
-        headers: {'Authorization': 'Bearer $token'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_authToken',
+        },
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Crop record deleted successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        _showSuccessSnackBar('Crop record deleted successfully');
         await _fetchGrowingCrops();
+      } else if (response.statusCode == 401) {
+        await _handleSessionExpired('Authentication failed');
       } else {
         throw Exception('Failed to delete crop: ${response.statusCode}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showErrorSnackBar('Error deleting crop: $e');
     }
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            if (_errorMessage != null) _buildErrorBanner(),
+            Expanded(
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                      ),
+                    )
+                  : growingCrops.isEmpty
+                      ? _buildEmptyState()
+                      : _buildCropsList(),
+            ),
+            _buildAddButton(),
+          ],
         ),
-        title: const Text(
-          "My Crop Records",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: Colors.green[700],
-        centerTitle: true,
-        toolbarHeight: 70,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-        ),
-        elevation: 4,
       ),
-      body: Column(
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.green[400],
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
         children: [
-          if (_errorMessage != null) _buildErrorBanner(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : growingCrops.isEmpty
-                    ? _buildEmptyState()
-                    : _buildCropGrid(),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              Expanded(
+                child: Text(
+                  "My Crop Records",
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(width: 48), // Balance the back button
+            ],
           ),
-          _buildAddButton(),
         ],
       ),
     );
@@ -141,12 +281,17 @@ class _CropsPageState extends State<CropsPage> {
 
   Widget _buildErrorBanner() {
     return Container(
-      padding: const EdgeInsets.all(8),
-      color: Colors.red[50],
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red[200]!),
+      ),
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: Colors.red),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               _errorMessage!,
@@ -154,7 +299,7 @@ class _CropsPageState extends State<CropsPage> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, size: 18),
+            icon: const Icon(Icons.close, size: 18, color: Colors.red),
             onPressed: () => setState(() => _errorMessage = null),
           ),
         ],
@@ -162,84 +307,164 @@ class _CropsPageState extends State<CropsPage> {
     );
   }
 
-  Widget _buildCropGrid() {
-  return Padding(
-    padding: const EdgeInsets.all(12),
-    child: ListView.builder(
-      itemCount: growingCrops.length,
-      itemBuilder: (context, index) => _buildCropCard(growingCrops[index]),
-    ),
-  );
-}
+  Widget _buildCropsList() {
+    return RefreshIndicator(
+      onRefresh: _fetchGrowingCrops,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView.builder(
+          itemCount: growingCrops.length,
+          itemBuilder: (context, index) => _buildCropCard(growingCrops[index]),
+        ),
+      ),
+    );
+  }
 
   Widget _buildCropCard(GrowingCrop crop) {
-  return Card(
-    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-    elevation: 2,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: ListTile(
-      contentPadding: const EdgeInsets.all(12),
-      leading: CircleAvatar(
-        backgroundColor: Colors.green[800],
-        child: Text(
-          crop.crop.cropName[0].toUpperCase(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 25,
+                  backgroundColor: Colors.green[400],
+                  child: Text(
+                    crop.crop.cropName[0].toUpperCase(),
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        crop.crop.cropName,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Amount: ${crop.amount} kg',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _showDeleteConfirmation(crop.cfid),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  _buildInfoRow(Icons.calendar_today, 'Planted', _formatDate(crop.date)),
+                  const SizedBox(height: 8),
+                  _buildInfoRow(Icons.location_on, 'Location', crop.farmer.farmLocation),
+                  const SizedBox(height: 8),
+                  _buildInfoRow(Icons.person, 'Farmer', crop.farmer.name),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.green[700]),
+        const SizedBox(width: 8),
+        Text(
+          '$label: ',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            color: Colors.black87,
           ),
         ),
-      ),
-      title: Text(
-        crop.crop.cropName,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey[700],
+            ),
+          ),
         ),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          Text('Amount: ${crop.amount} kg'),
-          Text('Planted: ${_formatDate(crop.date)}'),
-          Text('Location: ${crop.farmer.farmLocation}'),
-        ],
-      ),
-      trailing: IconButton(
-        icon: const Icon(Icons.delete, color: Colors.red),
-        onPressed: () => _showDeleteConfirmation(crop.cfid),
-      ),
-    ),
-  );
-}
+      ],
+    );
+  }
 
   Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.grass, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          const Text(
+          Icon(
+            Icons.grass,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 24),
+          Text(
             'No crop records found',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey,
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[600],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          Text(
+            'Start by adding your first crop record',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Colors.grey[500],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _fetchGrowingCrops,
-            icon: const Icon(Icons.refresh, size: 18),
+            icon: const Icon(Icons.refresh, size: 20),
             label: const Text('Refresh'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[50],
-              foregroundColor: Colors.green[800],
+              backgroundColor: Colors.green[400],
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(12),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
         ],
@@ -249,20 +474,27 @@ class _CropsPageState extends State<CropsPage> {
 
   Widget _buildAddButton() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      child: ElevatedButton.icon(
-        onPressed: _navigateToAddCrop,
-        icon: const Icon(Icons.add_circle_outline, size: 22),
-        label: const Text(
-          'Add New Crop Record',
-          style: TextStyle(fontSize: 16),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green[700],
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.all(16),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: _farmerId != null ? _navigateToAddCrop : null,
+          icon: const Icon(Icons.add_circle_outline, size: 24),
+          label: Text(
+            'Add New Crop Record',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green[400],
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 56),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 2,
           ),
         ),
       ),
@@ -270,12 +502,18 @@ class _CropsPageState extends State<CropsPage> {
   }
 
   Future<void> _navigateToAddCrop() async {
+    if (_farmerId == null) {
+      _showErrorSnackBar('Farmer ID not available');
+      return;
+    }
+
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddGrowingCropScreen(farmerId: widget.farmerId),
+        builder: (context) => AddGrowingCropScreen(farmerId: _farmerId!),
       ),
     );
+    
     if (result == true) {
       await _fetchGrowingCrops();
     }
@@ -285,21 +523,36 @@ class _CropsPageState extends State<CropsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this crop record?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        title: Text(
+          'Confirm Delete',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Are you sure you want to delete this crop record? This action cannot be undone.',
+          style: GoogleFonts.poppins(),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(color: Colors.grey[600]),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _deleteGrowingCrop(cfid);
             },
-            child: const Text(
+            child: Text(
               'Delete',
-              style: TextStyle(color: Colors.red),
+              style: GoogleFonts.poppins(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -310,7 +563,7 @@ class _CropsPageState extends State<CropsPage> {
   String _formatDate(String dateString) {
     try {
       final date = DateTime.parse(dateString);
-      return '${date.day}/${date.month}/${date.year}';
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     } catch (e) {
       return dateString;
     }
