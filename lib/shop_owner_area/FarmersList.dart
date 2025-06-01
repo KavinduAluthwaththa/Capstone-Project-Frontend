@@ -1,29 +1,9 @@
+import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:capsfront/models/farmer_model.dart';
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const FarmersList(),
-    );
-  }
-}
-
-class FarmersList extends StatelessWidget {
-  const FarmersList({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const FarmersListPage();
-  }
-}
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class FarmersListPage extends StatefulWidget {
   const FarmersListPage({super.key});
@@ -33,93 +13,108 @@ class FarmersListPage extends StatefulWidget {
 }
 
 class _FarmersListPageState extends State<FarmersListPage> {
-  String _selectedSort = "Crop type";
+  late Future<List<Farmer>> _farmersFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _farmersFuture = fetchFarmers();
+  }
+
+  Future<List<Farmer>> fetchFarmers() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getFarmers),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => Farmer.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load farmers: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch farmers: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4D3),
-
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop(); // This will navigate back
-          },
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           "Farmers List",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        // backgroundColor: const Color(0xFF6ABC4D), // Dark greenish header
-        backgroundColor: Colors.lightGreen[700],
+        backgroundColor: Colors.green[400],
         centerTitle: true,
-        toolbarHeight: 100, // Adjust the height as needed
+        toolbarHeight: 100,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Sort Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFABD298),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {},
-                  child: const Text(
-                    "sort by >",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildRadioButton("Crop type"),
-                    _buildRadioButton("Location"),
-                  ],
-                ),
-              ],
-            ),
             const SizedBox(height: 20),
-
-            // Farmers List
+            // List Section
             Expanded(
-              child: ListView.builder(
-                itemCount: 6,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFABD298), // Green button color
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: ListTile(
-                        title: Text(
-                          "Farmer ${index + 1}",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+              child: FutureBuilder<List<Farmer>>(
+                future: _farmersFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No farmers available'));
+                  }
+
+                  return ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      final farmer = snapshot.data![index];
+                      return Card(
+                        margin: const EdgeInsets.all(8),
+                        child: ListTile(
+                          title: Text(farmer.name),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Location: ${farmer.farmLocation}'),
+                              Text('Phone: ${farmer.phoneNumber}'),
+                            ],
+                          ),
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.green[800],
+                            child: Text(
+                              farmer.name[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               ),
@@ -127,28 +122,6 @@ class _FarmersListPageState extends State<FarmersListPage> {
           ],
         ),
       ),
-    );
-  }
-
-  // Radio Button Widget
-  Widget _buildRadioButton(String title) {
-    return Row(
-      children: [
-        Radio(
-          value: title,
-          groupValue: _selectedSort,
-          activeColor: const Color(0xFF4A6B3E),
-          onChanged: (value) {
-            setState(() {
-              _selectedSort = value.toString();
-            });
-          },
-        ),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ],
     );
   }
 }

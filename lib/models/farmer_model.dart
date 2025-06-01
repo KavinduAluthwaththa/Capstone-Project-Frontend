@@ -1,10 +1,17 @@
 class Farmer {
-  final int? farmerID;
+  final int farmerID;
   final String name;
   final String farmLocation;
-  final String phoneNumber;
+  final int phoneNumber;
+  final String Email;
 
-  Farmer({this.farmerID, required this.name, required this.farmLocation, required this.phoneNumber});
+  Farmer({
+    required this.farmerID,
+    required this.name,
+    required this.farmLocation,
+    required this.phoneNumber,
+    required this.Email,
+  });
 
   factory Farmer.fromJson(Map<String, dynamic> json) {
     return Farmer(
@@ -12,6 +19,7 @@ class Farmer {
       name: json['name'],
       farmLocation: json['farmLocation'],
       phoneNumber: json['phoneNumber'],
+      Email: json['email'] ?? '',
     );
   }
 
@@ -21,6 +29,7 @@ class Farmer {
       'name': name,
       'farmLocation': farmLocation,
       'phoneNumber': phoneNumber,
+      'email': Email,
     };
   }
 }

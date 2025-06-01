@@ -1,14 +1,13 @@
 import 'dart:convert';
-import 'package:capsfront/accounts/register.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/constraints/token_handler.dart';
 import 'package:capsfront/models/login_model.dart';
 import 'package:capsfront/farmer_area/farmer_main_page.dart';
-import 'package:capsfront/Inspector_area/inspector_main_page.dart';
 import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
+import 'package:capsfront/accounts/register.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,9 +17,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -39,52 +38,46 @@ class _LoginPageState extends State<LoginPage> {
       try {
         final response = await http.post(
           Uri.parse(ApiEndpoints.loginUser),
-          headers: {"Content-Type": "application/json", 
-          "Accept": "application/json"},
+          headers: {"Content-Type": "application/json", "Accept": "application/json"},
           body: jsonEncode(loginData.toJson()),
         );
 
         if (response.statusCode >= 200 && response.statusCode < 300) {
           final jsonData = json.decode(response.body);
           final token = jsonData['token'];
+          await SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('auth_token', token); // Save token
+            });
+            
           if (token == null || token.isEmpty) {
             _showError("Invalid token received.");
             return;
           }
 
-          TokenHandler().addToken(token);
           final decodedToken = JwtDecoder.decode(token);
-
-
           if (!decodedToken.containsKey('Role')) {
             _showError("User role not found.");
             return;
           }
 
-          // Access the userTypes as an integer
           var role = decodedToken['Role'];
           String email = _emailController.text.trim();
 
           if (role is String) {
-          switch (role.toLowerCase()) {
-            case "farmer":
-              role = 0;
-              break;
-            case "inspector":
-              role = 1;
-              break;
-            case "shopowner":
-              role = 2;
-              break;
-            default:
-              _showError("Unknown role: $role");
-              return;
+            switch (role.toLowerCase()) {
+              case "farmer":
+                role = 0;
+                break;
+              case "shopowner":
+                role = 1;
+                break;
+              default:
+                _showError("Unknown role: $role");
+                return;
+            }
           }
-        }
 
-          // Pass the integer value to the navigation method
           _navigateToDashboard(role, email);
-
         } else {
           _showError("Login failed. Please check your credentials.");
         }
@@ -95,29 +88,24 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _navigateToDashboard(int role, String email) {
-  Widget nextPage;
-
-  switch (role) {
-    case 0:
-      nextPage = FarmerMainPage(email: email);
-      break;
-    case 1:
-      nextPage = InspectorMainPage(email: email);
-      break;
-    case 2:
-      nextPage = ShopOwnerMainPage(email: email);
-      break;
-    default:
-      _showError("Unauthorized role: $role");
-      return;
+    Widget? nextPage;
+    switch (role) {
+      case 0:
+        nextPage = FarmerMainPage(email: email);
+        break;
+      case 1:
+        nextPage = ShopOwnerMainPage(email: email);
+        break;
+      default:
+        _showError("Unauthorized role: $role");
+        return;
+    }
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => nextPage!),
+      (route) => false,
+    );
   }
-
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => nextPage),
-    (Route<dynamic> route) => false,
-  );
-}
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -134,71 +122,53 @@ class _LoginPageState extends State<LoginPage> {
           key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-
-              Text(
-                'Login',
-                style: TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 50.0),
-
+            children: [
+              Text('Login', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w800)),
+              SizedBox(height: 50),
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Username',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                validator: (value) =>
-                (value == null || value.isEmpty) ? 'Enter Username' : null,
+                validator: (value) => (value == null || value.isEmpty) ? 'Enter Username' : null,
               ),
-              const SizedBox(height: 16.0),
-
+              SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 obscureText: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Enter Password';
-                  } else if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
+                  if (value == null || value.isEmpty) return 'Enter Password';
+                  if (value.length < 6) return 'Password must be at least 6 characters';
                   return null;
                 },
               ),
-
-              const SizedBox(height: 20.0),
-
+              SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 50), // Fixed missing value
+                    minimumSize: Size(double.infinity, 50),
                   ),
-                  onPressed: submitForm, // Corrected function call
-                  child: Text('Login',
-                      style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600)),
+                  onPressed: submitForm,
+                  child: Text('Login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
                 ),
               ),
-
-              const SizedBox(height: 16.0),
-
+              SizedBox(height: 16),
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => RegisterPage()), // Fixed incorrect reference
+                    MaterialPageRoute(builder: (context) => RegisterPage()),
                   );
                 },
-                child: Text(
-                  'Create an Account',
-                  style: TextStyle(fontSize: 15, color: Colors.black),
-                ),
+                child: Text('Create an Account', style: TextStyle(fontSize: 15)),
               ),
             ],
           ),

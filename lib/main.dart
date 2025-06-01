@@ -1,77 +1,75 @@
+import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
-import 'shared/Splash.dart';
+import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
+import 'package:capsfront/farmer_area/farmer_main_page.dart';
+import 'package:capsfront/shared/Chatbot.dart';
+import 'package:capsfront/shared/profile_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+Future<void> main() async {
+  try {
+    // Load .env file
+    await dotenv.load(fileName: ".env");
+    runApp(const MyApp());
+  } catch (e) {
+    print('Error loading .env file: $e');
+    // Fallback to run app without env variables
+    runApp(const MyApp());
+  }
+}
 
-void main() => runApp(const BottomNavigationBarExampleApp());
-
-class BottomNavigationBarExampleApp extends StatelessWidget {
-  const BottomNavigationBarExampleApp({super.key});
-
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-        home: Container(
-          child: Splashscreen(
-        child: BottomNavigationBarExample()
-          )
-        )
-      );
+      theme: ThemeData(primarySwatch: Colors.green),
+      home: const LoginPage(), // Set FarmerProfileScreen as the initial page
+    );
   }
 }
 
-class BottomNavigationBarExample extends StatefulWidget {
-  const BottomNavigationBarExample({super.key});
 
+class BottomNavigationHandler extends StatefulWidget {
+  const BottomNavigationHandler({super.key});
   @override
-  State<BottomNavigationBarExample> createState() => _BottomNavigationBarExampleState();
+  State<BottomNavigationHandler> createState() => _BottomNavigationHandlerState();
 }
 
-
-//bottom navigation bar
-class _BottomNavigationBarExampleState extends State<BottomNavigationBarExample> {
+class _BottomNavigationHandlerState extends State<BottomNavigationHandler> {
   int _selectedIndex = 0;
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text('Chatbot'),
-    Text('Chat'),
-  ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  final List<Widget> _pages = [
+    ShopOwnerMainPage(email: 'shopowner@mail.com'),
+    FarmerMainPage(email: 'farmer@mail.com'),
+    ChatbotPage(),
+    ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-            backgroundColor: Color(0xFF4A6B3E),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.cloud_outlined),
-            label: 'Chat',
-            backgroundColor: Color(0xFF4A6B3E),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Chatbot',
-            backgroundColor: Color(0xFF4A6B3E),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_customize_outlined),
-            label: 'MyAccount',
-            backgroundColor: Color(0xFF4A6B3E),
-          ),
-        ],
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.white,
-        onTap: _onItemTapped,
+        unselectedItemColor: Colors.white70,
+        backgroundColor: Colors.green[400],
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Ask me'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
     );
   }
