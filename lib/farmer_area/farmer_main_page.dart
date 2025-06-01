@@ -73,7 +73,6 @@ Future<void> _fetchFarmerData() async {
     }
 }
 
-// Fix 2: Add proper weather API key handling and error checking
 Future<void> _fetchWeatherData(String location) async {
     final weatherApiKey = dotenv.env['weatherapi'];
     if (weatherApiKey == null || weatherApiKey.isEmpty) {
