@@ -28,7 +28,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 class BottomNavigationHandler extends StatefulWidget {
   const BottomNavigationHandler({super.key});
   @override
@@ -39,8 +38,8 @@ class _BottomNavigationHandlerState extends State<BottomNavigationHandler> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    ShopOwnerMainPage(email: 'shopowner@mail.com'),
-    FarmerMainPage(email: 'farmer@mail.com'),
+    ShopOwnerMainPage(),
+    FarmerMainPage(),
     ChatbotPage(),
     ProfilePage(),
   ];
