@@ -1,9 +1,9 @@
 import 'package:capsfront/shared/Splash.dart';
 import 'package:flutter/material.dart';
-import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
-import 'package:capsfront/farmer_area/farmer_main_page.dart';
+import 'package:capsfront/shop_owner_area/ShopMainPage.dart';
+import 'package:capsfront/farmer_area/FarmerMainPage.dart';
 import 'package:capsfront/shared/Chatbot.dart';
-import 'package:capsfront/shared/profile_page.dart';
+import 'package:capsfront/shared/ProfilePage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {

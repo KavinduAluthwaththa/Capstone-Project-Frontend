@@ -2,7 +2,7 @@ import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/farmer_area/MyOrders.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:capsfront/models/shop_model.dart';
-import 'package:capsfront/shared/settings.dart';
+import 'package:capsfront/shared/Settings.dart';
 import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,17 +40,10 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       
-      // Debug: Print all available keys
-      print('Available SharedPreferences keys: ${prefs.getKeys()}');
-      
       final token = prefs.getString('auth_token');
       final userType = prefs.getString('user_type');
       final userEmail = prefs.getString('user_email');
       
-      // Debug: Print session data
-      print('Token: $token');
-      print('User Type: $userType');
-      print('User Email: $userEmail');
 
       // Check for missing session data
       if (token == null || token.isEmpty) {

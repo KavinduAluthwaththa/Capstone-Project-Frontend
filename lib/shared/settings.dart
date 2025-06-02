@@ -384,8 +384,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Column(
                         children: [
                           const SizedBox(height: 20),
-                          _buildUserProfile(),
-                          const SizedBox(height: 20),
                           _buildAccountInfo(),
                           const SizedBox(height: 20),
                           _buildSettingsSection(),
@@ -461,79 +459,6 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () => setState(() => _errorMessage = ''),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildUserProfile() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.green[400],
-              child: Text(
-                (_userName?.isNotEmpty == true ? _userName![0].toUpperCase() : 'U'),
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _userName ?? 'User Name',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _userEmail ?? 'user@example.com',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.green[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _getUserTypeDisplayName(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.green[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.green),
-              onPressed: _showEditProfileDialog,
-              tooltip: 'Edit Profile',
-            ),
-          ],
-        ),
       ),
     );
   }

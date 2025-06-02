@@ -80,7 +80,8 @@ class ApiEndpoints {
   // Request
   static const String getRequests = "$baseUrl/Request";
   static const String postRequest = "$baseUrl/Request";
-  static String getRequestById(int shopid) => "$baseUrl/Request/shop/$shopid";
+  static String getRequestById(int id) => "$baseUrl/Request/$id";
+  static String getRequestByShopId(int shopid) => "$baseUrl/Request/shop/$shopid";
   static String updateRequest(String id) => "$baseUrl/Request/$id";
   static String deleteRequest(String id) => "$baseUrl/Request/$id";
 
