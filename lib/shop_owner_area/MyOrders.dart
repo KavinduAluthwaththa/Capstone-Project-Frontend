@@ -288,8 +288,6 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      floatingActionButton: _buildFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: SafeArea(
         child: Column(
           children: [
@@ -306,44 +304,36 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                       ? _buildEmptyState()
                       : _buildRequestsList(),
             ),
+            _buildAddButton(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.green[400]!, Colors.green[600]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green[400]!.withOpacity(0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+  Widget _buildAddButton() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: _navigateToAddOrder,
+          icon: const Icon(Icons.add_circle_outline, size: 24),
+          label: Text(
+            'Add New Order Request',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ],
-      ),
-      child: FloatingActionButton.extended(
-        onPressed: _navigateToAddOrder,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        icon: const Icon(
-          Icons.add_shopping_cart,
-          color: Colors.white,
-          size: 24,
-        ),
-        label: Text(
-          'Add Request',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green[400],
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 56),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 2,
           ),
         ),
       ),
@@ -391,8 +381,12 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                   textAlign: TextAlign.center,
                 ),
               ),
+              Container(
+                padding: const EdgeInsets.all(8),
+              ),
             ],
           ),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -658,24 +652,6 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.green[400]!, Colors.green[600]!],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green[200]!.withOpacity(0.5),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              ),
             const SizedBox(height: 16),
             TextButton.icon(
               onPressed: _fetchRequests,
@@ -765,6 +741,3 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     }
   }
 }
-
-
-

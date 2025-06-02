@@ -321,6 +321,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
               const SizedBox(width: 48), // Balance the back button
             ],
           ),
+          const SizedBox(height: 8),
         ],
       ),
     );
