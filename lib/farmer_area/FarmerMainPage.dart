@@ -214,17 +214,15 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final farmer = Farmer.fromJson(data);
-        
-        setState(() {
-          _currentFarmer = farmer;
-        });
-        
+        if (mounted) {
+          setState(() {
+            _currentFarmer = farmer;
+          });
+        }
         // Save farmer data to SharedPreferences
         await _saveFarmerDataToPrefs(farmer);
-        
         // Fetch weather data
         await _fetchWeatherData(farmer.farmLocation);
-        
       } else if (response.statusCode == 401) {
         await _handleSessionExpired('Authentication failed');
       } else {
@@ -471,7 +469,13 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const CropSuggest()),
+                                      builder: (context) => CropSuggest(
+                                        temperature: double.tryParse(_temperature.replaceAll('°', '')) ?? 0.0,
+                                        humidity: int.tryParse(_humidity.replaceAll('%', '')) ?? 0,
+                                        rainfall: 0.0, // Replace with actual rainfall if available
+                                        location: _currentFarmer?.farmLocation,
+                                      ),
+                                    ),
                                   );
                                 },
                               ),

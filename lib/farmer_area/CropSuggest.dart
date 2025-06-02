@@ -1,8 +1,23 @@
+import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:capsfront/models/crop_suggest_model.dart';
 
 class CropSuggest extends StatefulWidget {
-  const CropSuggest({super.key});
+  final double temperature;
+  final int humidity;
+  final double rainfall;
+  final String? location;
+
+  const CropSuggest({
+    super.key,
+    required this.temperature,
+    required this.humidity,
+    required this.rainfall,
+    this.location,
+  });
 
   @override
   _CropSuggestState createState() => _CropSuggestState();
@@ -11,80 +26,52 @@ class CropSuggest extends StatefulWidget {
 class _CropSuggestState extends State<CropSuggest> {
   bool isLoading = true;
   bool isAnalyzing = false;
-  
+
   // Weather data
   Map<String, dynamic> weatherData = {
     'temperature': 0.0,
     'humidity': 0,
     'rainfall': 0.0,
+    'location': '',
   };
-  
+
   // Controllers for text fields
   final nController = TextEditingController();
   final pController = TextEditingController();
   final kController = TextEditingController();
   final phController = TextEditingController();
-  
-  // Sample data for crop suggestions (will be replaced by AI model output)
+
+  // Crop suggestions from backend
   final List<Map<String, dynamic>> cropSuggestions = [];
-  
+
   @override
   void initState() {
     super.initState();
-    // Fetch weather data when the widget initializes
-    fetchWeatherData();
+    // Initialize weather data from widget parameters
+    weatherData = {
+      'temperature': widget.temperature,
+      'humidity': widget.humidity,
+      'rainfall': widget.rainfall,
+      'location': widget.location ?? 'Unknown',
+    };
+    isLoading = false;
   }
-  
+
   @override
   void dispose() {
-    // Clean up the controllers when the widget is disposed
     nController.dispose();
     pController.dispose();
     kController.dispose();
     phController.dispose();
     super.dispose();
   }
-  
-  // Method to fetch weather data from API
-  Future<void> fetchWeatherData() async {
-    setState(() {
-      isLoading = true;
-    });
-    
-    try {
-      // Replace with your actual weather API call
-      // This is a placeholder simulation
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Sample weather data (replace with actual API response)
-      setState(() {
-        weatherData = {
-          'temperature': 28.5,
-          'humidity': 65,
-          'rainfall': 2.3,
-          'location': 'Sample Location',
-        };
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to fetch weather data. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-  
-  // Method to analyze soil data and get crop recommendations
+
+  // Method to analyze soil data and get crop recommendations from backend
   Future<void> analyzeSoilData() async {
-    // Validate input fields
-    if (nController.text.isEmpty || pController.text.isEmpty ||
-        kController.text.isEmpty || phController.text.isEmpty) {
+    if (nController.text.isEmpty ||
+        pController.text.isEmpty ||
+        kController.text.isEmpty ||
+        phController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all soil parameters'),
@@ -93,13 +80,12 @@ class _CropSuggestState extends State<CropSuggest> {
       );
       return;
     }
-    
-    // Parse the input values
+
     double? n = double.tryParse(nController.text);
     double? p = double.tryParse(pController.text);
     double? k = double.tryParse(kController.text);
     double? ph = double.tryParse(phController.text);
-    
+
     if (n == null || p == null || k == null || ph == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -109,55 +95,55 @@ class _CropSuggestState extends State<CropSuggest> {
       );
       return;
     }
-    
+
     setState(() {
       isAnalyzing = true;
     });
-    
+
     try {
-      // Replace with your actual AI model API call
-      // This is a placeholder simulation
-      await Future.delayed(const Duration(seconds: 3));
-      
-      // Sample crop recommendations (replace with actual AI model response)
-      setState(() {
-        cropSuggestions.clear();
-        cropSuggestions.addAll([
-          {
-            'name': 'Wheat',
-            'suitability': 'High',
-            'season': 'Winter',
-            'waterRequirement': 'Moderate',
-            'soilType': 'Loamy',
-            'confidence': 92,
-            'description': 'Ideal based on your soil parameters and current climate conditions.',
-          },
-          {
-            'name': 'Corn',
-            'suitability': 'Medium',
-            'season': 'Summer',
-            'waterRequirement': 'High',
-            'soilType': 'Sandy loam',
-            'confidence': 78,
-            'description': 'Good option with adequate irrigation. Your N value is optimal for corn growth.',
-          },
-          {
-            'name': 'Rice',
-            'suitability': 'High',
-            'season': 'Monsoon',
-            'waterRequirement': 'Very High',
-            'soilType': 'Clay',
-            'confidence': 85,
-            'description': 'Suitable for your soil pH and the current rainfall patterns.',
-          },
-        ]);
-        isAnalyzing = false;
-      });
+      final input = CropSuggestInput(
+        n: n,
+        p: p,
+        k: k,
+        ph: ph,
+        temperature: widget.temperature,
+        humidity: widget.humidity,
+        rainfall: widget.rainfall,
+        location: widget.location ?? '',
+      );
+
+            final response = await http.post(
+        Uri.parse(ApiEndpoints.cropRecommendationPredict),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(input.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          cropSuggestions.clear();
+          if (data is List) {
+            cropSuggestions.addAll(List<Map<String, dynamic>>.from(data));
+          } else if (data is Map) {
+            cropSuggestions.add(Map<String, dynamic>.from(data));
+          }
+          isAnalyzing = false;
+        });
+      } else {
+        setState(() {
+          isAnalyzing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to get recommendations: ${response.statusCode}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
       setState(() {
         isAnalyzing = false;
       });
-      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to analyze data. Please try again.'),
@@ -187,97 +173,90 @@ class _CropSuggestState extends State<CropSuggest> {
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
       ),
-      body: isLoading 
-        ? const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(color: Colors.green),
-                SizedBox(height: 20),
-                Text('Fetching weather data...'),
-              ],
-            ),
-          )
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Weather information section
-                _buildWeatherCard(),
-                const SizedBox(height: 20),
-                
-                // Soil parameters input section
-                _buildSoilInputSection(),
-                const SizedBox(height: 25),
-                
-                // Analyze button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: isAnalyzing ? null : analyzeSoilData,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[500],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      disabledBackgroundColor: Colors.green[200],
-                    ),
-                    child: isAnalyzing
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.0,
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Analyzing...',
-                              style: TextStyle(fontSize: 16, color: Colors.white),
-                            ),
-                          ],
-                        )
-                      : const Text(
-                          'Get Crop Recommendations',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                  ),
-                ),
-                const SizedBox(height: 25),
-                
-                // Crop recommendations section
-                if (cropSuggestions.isNotEmpty) ...[
-                  const Text(
-                    'Recommended Crops',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Based on your soil parameters and current weather conditions',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // List of crop suggestions
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: cropSuggestions.length,
-                    itemBuilder: (context, index) {
-                      final crop = cropSuggestions[index];
-                      return _buildCropCard(crop);
-                    },
-                  ),
+      body: isLoading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Colors.green),
+                  SizedBox(height: 20),
+                  Text('Fetching weather data...'),
                 ],
-              ],
+              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildWeatherCard(),
+                  const SizedBox(height: 20),
+                  _buildSoilInputSection(),
+                  const SizedBox(height: 25),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: isAnalyzing ? null : analyzeSoilData,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[500],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        disabledBackgroundColor: Colors.green[200],
+                      ),
+                      child: isAnalyzing
+                          ? const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.0,
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Analyzing...',
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.white),
+                                ),
+                              ],
+                            )
+                          : const Text(
+                              'Get Crop Recommendations',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+                  if (cropSuggestions.isNotEmpty) ...[
+                    const Text(
+                      'Recommended Crops',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Based on your soil parameters and current weather conditions',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 20),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: cropSuggestions.length,
+                      itemBuilder: (context, index) {
+                        final crop = cropSuggestions[index];
+                        return _buildCropCard(crop);
+                      },
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
     );
   }
 
@@ -302,11 +281,6 @@ class _CropSuggestState extends State<CropSuggest> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.green),
-                  onPressed: fetchWeatherData,
-                  tooltip: 'Refresh weather data',
-                ),
               ],
             ),
             const Divider(),
@@ -314,21 +288,12 @@ class _CropSuggestState extends State<CropSuggest> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+                _buildWeatherItem(Icons.thermostat,
+                    '${weatherData['temperature']}°C', 'Temperature'),
                 _buildWeatherItem(
-                  Icons.thermostat, 
-                  '${weatherData['temperature']}°C', 
-                  'Temperature'
-                ),
-                _buildWeatherItem(
-                  Icons.water_drop, 
-                  '${weatherData['humidity']}%', 
-                  'Humidity'
-                ),
-                _buildWeatherItem(
-                  Icons.grain, 
-                  '${weatherData['rainfall']} mm', 
-                  'Rainfall'
-                ),
+                    Icons.water_drop, '${weatherData['humidity']}%', 'Humidity'),
+                _buildWeatherItem(Icons.grain, '${weatherData['rainfall']} mm',
+                    'Rainfall'),
               ],
             ),
             const SizedBox(height: 8),
@@ -398,18 +363,12 @@ class _CropSuggestState extends State<CropSuggest> {
               children: [
                 Expanded(
                   child: _buildInputField(
-                    'Nitrogen (N)', 
-                    'mg/kg', 
-                    nController
-                  ),
+                      'Nitrogen (N)', 'mg/kg', nController),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildInputField(
-                    'Phosphorus (P)', 
-                    'mg/kg', 
-                    pController
-                  ),
+                      'Phosphorus (P)', 'mg/kg', pController),
                 ),
               ],
             ),
@@ -418,18 +377,11 @@ class _CropSuggestState extends State<CropSuggest> {
               children: [
                 Expanded(
                   child: _buildInputField(
-                    'Potassium (K)', 
-                    'mg/kg', 
-                    kController
-                  ),
+                      'Potassium (K)', 'mg/kg', kController),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _buildInputField(
-                    'pH Level', 
-                    '', 
-                    phController
-                  ),
+                  child: _buildInputField('pH Level', '', phController),
                 ),
               ],
             ),
@@ -439,7 +391,8 @@ class _CropSuggestState extends State<CropSuggest> {
     );
   }
 
-  Widget _buildInputField(String label, String unit, TextEditingController controller) {
+  Widget _buildInputField(
+      String label, String unit, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -460,7 +413,8 @@ class _CropSuggestState extends State<CropSuggest> {
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           ),
         ),
       ],
@@ -483,21 +437,25 @@ class _CropSuggestState extends State<CropSuggest> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  crop['name'],
+                  crop['name'] ?? '',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                _buildConfidenceChip(crop['confidence']),
+                if (crop['confidence'] != null)
+                  _buildConfidenceChip(crop['confidence']),
               ],
             ),
             const SizedBox(height: 10),
-            Text(crop['description']),
+            Text(crop['description'] ?? ''),
             const SizedBox(height: 15),
-            _buildInfoRow('Season', crop['season']),
-            _buildInfoRow('Water Requirement', crop['waterRequirement']),
-            _buildInfoRow('Ideal Soil Type', crop['soilType']),
+            if (crop['season'] != null)
+              _buildInfoRow('Season', crop['season']),
+            if (crop['waterRequirement'] != null)
+              _buildInfoRow('Water Requirement', crop['waterRequirement']),
+            if (crop['soilType'] != null)
+              _buildInfoRow('Ideal Soil Type', crop['soilType']),
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,
@@ -617,13 +575,14 @@ class _CropSuggestState extends State<CropSuggest> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      crop['name'],
+                      crop['name'] ?? '',
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    _buildSuitabilityChip(crop['suitability']),
+                    if (crop['suitability'] != null)
+                      _buildSuitabilityChip(crop['suitability']),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -635,9 +594,12 @@ class _CropSuggestState extends State<CropSuggest> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _buildDetailRow('Season', crop['season']),
-                _buildDetailRow('Water Requirement', crop['waterRequirement']),
-                _buildDetailRow('Ideal Soil Type', crop['soilType']),
+                if (crop['season'] != null)
+                  _buildDetailRow('Season', crop['season']),
+                if (crop['waterRequirement'] != null)
+                  _buildDetailRow('Water Requirement', crop['waterRequirement']),
+                if (crop['soilType'] != null)
+                  _buildDetailRow('Ideal Soil Type', crop['soilType']),
                 const SizedBox(height: 20),
                 const Text(
                   'Description',
@@ -648,17 +610,16 @@ class _CropSuggestState extends State<CropSuggest> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  '${crop['description']} Additional details about growing ${crop['name']} would appear here, including optimal planting times, spacing requirements, fertilizer recommendations, and common issues to watch for during cultivation.',
+                  '${crop['description'] ?? ''} Additional details about growing ${crop['name'] ?? ''} would appear here, including optimal planting times, spacing requirements, fertilizer recommendations, and common issues to watch for during cultivation.',
                   style: const TextStyle(height: 1.5),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    // Add to user's crop list or other action
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${crop['name']} added to your crops'),
+                        content: Text('${crop['name'] ?? ''} added to your crops'),
                         backgroundColor: Colors.green,
                       ),
                     );

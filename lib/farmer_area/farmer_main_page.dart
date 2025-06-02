@@ -1,13 +1,13 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/farmer_area/CropSuggest.dart';
-import 'package:capsfront/farmer_area/MarketPrice.dart';
+//import 'package:capsfront/farmer_area/MarketPrice.dart';
 import 'package:capsfront/farmer_area/ShopList.dart';
 import 'package:capsfront/farmer_area/MyCrops.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:capsfront/shared/DiseaseIdentification.dart';
 import 'package:capsfront/shared/FertilizerCalculation.dart';
 import 'package:capsfront/shared/Chatbot.dart';         
-import 'package:capsfront/shared/profile_page.dart'; 
+//import 'package:capsfront/shared/profile_page.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -231,15 +231,15 @@ Future<void> _fetchWeatherData(String location) async {
                             mainAxisSize: MainAxisSize.min, // <-- Add this
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildActionButton(
-                                'My Crops',
-                                Icons.grass,
-                                () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => CropsPage(farmerId: (_currentFarmer?.farmerID is int ? _currentFarmer!.farmerID : 0))),
-                                ),
-                              ),
+                              // _buildActionButton(
+                              //   'My Crops',
+                                //Icons.grass,
+                                // () => Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //       builder: (context) => CropsPage(farmerId: (_currentFarmer?.farmerID is int ? _currentFarmer!.farmerID : 0))),
+                                // ),
+                              //),
                               const SizedBox(height: 20),
                               _buildActionButton(
                                 'Shop List',
@@ -251,16 +251,15 @@ Future<void> _fetchWeatherData(String location) async {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              _buildActionButton(
-                                'Crop Suggestion',
-                                Icons.android,
-                                () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          CropSuggest()),
-                                ),
-                              ),
+                              // _buildActionButton(
+                              //   'Crop Suggestion',
+                              //   Icons.android,
+                              //   () => Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //         builder: (context) => CropSuggest()),
+                              //   ),
+                              // ),
                               const SizedBox(height: 20),
                               _buildActionButton(
                                 'Diseases Identification',
@@ -292,8 +291,8 @@ Future<void> _fetchWeatherData(String location) async {
       );
     } else if (index == 1) {
       return const ChatbotPage();
-    } else if (index == 2) {
-      return const ProfilePage();
+    // } else if (index == 2) {
+    //   return const ProfilePage();
     }
     return Container();
   }
