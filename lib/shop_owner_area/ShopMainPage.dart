@@ -1,11 +1,11 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/farmer_area/MyOrders.dart';
 import 'package:capsfront/shop_owner_area/FarmersList.dart';
-import 'package:capsfront/shop_owner_area/MyOrders.dart';
 import 'package:capsfront/shared/Chatbot.dart';
 import 'package:capsfront/shared/ProfilePage.dart';
 import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/models/shop_model.dart';
+import 'package:capsfront/shop_owner_area/MyOrders.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -15,7 +15,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ShopOwnerMainPage extends StatefulWidget {
-  final String? email; // Make email optional since we'll get it from SharedPreferences
+  final String? email;
   const ShopOwnerMainPage({super.key, this.email});
 
   @override
@@ -31,7 +31,6 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
   String _weatherIcon = '☀️';
   String _humidity = '--%';
 
-  // Session data from SharedPreferences
   String? _authToken;
   String? _userType;
   String? _userEmail;
@@ -470,7 +469,7 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const MyOrdersPage()),
+                                        builder: (context) => MyRequestsPage(shopID: _currentShop?.shopID ?? 0)),
                                   );
                                 },
                               ),
