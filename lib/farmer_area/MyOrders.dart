@@ -4,22 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const MyOrdersPage(),
-    );
-  }
-}
-
 class MyOrdersPage extends StatefulWidget {
   const MyOrdersPage({super.key});
 
@@ -75,9 +59,9 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
           // Header Section
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Color(0xFF98D178),
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: Colors.lightGreen[700],
+              borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),

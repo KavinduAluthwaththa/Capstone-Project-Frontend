@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/models/login_model.dart';
-import 'package:capsfront/farmer_area/farmer_main_page.dart';
-import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
+import 'package:capsfront/farmer_area/FarmerMainPage.dart';
+import 'package:capsfront/shop_owner_area/ShopMainPage.dart';
 import 'package:capsfront/accounts/register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -30,6 +31,10 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> submitForm() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       final loginData = LoginModel(
         userName: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -45,45 +50,129 @@ class _LoginPageState extends State<LoginPage> {
         if (response.statusCode >= 200 && response.statusCode < 300) {
           final jsonData = json.decode(response.body);
           final token = jsonData['token'];
-          await SharedPreferences.getInstance().then((prefs) {
-            prefs.setString('auth_token', token); // Save token
-            });
-            
+          
           if (token == null || token.isEmpty) {
             _showError("Invalid token received.");
             return;
           }
 
+          // Decode token to get user information
           final decodedToken = JwtDecoder.decode(token);
+          
           if (!decodedToken.containsKey('Role')) {
-            _showError("User role not found.");
+            _showError("User role not found in token.");
             return;
           }
 
+          // Extract user data from token
           var role = decodedToken['Role'];
           String email = _emailController.text.trim();
-
+          String? userId = decodedToken['nameid']?.toString(); // User ID from token
+          String? userName = decodedToken['unique_name']; // Username from token
+          
+          // Convert role to standard format
+          String userType;
+          int roleNumber;
+          
           if (role is String) {
             switch (role.toLowerCase()) {
               case "farmer":
-                role = 0;
+                userType = "farmer";
+                roleNumber = 0;
                 break;
               case "shopowner":
-                role = 1;
+                userType = "shopowner";
+                roleNumber = 1;
                 break;
               default:
                 _showError("Unknown role: $role");
                 return;
             }
+          } else {
+            _showError("Invalid role format in token.");
+            return;
           }
 
-          _navigateToDashboard(role, email);
+          // Save all important data to SharedPreferences
+          await _saveUserSession(
+            token: token,
+            userType: userType,
+            email: email,
+            userId: userId,
+            userName: userName,
+            decodedToken: decodedToken,
+          );
+
+          // Navigate to appropriate dashboard
+          _navigateToDashboard(roleNumber, email);
         } else {
-          _showError("Login failed. Please check your credentials.");
+          final errorData = json.decode(response.body);
+          String errorMessage = errorData['message'] ?? "Login failed. Please check your credentials.";
+          _showError(errorMessage);
         }
       } catch (e) {
         _showError("An error occurred: $e");
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
+    }
+  }
+
+  Future<void> _saveUserSession({
+    required String token,
+    required String userType,
+    required String email,
+    String? userId,
+    String? userName,
+    required Map<String, dynamic> decodedToken,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Save essential user session data
+      await prefs.setString('auth_token', token);
+      await prefs.setString('user_type', userType);
+      await prefs.setString('user_email', email);
+      
+      // Save additional user data if available
+      if (userId != null) {
+        await prefs.setString('user_id', userId);
+      }
+      
+      if (userName != null) {
+        await prefs.setString('user_name', userName);
+      }
+      
+      // Save login timestamp
+      await prefs.setString('login_timestamp', DateTime.now().toIso8601String());
+      
+      // Save token expiration if available
+      if (decodedToken.containsKey('exp')) {
+        final expTimestamp = decodedToken['exp'];
+        if (expTimestamp is int) {
+          final expDate = DateTime.fromMillisecondsSinceEpoch(expTimestamp * 1000);
+          await prefs.setString('token_expiry', expDate.toIso8601String());
+        }
+      }
+      
+      // Save additional token claims that might be useful
+      if (decodedToken.containsKey('iss')) {
+        await prefs.setString('token_issuer', decodedToken['iss'].toString());
+      }
+      
+      if (decodedToken.containsKey('aud')) {
+        await prefs.setString('token_audience', decodedToken['aud'].toString());
+      }
+      
+      await prefs.setInt('user_role_number', userType == 'farmer' ? 0 : 1);
+      
+      await prefs.setBool('is_logged_in', true);
+      
+    } catch (e) {
+      print('Error saving user session: $e');
+      _showError("Failed to save user session. Please try again.");
     }
   }
 
@@ -91,10 +180,10 @@ class _LoginPageState extends State<LoginPage> {
     Widget? nextPage;
     switch (role) {
       case 0:
-        nextPage = FarmerMainPage(email: email);
+        nextPage = FarmerMainPage();
         break;
       case 1:
-        nextPage = ShopOwnerMainPage(email: email);
+        nextPage = ShopOwnerMainPage();
         break;
       default:
         _showError("Unauthorized role: $role");
@@ -109,7 +198,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
     );
   }
 
@@ -123,22 +216,28 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Login', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w800)),
-              SizedBox(height: 50),
+              const Text(
+                'Login',
+                style: TextStyle(fontSize: 40, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 50),
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'Username/Email',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  prefixIcon: const Icon(Icons.person),
                 ),
-                validator: (value) => (value == null || value.isEmpty) ? 'Enter Username' : null,
+                validator: (value) => (value == null || value.isEmpty) ? 'Enter Username/Email' : null,
+                enabled: !_isLoading,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  prefixIcon: const Icon(Icons.lock),
                 ),
                 obscureText: true,
                 validator: (value) {
@@ -146,29 +245,38 @@ class _LoginPageState extends State<LoginPage> {
                   if (value.length < 6) return 'Password must be at least 6 characters';
                   return null;
                 },
+                enabled: !_isLoading,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 50),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                  onPressed: submitForm,
-                  child: Text('Login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                  onPressed: _isLoading ? null : submitForm,
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Login',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                        ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextButton(
-                onPressed: () {
+                onPressed: _isLoading ? null : () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => RegisterPage()),
+                    MaterialPageRoute(builder: (context) => const RegisterPage()),
                   );
                 },
-                child: Text('Create an Account', style: TextStyle(fontSize: 15)),
+                child: const Text(
+                  'Create an Account',
+                  style: TextStyle(fontSize: 15),
+                ),
               ),
             ],
           ),
@@ -176,8 +284,4 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(const MaterialApp(home: LoginPage()));
 }
