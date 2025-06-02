@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/models/login_model.dart';
-import 'package:capsfront/farmer_area/farmer_main_page.dart';
-import 'package:capsfront/shop_owner_area/shop_owner_main_page.dart';
+import 'package:capsfront/farmer_area/FarmerMainPage.dart';
+import 'package:capsfront/shop_owner_area/ShopMainPage.dart';
 import 'package:capsfront/accounts/register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

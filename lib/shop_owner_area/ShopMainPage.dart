@@ -1,36 +1,35 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/farmer_area/CropSuggest.dart';
-import 'package:capsfront/farmer_area/ShopList.dart';
-import 'package:capsfront/farmer_area/MyCrops.dart';
-import 'package:capsfront/models/farmer_model.dart';
-import 'package:capsfront/shared/DiseaseIdentification.dart';
-import 'package:capsfront/shared/FertilizerCalculation.dart';
-import 'package:capsfront/shared/Chatbot.dart';         
-import 'package:capsfront/shared/profile_page.dart'; 
+import 'package:capsfront/farmer_area/MyOrders.dart';
+import 'package:capsfront/shop_owner_area/FarmersList.dart';
+import 'package:capsfront/shop_owner_area/MyOrders.dart';
+import 'package:capsfront/shared/Chatbot.dart';
+import 'package:capsfront/shared/ProfilePage.dart';
 import 'package:capsfront/accounts/login.dart';
+import 'package:capsfront/models/shop_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class FarmerMainPage extends StatefulWidget { // Make email optional since we'll get it from SharedPreferences
-  const FarmerMainPage({super.key});
+class ShopOwnerMainPage extends StatefulWidget {
+  final String? email; // Make email optional since we'll get it from SharedPreferences
+  const ShopOwnerMainPage({super.key, this.email});
 
   @override
-  State<FarmerMainPage> createState() => _FarmerMainPageState();
+  State<ShopOwnerMainPage> createState() => _ShopOwnerMainPageState();
 }
 
-class _FarmerMainPageState extends State<FarmerMainPage> {
-  Farmer? _currentFarmer;
+class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
+  int _selectedIndex = 0;
+  Shop? _currentShop;
   bool _isLoading = true;
   String _errorMessage = '';
   String _temperature = '--°';
   String _weatherIcon = '☀️';
   String _humidity = '--%';
-  int _selectedIndex = 0;
 
   // Session data from SharedPreferences
   String? _authToken;
@@ -59,27 +58,22 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
       });
 
       print('Session data loaded:');
-      print('- Auth Token: ${_authToken?.isNotEmpty == true ? "Available" : "Missing"}');
-      print('- User Type: $_userType');
-      print('- User Email: $_userEmail');
-      print('- User ID: $_userId');
-
-      // Validate session
+      
       if (_authToken == null || _authToken!.isEmpty) {
         await _handleSessionExpired('Authentication token missing');
         return;
       }
 
-      if (_userType != 'farmer') {
-        await _handleSessionExpired('Invalid user type for farmer area');
+      if (_userType != 'shopowner') {
+        await _handleSessionExpired('Invalid user type for shop owner area');
         return;
       }
 
       // Load cached data first for immediate display
-      await _loadCachedFarmerData();
+      await _loadCachedShopData();
       
       // Then fetch fresh data
-      await _fetchFarmerData();
+      await _fetchShopData();
       
     } catch (e) {
       print('Error loading session data: $e');
@@ -121,50 +115,50 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
     }
   }
 
-  // Save farmer data to SharedPreferences
-  Future<void> _saveFarmerDataToPrefs(Farmer farmer) async {
+  // Save shop data to SharedPreferences
+  Future<void> _saveShopDataToPrefs(Shop shop) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       
-      // Save farmer-specific data
-      await prefs.setString('farmer_name', farmer.name);
-      await prefs.setString('farmer_email', farmer.Email);
-      await prefs.setString('farmer_location', farmer.farmLocation);
-      await prefs.setInt('farmer_id', farmer.farmerID);
-      await prefs.setString('farmer_phone', farmer.phoneNumber.toString());
+      // Save shop-specific data
+      await prefs.setString('shop_name', shop.name);
+      await prefs.setString('shop_email', shop.email);
+      await prefs.setString('shop_location', shop.location);
+      await prefs.setInt('shop_id', shop.shopID);
+      await prefs.setString('shop_phone', shop.phoneNumber);
       
       // Save weather data
       await prefs.setString('last_temperature', _temperature);
       await prefs.setString('last_humidity', _humidity);
       await prefs.setString('last_weather_icon', _weatherIcon);
-      await prefs.setString('weather_location', farmer.farmLocation);
+      await prefs.setString('weather_location', shop.location);
       await prefs.setString('weather_last_updated', DateTime.now().toIso8601String());
       
-      print('Farmer data saved to SharedPreferences');
+      print('Shop data saved to SharedPreferences');
     } catch (e) {
-      print('Error saving farmer data to SharedPreferences: $e');
+      print('Error saving shop data to SharedPreferences: $e');
     }
   }
 
-  // Load cached farmer data from SharedPreferences
-  Future<void> _loadCachedFarmerData() async {
+  // Load cached shop data from SharedPreferences
+  Future<void> _loadCachedShopData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       
-      final cachedName = prefs.getString('farmer_name');
-      final cachedEmail = prefs.getString('farmer_email');
-      final cachedLocation = prefs.getString('farmer_location');
-      final cachedId = prefs.getInt('farmer_id');
-      final cachedPhone = prefs.getString('farmer_phone');
+      final cachedName = prefs.getString('shop_name');
+      final cachedEmail = prefs.getString('shop_email');
+      final cachedLocation = prefs.getString('shop_location');
+      final cachedId = prefs.getInt('shop_id');
+      final cachedPhone = prefs.getString('shop_phone');
       
       if (cachedName != null && cachedEmail != null && cachedLocation != null && cachedId != null) {
         setState(() {
-          _currentFarmer = Farmer(
-            farmerID: cachedId,
+          _currentShop = Shop(
+            shopID: cachedId,
             name: cachedName,
-            Email: cachedEmail,
-            farmLocation: cachedLocation,
-            phoneNumber: cachedPhone != null ? int.tryParse(cachedPhone) ?? 0 : 0,
+            email: cachedEmail,
+            location: cachedLocation,
+            phoneNumber: cachedPhone ?? '',
           );
           
           // Load cached weather data
@@ -175,7 +169,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
           _isLoading = false;
         });
         
-        print('Loaded cached farmer data');
+        print('Loaded cached shop data');
         
         // Check if weather data needs updating (if older than 30 minutes)
         final lastUpdated = prefs.getString('weather_last_updated');
@@ -188,54 +182,55 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
         }
       }
     } catch (e) {
-      print('Error loading cached farmer data: $e');
+      print('Error loading cached shop data: $e');
     }
   }
 
-  Future<void> _fetchFarmerData() async {
+  Future<void> _fetchShopData() async {
     try {
       if (_authToken == null || _authToken!.isEmpty) {
         throw Exception('No authentication token available');
       }
       
-      final emailToUse = _userEmail;
+      // Use email from SharedPreferences, fallback to widget.email
+      final emailToUse = _userEmail ?? widget.email;
       if (emailToUse == null || emailToUse.isEmpty) {
-        throw Exception('No email available for farmer lookup');
+        throw Exception('No email available for shop lookup');
       }
       
       final email = Uri.encodeComponent(emailToUse);
     
       final response = await http.get(
-        Uri.parse(ApiEndpoints.getFarmer(email)),
+        Uri.parse(ApiEndpoints.getShopByEmail(email)),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_authToken',
         },
       );
 
-      print('Farmer API response status: ${response.statusCode}');
+      print('Shop API response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final farmer = Farmer.fromJson(data);
+        final shop = Shop.fromJson(data);
         
         setState(() {
-          _currentFarmer = farmer;
+          _currentShop = shop;
         });
         
-        // Save farmer data to SharedPreferences
-        await _saveFarmerDataToPrefs(farmer);
+        // Save shop data to SharedPreferences
+        await _saveShopDataToPrefs(shop);
         
         // Fetch weather data
-        await _fetchWeatherData(farmer.farmLocation);
+        await _fetchWeatherData(shop.location);
         
       } else if (response.statusCode == 401) {
         await _handleSessionExpired('Authentication failed');
       } else {
-        throw Exception('Failed to load farmer data: ${response.statusCode}');
+        throw Exception('Failed to load shop data: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching farmer data: $e');
+      print('Error fetching shop data: $e');
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -269,8 +264,8 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
         });
         
         // Save updated weather data to SharedPreferences
-        if (_currentFarmer != null) {
-          await _saveFarmerDataToPrefs(_currentFarmer!);
+        if (_currentShop != null) {
+          await _saveShopDataToPrefs(_currentShop!);
         }
       } else {
         throw Exception('Weather API Error: ${response.statusCode}');
@@ -308,6 +303,12 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
     } catch (e) {
       print('Error saving usage data: $e');
     }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   Widget _getPage(int index) {
@@ -362,13 +363,13 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                         ),
                       ],
                     ),
-                    if (_currentFarmer != null) ...[
+                    if (_currentShop != null) ...[
                       Column(
                         children: [
                           const Icon(Icons.location_pin, color: Colors.red),
                           const SizedBox(height: 4),
                           Text(
-                            _currentFarmer!.farmLocation,
+                            _currentShop!.location,
                             style: GoogleFonts.poppins(fontSize: 14),
                           ),
                         ],
@@ -378,10 +379,17 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Hi, ${_currentFarmer?.name ?? _userName ?? 'Farmer'}!',
+                  'Hi, ${_currentShop?.name ?? _userName ?? 'Shop Owner'}!',
                   style: GoogleFonts.poppins(
                       fontSize: 20, fontWeight: FontWeight.bold),
                 ),
+                if (_currentShop != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Shop: ${_currentShop!.name}',
+                    style: GoogleFonts.poppins(fontSize: 14),
+                  ),
+                ],
               ],
             ),
           ),
@@ -442,66 +450,27 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               _buildActionButton(
-                                'My Crops',
-                                Icons.grass,
+                                'Farmers List',
+                                Icons.people,
                                 () async {
-                                  await _saveAppUsageData('my_crops');
+                                  await _saveAppUsageData('farmers_list');
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const CropsPage()),
+                                        builder: (context) => const FarmersListPage()),
                                   );
                                 },
                               ),
                               const SizedBox(height: 20),
                               _buildActionButton(
-                                'Shop List',
-                                Icons.store,
+                                'My Orders',
+                                Icons.shopping_cart,
                                 () async {
-                                  await _saveAppUsageData('shop_list');
+                                  await _saveAppUsageData('my_orders');
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const ShopListPage()),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                              _buildActionButton(
-                                'Crop Suggestion',
-                                Icons.android,
-                                () async {
-                                  await _saveAppUsageData('crop_suggestion');
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => const CropSuggest()),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                              _buildActionButton(
-                                'Diseases Identification',
-                                Icons.crop,
-                                () async {
-                                  await _saveAppUsageData('disease_identification');
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => const DiseaseM()),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                              _buildActionButton(
-                                'Fertilizer Calculation',
-                                Icons.medical_information,
-                                () async {
-                                  await _saveAppUsageData('fertilizer_calculation');
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => const Fertilizing()),
+                                        builder: (context) => const MyOrdersPage()),
                                   );
                                 },
                               ),
@@ -530,11 +499,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
         backgroundColor: Colors.green[400],
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Ask me'),
