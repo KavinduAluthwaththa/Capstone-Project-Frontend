@@ -43,71 +43,93 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
 
   // Fix 1: Move weatherApiKey to _fetchWeatherData method
 Future<void> _fetchFarmerData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
-      
-      final email = Uri.encodeComponent(widget.email);
-    
-      final response = await http.get(
-        Uri.parse(ApiEndpoints.getFarmer(email)),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    final email = Uri.encodeComponent(widget.email);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          _currentFarmer = Farmer.fromJson(data);
-          _fetchWeatherData(_currentFarmer!.farmLocation);
-        });
-      } else {
-        throw Exception('Failed to load farmer data: ${response.statusCode}');
-      }
-    } catch (e) {
+    print('Fetching farmer data for: $email');
+    final response = await http.get(
+      Uri.parse(ApiEndpoints.getFarmer(email)),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('Farmer API status: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
       setState(() {
-        _errorMessage = e.toString();
+        _currentFarmer = Farmer.fromJson(data);
+      });
+      // Only fetch weather if farmLocation is not empty
+      if (_currentFarmer != null && _currentFarmer!.farmLocation.isNotEmpty) {
+        await _fetchWeatherData(_currentFarmer!.farmLocation);
+      }
+      setState(() {
+        _isLoading = false;
+        _errorMessage = '';
+      });
+    } else {
+      setState(() {
+        _errorMessage = 'Failed to load farmer data: ${response.statusCode}';
         _isLoading = false;
       });
     }
+  } catch (e) {
+    print('Error fetching farmer data: $e');
+    setState(() {
+      _errorMessage = 'Error: ${e.toString()}';
+      _isLoading = false;
+    });
+  }
 }
 
 // Fix 2: Add proper weather API key handling and error checking
 Future<void> _fetchWeatherData(String location) async {
-    final weatherApiKey = dotenv.env['weatherapi'];
-    if (weatherApiKey == null || weatherApiKey.isEmpty) {
-      setState(() {
-        _errorMessage = 'Weather API key not configured';
-        _isLoading = false;
-      });
-      return;
-    }
+  if (!dotenv.isInitialized) {
+    setState(() {
+      _errorMessage = 'Environment not initialized';
+      _isLoading = false;
+    });
+    return;
+  }
+  final weatherApiKey = dotenv.env['weatherapi'];
+  if (weatherApiKey == null || weatherApiKey.isEmpty) {
+    setState(() {
+      _errorMessage = 'Weather API key not configured';
+      _isLoading = false;
+    });
+    return;
+  }
 
-    try {
-      final response = await http.get(
-        Uri.parse('https://api.openweathermap.org/data/2.5/weather?q=$location,LK&units=metric&appid=$weatherApiKey'),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          _temperature = '${data['main']['temp'].round()}°';
-          _humidity = '${data['main']['humidity']}%';
-          _weatherIcon = _getWeatherIcon(data['weather'][0]['id']);
-          _isLoading = false;
-          _errorMessage = '';
-        });
-      } else {
-        throw Exception('Weather API Error: ${response.statusCode}');
-      }
-    } catch (e) {
+  try {
+    print('Fetching weather for: $location');
+    final response = await http.get(
+      Uri.parse('https://api.openweathermap.org/data/2.5/weather?q=$location,LK&units=metric&appid=$weatherApiKey'),
+    );
+    print('Weather API status: ${response.statusCode}');
+    print('Weather API body: ${response.body}');
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
       setState(() {
-        _errorMessage = 'Weather data unavailable: ${e.toString()}';
-        _isLoading = false;
+        _temperature = '${data['main']['temp'].round()}°';
+        _humidity = '${data['main']['humidity']}%';
+        _weatherIcon = _getWeatherIcon(data['weather'][0]['id']);
+        _errorMessage = '';
+      });
+    } else {
+      setState(() {
+        _errorMessage = 'Weather API Error: ${response.statusCode}';
       });
     }
+  } catch (e) {
+    print('Error fetching weather data: $e');
+    setState(() {
+      _errorMessage = 'Weather data unavailable: ${e.toString()}';
+    });
+  }
 }
 
   String _getWeatherIcon(int conditionCode) {
