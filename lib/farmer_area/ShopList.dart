@@ -21,8 +21,6 @@ class _ShopListPageState extends State<ShopListPage> {
   String? _errorMessage;
   String _searchQuery = '';
   List<String> _favoriteShops = [];
-  String? _userType;
-  String? _userName;
   
   final TextEditingController _searchController = TextEditingController();
 
@@ -49,10 +47,6 @@ class _ShopListPageState extends State<ShopListPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _userType = prefs.getString('user_type');
-        _userName = prefs.getString('user_name') ?? 
-                   prefs.getString('farmer_name') ?? 
-                   prefs.getString('shop_name');
       });
     } catch (e) {
       print('Error loading user data: $e');
