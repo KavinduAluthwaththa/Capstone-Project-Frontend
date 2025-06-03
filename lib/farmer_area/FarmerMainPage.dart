@@ -36,7 +36,6 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
   String? _authToken;
   String? _userType;
   String? _userEmail;
-  String? _userId;
   String? _userName;
 
   @override
@@ -54,7 +53,6 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
         _authToken = prefs.getString('auth_token');
         _userType = prefs.getString('user_type');
         _userEmail = prefs.getString('user_email');
-        _userId = prefs.getString('user_id');
         _userName = prefs.getString('user_name');
       });
 

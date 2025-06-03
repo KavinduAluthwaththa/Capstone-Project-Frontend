@@ -20,17 +20,8 @@ class _SettingsPageState extends State<SettingsPage> {
   String? _userName;
   String? _userEmail;
   String? _userType;
-  String? _userId;
-  String? _authToken;
-  String? _loginTimestamp;
-  String? _tokenExpiry;
   String? _userPhone;
   String? _userLocation;
-
-  // App usage data
-  Map<String, int> _featureUsage = {};
-  String? _lastUsedFeature;
-  String? _lastActivityTime;
 
   // Controllers for editing
   final TextEditingController _nameController = TextEditingController();
@@ -62,10 +53,6 @@ class _SettingsPageState extends State<SettingsPage> {
         _userName = prefs.getString('user_name') ?? prefs.getString('farmer_name') ?? prefs.getString('shop_name');
         _userEmail = prefs.getString('user_email') ?? prefs.getString('farmer_email') ?? prefs.getString('shop_email');
         _userType = prefs.getString('user_type');
-        _userId = prefs.getString('user_id');
-        _authToken = prefs.getString('auth_token');
-        _loginTimestamp = prefs.getString('login_timestamp');
-        _tokenExpiry = prefs.getString('token_expiry');
         _userPhone = prefs.getString('farmer_phone') ?? prefs.getString('shop_phone');
         _userLocation = prefs.getString('farmer_location') ?? prefs.getString('shop_location');
 
@@ -79,21 +66,8 @@ class _SettingsPageState extends State<SettingsPage> {
         _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
 
         // Usage data
-        _lastUsedFeature = prefs.getString('last_used_feature');
-        _lastActivityTime = prefs.getString('last_activity_time');
 
         // Load feature usage statistics
-        _featureUsage = {
-          'my_crops': prefs.getInt('feature_usage_my_crops') ?? 0,
-          'shop_list': prefs.getInt('feature_usage_shop_list') ?? 0,
-          'crop_suggestion': prefs.getInt('feature_usage_crop_suggestion') ?? 0,
-          'disease_identification': prefs.getInt('feature_usage_disease_identification') ?? 0,
-          'fertilizer_calculation': prefs.getInt('feature_usage_fertilizer_calculation') ?? 0,
-          'farmers_list': prefs.getInt('feature_usage_farmers_list') ?? 0,
-          'my_orders': prefs.getInt('feature_usage_my_orders') ?? 0,
-          'inventory': prefs.getInt('feature_usage_inventory') ?? 0,
-          'analytics': prefs.getInt('feature_usage_analytics') ?? 0,
-        };
 
         _isLoading = false;
       });
@@ -339,16 +313,6 @@ class _SettingsPageState extends State<SettingsPage> {
           );
         }
       }
-    }
-  }
-
-  String _formatDateTime(String? isoString) {
-    if (isoString == null) return 'N/A';
-    try {
-      final dateTime = DateTime.parse(isoString);
-      return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    } catch (e) {
-      return 'Invalid date';
     }
   }
 

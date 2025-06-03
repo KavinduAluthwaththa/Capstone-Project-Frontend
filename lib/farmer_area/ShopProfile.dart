@@ -22,8 +22,6 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   String? _errorMessage;
   bool _isFavorite = false;
   List<String> _favoriteShops = [];
-  String? _userType;
-  String? _userName;
 
   @override
   void initState() {
@@ -42,10 +40,6 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _userType = prefs.getString('user_type');
-        _userName = prefs.getString('user_name') ?? 
-                   prefs.getString('farmer_name') ?? 
-                   prefs.getString('shop_name');
       });
     } catch (e) {
       print('Error loading user data: $e');

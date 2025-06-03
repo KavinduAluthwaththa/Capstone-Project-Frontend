@@ -23,8 +23,6 @@ class _AddOrderPageState extends State<AddOrderPage> {
   bool _isSubmitting = false;
   List<Crop> _crops = [];
   String? _errorMessage;
-  String? _userType;
-  String? _userName;
 
   @override
   void initState() {
@@ -49,10 +47,6 @@ class _AddOrderPageState extends State<AddOrderPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _userType = prefs.getString('user_type');
-        _userName = prefs.getString('user_name') ?? 
-                   prefs.getString('farmer_name') ?? 
-                   prefs.getString('shop_name');
       });
     } catch (e) {
       print('Error loading user data: $e');
