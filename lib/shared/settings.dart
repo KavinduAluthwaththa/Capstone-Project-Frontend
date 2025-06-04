@@ -310,6 +310,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
                 TextButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () async {
+                          if (_validateInputs()) {
+                            Navigator.of(context).pop();
+                            await _updateUserProfile();
+                          }
+                        },
                   child: _isSaving
                       ? SizedBox(
                           width: 20,
@@ -326,14 +334,6 @@ class _SettingsPageState extends State<SettingsPage> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                  onPressed: _isSaving
-                      ? null
-                      : () async {
-                          if (_validateInputs()) {
-                            Navigator.of(context).pop();
-                            await _updateUserProfile();
-                          }
-                        },
                 ),
               ],
             );
