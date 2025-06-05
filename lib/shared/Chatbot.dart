@@ -16,7 +16,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
   String? _userType;
-  String? _userName;
 
   // Initialize the Generative Model
   GenerativeModel? _model;
@@ -62,7 +61,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
         _userType = prefs.getString('user_type');
-        _userName = prefs.getString('user_name') ?? prefs.getString('user_email');
       });
     } catch (e) {
       print('Error loading user data: $e');
