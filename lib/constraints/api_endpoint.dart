@@ -94,4 +94,7 @@ class ApiEndpoints {
   // User
   static const String registerUser = "$baseUrl/User/Register";
   static const String loginUser = "$baseUrl/User/Login";
+
+  //suggestion model
+  static const String cropPrediction = "$baseUrl/CropRecommendation/predict"; //nitrogen, phosphorus,potassium,temperature,humidity,ph,rainfall
 }
