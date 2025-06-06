@@ -1,4 +1,5 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/models/cropRecommendation_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,6 +34,7 @@ class _CropSuggestState extends State<CropSuggest> {
   
   // API response data
   Map<String, dynamic>? cropPredictionResponse;
+  List<CropRecommendation> topRecommendations = [];
   
   // Session data
   String? _authToken;
@@ -195,6 +197,7 @@ class _CropSuggestState extends State<CropSuggest> {
         
         setState(() {
           cropPredictionResponse = responseData;
+          topRecommendations = _parseTopRecommendations(responseData);
           isAnalyzing = false;
         });
         
@@ -219,6 +222,30 @@ class _CropSuggestState extends State<CropSuggest> {
       });
       _showErrorSnackBar('Failed to get crop recommendation: $e');
     }
+  }
+  
+  // Parse the API response to get top 3 recommendations
+  List<CropRecommendation> _parseTopRecommendations(Map<String, dynamic> response) {
+    List<CropRecommendation> recommendations = [];
+    
+    if (response.containsKey('probabilities')) {
+      Map<String, dynamic> probabilities = response['probabilities'];
+      
+      // Convert probabilities to list and sort by confidence
+      List<MapEntry<String, dynamic>> entries = probabilities.entries.toList();
+      entries.sort((a, b) => (b.value as double).compareTo(a.value as double));
+      
+      // Take top 3 recommendations
+      for (int i = 0; i < 3 && i < entries.length; i++) {
+        recommendations.add(CropRecommendation(
+          cropName: entries[i].key,
+          confidence: (entries[i].value as double) * 100, // Convert to percentage
+          rank: i + 1,
+        ));
+      }
+    }
+    
+    return recommendations;
   }
   
   void _showSuccessSnackBar(String message) {
@@ -431,9 +458,10 @@ class _CropSuggestState extends State<CropSuggest> {
           _buildAnalyzeButton(),
           const SizedBox(height: 25),
           
-          // API Response section
-          if (cropPredictionResponse != null) ...[
-            _buildResponseSection(),
+          // Top Recommendations section
+          if (topRecommendations.isNotEmpty) ...[
+            _buildRecommendationsSection(),
+            const SizedBox(height: 20),
           ],
         ],
       ),
@@ -762,7 +790,7 @@ class _CropSuggestState extends State<CropSuggest> {
     );
   }
   
-  Widget _buildResponseSection() {
+  Widget _buildRecommendationsSection() {
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(
@@ -793,7 +821,7 @@ class _CropSuggestState extends State<CropSuggest> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'AI Recommendation Result',
+                  'Recommended Crops',
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -803,36 +831,13 @@ class _CropSuggestState extends State<CropSuggest> {
               ],
             ),
             const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'API Response:',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    const JsonEncoder.withIndent('  ').convert(cropPredictionResponse),
-                    style: GoogleFonts.sourceCodePro(
-                      fontSize: 12,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            
+            // Display top 3 recommendations
+            for (int i = 0; i < topRecommendations.length; i++) ...[
+              _buildRecommendationCard(topRecommendations[i], i),
+              if (i < topRecommendations.length - 1) const SizedBox(height: 12),
+            ],
+            
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -843,11 +848,11 @@ class _CropSuggestState extends State<CropSuggest> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info, color: Colors.blue[600], size: 20),
+                  Icon(Icons.lightbulb, color: Colors.blue[600], size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'This is the raw API response. UI improvements will be implemented based on the actual response structure.',
+                      'These recommendations are based on your soil conditions and local climate. Consider consulting with agricultural experts for best results.',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.blue[700],
@@ -861,5 +866,114 @@ class _CropSuggestState extends State<CropSuggest> {
         ),
       ),
     );
+  }
+  
+  Widget _buildRecommendationCard(CropRecommendation recommendation, int index) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.green[200]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Crop icon
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green[400]!, Colors.green[600]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.eco,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // Crop details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _formatCropName(recommendation.cropName),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Suitability: ${recommendation.confidence.toStringAsFixed(1)}%',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Confidence indicator
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.green[600],
+              size: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  String _formatCropName(String cropName) {
+    // Capitalize first letter and format crop names
+    if (cropName.isEmpty) return cropName;
+    
+    // Handle special cases
+    Map<String, String> specialNames = {
+      'kidneybeans': 'Kidney Beans',
+      'mothbeans': 'Moth Beans',
+      'mungbean': 'Mung Bean',
+      'muskmelon': 'Muskmelon',
+      'pigeonpeas': 'Pigeon Peas',
+      'blackgram': 'Black Gram',
+    };
+    
+    if (specialNames.containsKey(cropName.toLowerCase())) {
+      return specialNames[cropName.toLowerCase()]!;
+    }
+    
+    // Default formatting: capitalize first letter
+    return cropName[0].toUpperCase() + cropName.substring(1);
   }
 }
