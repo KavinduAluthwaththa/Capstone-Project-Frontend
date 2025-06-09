@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:capsfront/models/DiseaseResult_model.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -855,21 +856,4 @@ class _DiseaseMState extends State<DiseaseM> {
       ),
     );
   }
-}
-
-// Model class for disease results
-class DiseaseResult {
-  final String diseaseName;
-  final double confidence;
-  final String description;
-  final String treatment;
-  final String severity;
-
-  DiseaseResult({
-    required this.diseaseName,
-    required this.confidence,
-    required this.description,
-    required this.treatment,
-    required this.severity,
-  });
 }
