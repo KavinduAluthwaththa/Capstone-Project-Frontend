@@ -1,4 +1,5 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/shop_owner_area/FarmerProfile.dart' as profile;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:flutter/material.dart';
@@ -104,7 +105,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
       final interactionCount = prefs.getInt(farmerInteractionKey) ?? 0;
       await prefs.setInt(farmerInteractionKey, interactionCount + 1);
       
-      // Save current farmer data
+      // Save current farmer data for the profile page
       await prefs.setString('current_farmer_id', farmer.farmerID.toString());
       await prefs.setString('current_farmer_name', farmer.name);
       await prefs.setString('current_farmer_location', farmer.farmLocation);
@@ -148,6 +149,8 @@ class _FarmersListPageState extends State<FarmersListPage> {
           ),
           backgroundColor: Colors.green[400],
           duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     } catch (e) {
@@ -559,8 +562,12 @@ class _FarmersListPageState extends State<FarmersListPage> {
           // Save farmer data to SharedPreferences before navigation
           await _saveSelectedFarmer(farmer);
           
-          // You can add navigation to farmer profile page here
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => FarmerProfilePage(farmer: farmer)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => profile.FarmerProfileScreen(farmer: farmer),
+            ),
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -596,7 +603,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "ID: FARMER-${farmer.farmerID}",
+                          "ID: FRM-${farmer.farmerID}",
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[600],
