@@ -264,15 +264,6 @@ class _FarmersListPageState extends State<FarmersListPage> {
         case 'location':
           _filteredFarmers.sort((a, b) => a.farmLocation.compareTo(b.farmLocation));
           break;
-        case 'favorites':
-          _filteredFarmers.sort((a, b) {
-            bool aIsFavorite = _favoriteFarmers.contains(a.farmerID.toString());
-            bool bIsFavorite = _favoriteFarmers.contains(b.farmerID.toString());
-            if (aIsFavorite && !bIsFavorite) return -1;
-            if (!aIsFavorite && bIsFavorite) return 1;
-            return a.name.compareTo(b.name);
-          });
-          break;
       }
     });
   }
@@ -406,17 +397,7 @@ class _FarmersListPageState extends State<FarmersListPage> {
                     });
                   }),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildFilterChip('Favorites', Icons.favorite, () {
-                    setState(() {
-                      _filteredFarmers = _farmers.where((farmer) => 
-                        _favoriteFarmers.contains(farmer.farmerID.toString())
-                      ).toList();
-                    });
-                  }),
-                ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 16),
                 _buildSortButton(),
               ],
             ),
@@ -478,16 +459,6 @@ class _FarmersListPageState extends State<FarmersListPage> {
               const Icon(Icons.location_on, size: 16),
               const SizedBox(width: 8),
               Text('Location', style: GoogleFonts.poppins()),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'favorites',
-          child: Row(
-            children: [
-              const Icon(Icons.favorite, size: 16),
-              const SizedBox(width: 8),
-              Text('Favorites First', style: GoogleFonts.poppins()),
             ],
           ),
         ),
