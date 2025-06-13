@@ -1,3 +1,6 @@
+import 'farmer_model.dart';
+import 'crop_model.dart';
+
 class GrowingCrop {
   final int cfid;
   final int cropID;
@@ -26,52 +29,6 @@ class GrowingCrop {
       amount: json['amount'],
       crop: Crop.fromJson(json['crop']),
       farmer: Farmer.fromJson(json['farmer']),
-    );
-  }
-}
-
-class Crop {
-  final int cropID;
-  final String cropName;
-  final String plantingSeason;
-
-  Crop({
-    required this.cropID,
-    required this.cropName,
-    required this.plantingSeason,
-  });
-
-  factory Crop.fromJson(Map<String, dynamic> json) {
-    return Crop(
-      cropID: json['cropID'],
-      cropName: json['cropName'],
-      plantingSeason: json['plantingSeason'],
-    );
-  }
-}
-
-class Farmer {
-  final int farmerID;
-  final String name;
-  final String farmLocation;
-  final int phoneNumber;
-  final String email;
-
-  Farmer({
-    required this.farmerID,
-    required this.name,
-    required this.farmLocation,
-    required this.phoneNumber,
-    required this.email,
-  });
-
-  factory Farmer.fromJson(Map<String, dynamic> json) {
-    return Farmer(
-      farmerID: json['farmerID'],
-      name: json['name'],
-      farmLocation: json['farmLocation'],
-      phoneNumber: json['phoneNumber'],
-      email: json['email'],
     );
   }
 }
