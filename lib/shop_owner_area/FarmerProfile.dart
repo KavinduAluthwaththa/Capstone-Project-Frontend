@@ -1,4 +1,7 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/models/crop_model.dart' as GrowingCrop;
+import 'package:capsfront/models/farmer_model.dart';
+import 'package:capsfront/models/growingCrop_model.dart' as crop_model;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,7 +18,7 @@ class FarmerProfileScreen extends StatefulWidget {
 }
 
 class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
-  List<Crop> _farmerCrops = [];
+  List<GrowingCrop.Crop> _farmerCrops = [];
   bool _isLoading = true;
   String? _errorMessage;
   bool _isFavorite = false;
@@ -154,7 +157,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         setState(() {
-          _farmerCrops = jsonData.map((json) => Crop.fromJson(json)).toList();
+          _farmerCrops = jsonData.map((json) => GrowingCrop.Crop.fromJson(json)).toList();
           _isLoading = false;
         });
         
@@ -200,7 +203,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
       if (cachedData != null) {
         final List<dynamic> jsonData = json.decode(cachedData);
         setState(() {
-          _farmerCrops = jsonData.map((json) => Crop.fromJson(json)).toList();
+          _farmerCrops = jsonData.map((json) => GrowingCrop.Crop.fromJson(json)).toList();
         });
       }
     } catch (e) {
@@ -363,11 +366,11 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            _buildInfoRow(Icons.location_on, widget.farmer.location),
+            _buildInfoRow(Icons.location_on, widget.farmer.farmLocation),
             const SizedBox(height: 8),
-            _buildInfoRow(Icons.phone, widget.farmer.phoneNumber),
+            _buildInfoRow(Icons.phone, widget.farmer.phoneNumber.toString()),
             const SizedBox(height: 8),
-            _buildInfoRow(Icons.email, widget.farmer.email),
+            _buildInfoRow(Icons.email, widget.farmer.Email),
           ],
         ),
       ),
@@ -608,7 +611,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
     );
   }
 
-  Widget _buildCropItem(Crop crop) {
+  Widget _buildCropItem(GrowingCrop.Crop crop) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -650,25 +653,14 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Crop ID: ${crop.cropID}",
+            "Crop ID: ${crop.cropId}",
             style: GoogleFonts.poppins(
               color: Colors.grey[600],
               fontSize: 12,
             ),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCropDetail('Quantity', '${crop.quantity} kg', Icons.scale),
-              ),
-              Expanded(
-                child: _buildCropDetail('Price', 'Rs. ${crop.price}', Icons.monetization_on),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          _buildCropDetail('Harvest Date', crop.harvestDate, Icons.calendar_today),
+          _buildCropDetail('Planting Season', crop.plantingSeason, Icons.calendar_today),
         ],
       ),
     );
@@ -700,59 +692,6 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           ],
         ),
       ],
-    );
-  }
-}
-
-// Model classes (if not already defined)
-class Farmer {
-  final int farmerID;
-  final String name;
-  final String location;
-  final String phoneNumber;
-  final String email;
-
-  Farmer({
-    required this.farmerID,
-    required this.name,
-    required this.location,
-    required this.phoneNumber,
-    required this.email,
-  });
-
-  factory Farmer.fromJson(Map<String, dynamic> json) {
-    return Farmer(
-      farmerID: json['farmer_id'] ?? 0,
-      name: json['name'] ?? '',
-      location: json['location'] ?? '',
-      phoneNumber: json['phone_number'] ?? '',
-      email: json['email'] ?? '',
-    );
-  }
-}
-
-class Crop {
-  final int cropID;
-  final String cropName;
-  final int quantity;
-  final double price;
-  final String harvestDate;
-
-  Crop({
-    required this.cropID,
-    required this.cropName,
-    required this.quantity,
-    required this.price,
-    required this.harvestDate,
-  });
-
-  factory Crop.fromJson(Map<String, dynamic> json) {
-    return Crop(
-      cropID: json['crop_id'] ?? 0,
-      cropName: json['crop_name'] ?? '',
-      quantity: json['quantity'] ?? 0,
-      price: (json['price'] ?? 0.0).toDouble(),
-      harvestDate: json['harvest_date'] ?? '',
     );
   }
 }
