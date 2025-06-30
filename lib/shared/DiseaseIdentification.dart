@@ -99,7 +99,9 @@ class _DiseaseMState extends State<DiseaseM> {
       // Prepare request
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse(ApiEndpoints.diseaseIdentification),
+        Uri.parse(
+          ApiEndpoints.getCropShops,
+        ),
       );
 
       request.headers.addAll({
@@ -120,7 +122,7 @@ class _DiseaseMState extends State<DiseaseM> {
         request.fields['comments'] = _commentsController.text;
       }
 
-      print('Sending disease identification request to: ${ApiEndpoints.diseaseIdentification}');
+      print('Sending disease identification request to: ${ApiEndpoints.getCropShops}');
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
