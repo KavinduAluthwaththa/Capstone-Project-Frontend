@@ -97,4 +97,12 @@ class ApiEndpoints {
 
   //suggestion model
   static const String cropPrediction = "$baseUrl/CropRecommendation/predict"; //nitrogen, phosphorus,potassium,temperature,humidity,ph,rainfall
+
+  //disease prediction
+  static const String potatodisease = "$baseUrl/PotatoDisease/predict"; //potato
+  static const String ricedisease = "$baseUrl/RiceDisease/predict"; //rice
+  static const String pumpkindisease = "$baseUrl/PumpkinDisease/predict"; //pumpkin
+
+
+
 }
