@@ -15,24 +15,55 @@ class _ChatbotPageState extends State<ChatbotPage> {
   bool _isLoading = false;
 
   // Initialize the Generative Model
-  late final GenerativeModel _model;
+  GenerativeModel? _model;
+  String? _initError;
 
   @override
-void initState() {
-  super.initState();
-  final geminiApiKey = dotenv.env['geminiapi'];
-  if (geminiApiKey == null || geminiApiKey.isEmpty) {
-    throw Exception('Gemini API key not found in .env file');
+  void initState() {
+    super.initState();
+    // Add a small delay to ensure dotenv is loaded from main.dart
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _initializeModel();
+    });
   }
-  
-  // Initialize the model with the API key from .env
-  _model = GenerativeModel(
-    model: 'gemini-pro',
-    apiKey: geminiApiKey,
-  );
-}
+
+  void _initializeModel() {
+    try {
+      final geminiApiKey = dotenv.env['geminiapi'];
+      print('Attempting to get API key...');
+      print('API Key exists: ${geminiApiKey != null}');
+      print('API Key length: ${geminiApiKey?.length ?? 0}');
+      
+      if (geminiApiKey == null || geminiApiKey.isEmpty) {
+        setState(() {
+          _initError = 'Gemini API key not found in .env file. Please check your .env file contains: geminiapi=YOUR_API_KEY';
+        });
+        return;
+      }
+      
+      // Initialize the model with the API key from .env - using gemini-1.5-flash instead of gemini-pro
+      _model = GenerativeModel(
+        model: 'gemini-1.5-flash',
+        apiKey: geminiApiKey,
+      );
+      
+      print('Model initialized successfully');
+    } catch (e) {
+      print('Error initializing model: $e');
+      setState(() {
+        _initError = 'Failed to initialize AI model: ${e.toString()}';
+      });
+    }
+  }
 
   Future<void> _sendMessage() async {
+    if (_model == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_initError ?? 'AI model not initialized')),
+      );
+      return;
+    }
+
     String message = _controller.text.trim();
     if (message.isEmpty) return;
 
@@ -43,26 +74,46 @@ void initState() {
     _controller.clear();
 
     try {
-      // Create a specialized prompt for agricultural context
-      final prompt = '''
-      You are an agricultural expert assistant helping farmers with their queries.
-      Provide detailed, practical advice in simple language.
-      Focus on crop management, pest control, weather impact, soil health, and farming techniques.
-      If the question isn't agriculture-related, politely guide back to farming topics.
+      // Simplified prompt for better compatibility
+      final prompt = 'You are an agricultural expert. Answer this farming question briefly and practically: $message';
       
-      Farmer's question: $message
-      ''';
-      
+      print('Sending request to Gemini API...');
       final content = Content.text(prompt);
-      final response = await _model.generateContent([content]);
       
+      // Add timeout to the request
+      final response = await _model!.generateContent([content]).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Request timed out. Please check your internet connection.');
+        },
+      );
+      
+      print('Response received from Gemini API');
       setState(() {
         _messages.add({"bot": response.text ?? "I couldn't process that request. Please try again."});
         _isLoading = false;
       });
     } catch (e) {
+      print('Detailed error: $e');
+      print('Error type: ${e.runtimeType}');
+      
+      String errorMessage;
+      if (e.toString().contains('Failed to fetch') || e.toString().contains('ClientException')) {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+      } else if (e.toString().contains('timeout')) {
+        errorMessage = "Request timed out. Please check your connection and try again.";
+      } else if (e.toString().contains('API key')) {
+        errorMessage = "Invalid API key. Please check your Gemini API key.";
+      } else if (e.toString().contains('403')) {
+        errorMessage = "API access forbidden. Please check your API key permissions.";
+      } else if (e.toString().contains('429')) {
+        errorMessage = "Too many requests. Please wait and try again.";
+      } else {
+        errorMessage = "Connection error: ${e.toString()}";
+      }
+      
       setState(() {
-        _messages.add({"bot": "Error connecting to the AI service. Please check your connection."});
+        _messages.add({"bot": errorMessage});
         _isLoading = false;
       });
     }
@@ -70,6 +121,40 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
+    if (_initError != null) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text('Agri Assistant'),
+          backgroundColor: Colors.green[400],
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, color: Colors.red, size: 60),
+              const SizedBox(height: 20),
+              Text(
+                'Error: $_initError',
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _initError = null;
+                  });
+                  _initializeModel();
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(

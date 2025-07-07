@@ -8,13 +8,25 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   try {
+    // Load environment variables
     await dotenv.load(fileName: ".env");
-    runApp(const MyApp());
+    print('Environment variables loaded successfully');
+    
+    final apiKey = dotenv.env['geminiapi'];
+    print('Gemini API Key loaded: ${apiKey != null}');
+    print('API Key first 10 chars: ${apiKey?.substring(0, 10) ?? 'null'}...');
+    
+    final weatherKey = dotenv.env['weatherapi'];
+    print('Weather API Key loaded: ${weatherKey != null}');
+    print('Weather API Key length: ${weatherKey?.length ?? 0}');
   } catch (e) {
     print('Error loading .env file: $e');
-    runApp(const MyApp());
+    // Continue running the app even if .env fails to load
   }
+  
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -64,8 +76,9 @@ class _BottomNavigationHandlerState extends State<BottomNavigationHandler> {
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Ask me'),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shop'),
+          BottomNavigationBarItem(icon: Icon(Icons.agriculture), label: 'Farm'),
+          BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Chatbot'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

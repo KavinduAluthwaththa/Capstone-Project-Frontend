@@ -252,6 +252,9 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
         Uri.parse('https://api.openweathermap.org/data/2.5/weather?q=$location,LK&units=metric&appid=$weatherApiKey'),
       );
 
+      print('Weather API response status: ${response.statusCode}');
+      print('Weather API response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -262,12 +265,18 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
           _errorMessage = '';
         });
         
-        // Save updated weather data to SharedPreferences
         if (_currentFarmer != null) {
           await _saveFarmerDataToPrefs(_currentFarmer!);
         }
+      } else if (response.statusCode == 401) {
+        // Handle invalid API key specifically
+        setState(() {
+          _errorMessage = 'Weather API key is invalid. Please check configuration.';
+          _isLoading = false;
+        });
       } else {
-        throw Exception('Weather API Error: ${response.statusCode}');
+        final errorData = json.decode(response.body);
+        throw Exception('Weather API Error: ${errorData['message'] ?? response.statusCode}');
       }
     } catch (e) {
       setState(() {
