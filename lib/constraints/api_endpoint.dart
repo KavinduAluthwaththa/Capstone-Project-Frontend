@@ -1,6 +1,5 @@
 class ApiEndpoints {
-  static const String baseUrl = "https://localhost:7126/api";
-  static const String baseUrl = "https://localhost:7126/api";
+  static const String baseUrl = "https://localhost:44320/api";
 
   // Crop
   static const String getCrops = "$baseUrl/Crop";
@@ -95,5 +94,15 @@ class ApiEndpoints {
   // User
   static const String registerUser = "$baseUrl/User/Register";
   static const String loginUser = "$baseUrl/User/Login";
+
+  //suggestion model
+  static const String cropPrediction = "$baseUrl/CropRecommendation/predict"; //nitrogen, phosphorus,potassium,temperature,humidity,ph,rainfall
+
+  //disease prediction
+  static const String potatodisease = "$baseUrl/PotatoDisease/predict"; //potato
+  static const String ricedisease = "$baseUrl/RiceDisease/predict"; //rice
+  static const String pumpkindisease = "$baseUrl/PumpkinDisease/predict"; //pumpkin
+
+
 
 }

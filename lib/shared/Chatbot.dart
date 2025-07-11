@@ -68,13 +68,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   Future<void> _sendMessage() async {
-    if (_model == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_initError ?? 'AI model not initialized')),
-      );
-      return;
-    }
-
     String message = _controller.text.trim();
     if (message.isEmpty || _model == null) return;
 
@@ -107,24 +100,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Detailed error: $e');
-      print('Error type: ${e.runtimeType}');
-      
-      String errorMessage;
-      if (e.toString().contains('Failed to fetch') || e.toString().contains('ClientException')) {
-        errorMessage = "Network error. Please check your internet connection and try again.";
-      } else if (e.toString().contains('timeout')) {
-        errorMessage = "Request timed out. Please check your connection and try again.";
-      } else if (e.toString().contains('API key')) {
-        errorMessage = "Invalid API key. Please check your Gemini API key.";
-      } else if (e.toString().contains('403')) {
-        errorMessage = "API access forbidden. Please check your API key permissions.";
-      } else if (e.toString().contains('429')) {
-        errorMessage = "Too many requests. Please wait and try again.";
-      } else {
-        errorMessage = "Connection error: ${e.toString()}";
-      }
-      
       setState(() {
         _messages.add({"bot": "Error: Unable to get response. Please check your internet connection and try again."});
         _isLoading = false;
@@ -171,40 +146,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_initError != null) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('Agri Assistant'),
-          backgroundColor: Colors.green[400],
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, color: Colors.red, size: 60),
-              const SizedBox(height: 20),
-              Text(
-                'Error: $_initError',
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _initError = null;
-                  });
-                  _initializeModel();
-                },
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(

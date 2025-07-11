@@ -7,18 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CropSuggest extends StatefulWidget {
-  final double temperature;
-  final int humidity;
-  final double rainfall;
-  final String? location;
-
-  const CropSuggest({
-    super.key,
-    required this.temperature,
-    required this.humidity,
-    required this.rainfall,
-    this.location,
-  });
+  const CropSuggest({super.key});
 
   @override
   _CropSuggestState createState() => _CropSuggestState();
@@ -36,7 +25,7 @@ class _CropSuggestState extends State<CropSuggest> {
     'rainfall': 0.0,
     'location': '',
   };
-
+  
   // Controllers for text fields
   final nController = TextEditingController();
   final pController = TextEditingController();
@@ -56,7 +45,7 @@ class _CropSuggestState extends State<CropSuggest> {
     super.initState();
     _loadSessionAndWeatherData();
   }
-
+  
   @override
   void dispose() {
     nController.dispose();
@@ -169,12 +158,12 @@ class _CropSuggestState extends State<CropSuggest> {
       _showErrorSnackBar('pH value must be between 0 and 14');
       return;
     }
-
+    
     setState(() {
       isAnalyzing = true;
       _errorMessage = '';
     });
-
+    
     try {
       // Prepare data in the required order: nitrogen, phosphorus, potassium, temperature, humidity, ph, rainfall
       final requestData = {
@@ -526,8 +515,6 @@ class _CropSuggestState extends State<CropSuggest> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildWeatherItem(Icons.thermostat,
-                    '${weatherData['temperature']}°C', 'Temperature'),
                 _buildWeatherItem(
                   Icons.thermostat,
                   '${weatherData['temperature']}°C',
