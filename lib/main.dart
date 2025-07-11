@@ -5,6 +5,8 @@ import 'package:capsfront/farmer_area/FarmerMainPage.dart';
 import 'package:capsfront/shared/Chatbot.dart';
 import 'package:capsfront/shared/ProfilePage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import 'package:capsfront/services/theme_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,18 +14,20 @@ Future<void> main() async {
   try {
     // Load environment variables
     await dotenv.load(fileName: ".env");
-    print('Environment variables loaded successfully');
-    
-    final apiKey = dotenv.env['geminiapi'];
-    print('Gemini API Key loaded: ${apiKey != null}');
-    print('API Key first 10 chars: ${apiKey?.substring(0, 10) ?? 'null'}...');
-    
-    final weatherKey = dotenv.env['weatherapi'];
-    print('Weather API Key loaded: ${weatherKey != null}');
-    print('Weather API Key length: ${weatherKey?.length ?? 0}');
+    runApp(
+      ChangeNotifierProvider(
+        create: (context) => ThemeService(),
+        child: const MyApp(),
+      ),
+    );
   } catch (e) {
     print('Error loading .env file: $e');
-    // Continue running the app even if .env fails to load
+    runApp(
+      ChangeNotifierProvider(
+        create: (context) => ThemeService(),
+        child: const MyApp(),
+      ),
+    );
   }
   
   runApp(const MyApp());
@@ -33,10 +37,16 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: const Splashscreen(), // Set FarmerProfileScreen as the initial page
+    return Consumer<ThemeService>(
+      builder: (context, themeService, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeService.lightTheme,
+          darkTheme: ThemeService.darkTheme,
+          themeMode: themeService.currentTheme,
+          home: const Splashscreen(),
+        );
+      },
     );
   }
 }
@@ -44,7 +54,8 @@ class MyApp extends StatelessWidget {
 class BottomNavigationHandler extends StatefulWidget {
   const BottomNavigationHandler({super.key});
   @override
-  State<BottomNavigationHandler> createState() => _BottomNavigationHandlerState();
+  State<BottomNavigationHandler> createState() =>
+      _BottomNavigationHandlerState();
 }
 
 class _BottomNavigationHandlerState extends State<BottomNavigationHandler> {
@@ -60,16 +71,16 @@ class _BottomNavigationHandlerState extends State<BottomNavigationHandler> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        backgroundColor: Colors.green[400],
+        selectedItemColor:
+            Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
+        unselectedItemColor:
+            Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
+        backgroundColor:
+            Theme.of(context).bottomNavigationBarTheme.backgroundColor,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;

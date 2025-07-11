@@ -94,6 +94,14 @@ class ApiEndpoints {
   static const String registerUser = "$baseUrl/User/Register";
   static const String loginUser = "$baseUrl/User/Login";
 
-  //Crop recommendation
-  static String cropRecommendationPredict = "$baseUrl/CropRecommendation/predict";
+  //suggestion model
+  static const String cropPrediction = "$baseUrl/CropRecommendation/predict"; //nitrogen, phosphorus,potassium,temperature,humidity,ph,rainfall
+
+  //disease prediction
+  static const String potatodisease = "$baseUrl/PotatoDisease/predict"; //potato
+  static const String ricedisease = "$baseUrl/RiceDisease/predict"; //rice
+  static const String pumpkindisease = "$baseUrl/PumpkinDisease/predict"; //pumpkin
+
+
+
 }

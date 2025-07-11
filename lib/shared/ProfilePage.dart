@@ -17,11 +17,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final int _selectedIndex = 2;
   bool _isLoading = true;
   String? _errorMessage;
-  String? _userType;
-  String? _userEmail;
   Farmer? _farmer;
   Shop? _shop;
 
@@ -62,8 +59,6 @@ class _ProfilePageState extends State<ProfilePage> {
       }
 
       setState(() {
-        _userType = userType;
-        _userEmail = userEmail;
       });
 
       if (userType.toLowerCase() == 'farmer') {

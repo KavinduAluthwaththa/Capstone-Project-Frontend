@@ -1,9 +1,10 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/models/cropRecommendation_model.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:capsfront/models/crop_suggest_model.dart';
+import 'dart:convert';
 
 class CropSuggest extends StatefulWidget {
   final double temperature;
@@ -26,8 +27,9 @@ class CropSuggest extends StatefulWidget {
 class _CropSuggestState extends State<CropSuggest> {
   bool isLoading = true;
   bool isAnalyzing = false;
-
-  // Weather data
+  String _errorMessage = '';
+  
+  // Weather data from SharedPreferences
   Map<String, dynamic> weatherData = {
     'temperature': 0.0,
     'humidity': 0,
@@ -40,21 +42,19 @@ class _CropSuggestState extends State<CropSuggest> {
   final pController = TextEditingController();
   final kController = TextEditingController();
   final phController = TextEditingController();
-
-  // Crop suggestions from backend
-  final List<Map<String, dynamic>> cropSuggestions = [];
-
+  
+  // API response data
+  Map<String, dynamic>? cropPredictionResponse;
+  List<CropRecommendation> topRecommendations = [];
+  
+  // Session data
+  String? _authToken;
+  String? _farmerLocation;
+  
   @override
   void initState() {
     super.initState();
-    // Initialize weather data from widget parameters
-    weatherData = {
-      'temperature': widget.temperature,
-      'humidity': widget.humidity,
-      'rainfall': widget.rainfall,
-      'location': widget.location ?? 'Unknown',
-    };
-    isLoading = false;
+    _loadSessionAndWeatherData();
   }
 
   @override
@@ -65,245 +65,509 @@ class _CropSuggestState extends State<CropSuggest> {
     phController.dispose();
     super.dispose();
   }
-
-  // Method to analyze soil data and get crop recommendations from backend
+  
+  // Load session data and weather data from SharedPreferences
+  Future<void> _loadSessionAndWeatherData() async {
+    setState(() {
+      isLoading = true;
+      _errorMessage = '';
+    });
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Load session data
+      _authToken = prefs.getString('auth_token');
+      _farmerLocation = prefs.getString('farmer_location') ?? prefs.getString('weather_location');
+      
+      if (_authToken == null || _authToken!.isEmpty) {
+        throw Exception('Authentication token missing. Please log in again.');
+      }
+      
+      // Load weather data from SharedPreferences
+      final temperature = prefs.getString('last_temperature') ?? '--°';
+      final humidity = prefs.getString('last_humidity') ?? '--%';
+      final location = prefs.getString('weather_location') ?? 'Unknown';
+      
+      // Parse temperature and humidity values
+      double tempValue = 0.0;
+      int humidityValue = 0;
+      
+      try {
+        // Extract numeric value from temperature string (e.g., "28°" -> 28.0)
+        final tempStr = temperature.replaceAll('°', '');
+        if (tempStr != '--') {
+          tempValue = double.parse(tempStr);
+        }
+        
+        // Extract numeric value from humidity string (e.g., "65%" -> 65)
+        final humidityStr = humidity.replaceAll('%', '');
+        if (humidityStr != '--') {
+          humidityValue = int.parse(humidityStr);
+        }
+      } catch (e) {
+        print('Error parsing weather values: $e');
+      }
+      
+      setState(() {
+        weatherData = {
+          'temperature': tempValue,
+          'humidity': humidityValue,
+          'rainfall': 0.0, // Will be estimated based on humidity
+          'location': location,
+        };
+        
+        // Estimate rainfall based on humidity (this is a rough estimation)
+        if (humidityValue > 80) {
+          weatherData['rainfall'] = 10.0;
+        } else if (humidityValue > 60) {
+          weatherData['rainfall'] = 5.0;
+        } else {
+          weatherData['rainfall'] = 1.0;
+        }
+        
+        isLoading = false;
+      });
+      
+      print('Weather data loaded from SharedPreferences:');
+      print('Temperature: ${weatherData['temperature']}°C');
+      print('Humidity: ${weatherData['humidity']}%');
+      print('Estimated Rainfall: ${weatherData['rainfall']} mm');
+      print('Location: ${weatherData['location']}');
+      
+    } catch (e) {
+      print('Error loading weather data: $e');
+      setState(() {
+        _errorMessage = e.toString();
+        isLoading = false;
+      });
+    }
+  }
+  
+  // Method to analyze soil data and get crop recommendations from API
   Future<void> analyzeSoilData() async {
-    if (nController.text.isEmpty ||
-        pController.text.isEmpty ||
-        kController.text.isEmpty ||
-        phController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all soil parameters'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+    // Validate input fields
+    if (nController.text.isEmpty || pController.text.isEmpty ||
+        kController.text.isEmpty || phController.text.isEmpty) {
+      _showErrorSnackBar('Please fill in all soil parameters');
       return;
     }
-
-    double? n = double.tryParse(nController.text);
-    double? p = double.tryParse(pController.text);
-    double? k = double.tryParse(kController.text);
+    
+    // Parse the input values
+    double? nitrogen = double.tryParse(nController.text);
+    double? phosphorus = double.tryParse(pController.text);
+    double? potassium = double.tryParse(kController.text);
     double? ph = double.tryParse(phController.text);
-
-    if (n == null || p == null || k == null || ph == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter valid numeric values'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+    
+    if (nitrogen == null || phosphorus == null || potassium == null || ph == null) {
+      _showErrorSnackBar('Please enter valid numeric values');
+      return;
+    }
+    
+    // Validate pH range
+    if (ph < 0 || ph > 14) {
+      _showErrorSnackBar('pH value must be between 0 and 14');
       return;
     }
 
     setState(() {
       isAnalyzing = true;
+      _errorMessage = '';
     });
 
     try {
-      final input = CropSuggestInput(
-        n: n,
-        p: p,
-        k: k,
-        ph: ph,
-        temperature: widget.temperature,
-        humidity: widget.humidity,
-        rainfall: widget.rainfall,
-        location: widget.location ?? '',
+      // Prepare data in the required order: nitrogen, phosphorus, potassium, temperature, humidity, ph, rainfall
+      final requestData = {
+        "nitrogen": nitrogen,
+        "phosphorus": phosphorus,
+        "potassium": potassium,
+        "temperature": weatherData['temperature'],
+        "humidity": weatherData['humidity'],
+        "ph": ph,
+        "rainfall": weatherData['rainfall'],
+      };
+      
+      print('Sending crop prediction request:');
+      print('API Endpoint: ${ApiEndpoints.cropPrediction}');
+      print('Request Data: $requestData');
+      
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.cropPrediction),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_authToken',
+        },
+        body: jsonEncode(requestData),
       );
-
-            final response = await http.post(
-        Uri.parse(ApiEndpoints.cropRecommendationPredict),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(input.toJson()),
-      );
-
+      
+      print('Crop prediction response status: ${response.statusCode}');
+      print('Crop prediction response body: ${response.body}');
+      
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final responseData = json.decode(response.body);
+        
         setState(() {
-          cropSuggestions.clear();
-          if (data is List) {
-            cropSuggestions.addAll(List<Map<String, dynamic>>.from(data));
-          } else if (data is Map) {
-            cropSuggestions.add(Map<String, dynamic>.from(data));
-          }
+          cropPredictionResponse = responseData;
+          topRecommendations = _parseTopRecommendations(responseData);
+          isAnalyzing = false;
+        });
+        
+        _showSuccessSnackBar('Crop recommendation received successfully!');
+        
+      } else if (response.statusCode == 401) {
+        setState(() {
+          _errorMessage = 'Authentication failed. Please log in again.';
           isAnalyzing = false;
         });
       } else {
-        setState(() {
-          isAnalyzing = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to get recommendations: ${response.statusCode}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        final errorData = json.decode(response.body);
+        final errorMessage = errorData['message'] ?? 'Failed to get crop recommendation';
+        throw Exception(errorMessage);
       }
+      
     } catch (e) {
+      print('Error getting crop recommendation: $e');
       setState(() {
+        _errorMessage = 'Error: $e';
         isAnalyzing = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to analyze data. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showErrorSnackBar('Failed to get crop recommendation: $e');
     }
+  }
+  
+  // Parse the API response to get top 3 recommendations
+  List<CropRecommendation> _parseTopRecommendations(Map<String, dynamic> response) {
+    List<CropRecommendation> recommendations = [];
+    
+    if (response.containsKey('probabilities')) {
+      Map<String, dynamic> probabilities = response['probabilities'];
+      
+      // Convert probabilities to list and sort by confidence
+      List<MapEntry<String, dynamic>> entries = probabilities.entries.toList();
+      entries.sort((a, b) => (b.value as double).compareTo(a.value as double));
+      
+      // Take top 3 recommendations
+      for (int i = 0; i < 3 && i < entries.length; i++) {
+        recommendations.add(CropRecommendation(
+          cropName: entries[i].key,
+          confidence: (entries[i].value as double) * 100, // Convert to percentage
+          rank: i + 1,
+        ));
+      }
+    }
+    
+    return recommendations;
+  }
+  
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        backgroundColor: Colors.green[400],
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+  
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        backgroundColor: Colors.red[400],
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          "Crop Recommendation",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-        ),
-        backgroundColor: Colors.green[400],
-        centerTitle: true,
-        toolbarHeight: 80,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: isLoading
+                  ? _buildLoadingState()
+                  : _errorMessage.isNotEmpty
+                      ? _buildErrorState()
+                      : _buildMainContent(),
+            ),
+          ],
         ),
       ),
-      body: isLoading
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: Colors.green),
-                  SizedBox(height: 20),
-                  Text('Fetching weather data...'),
-                ],
+    );
+  }
+  
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green[400]!, Colors.green[500]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(25),
+          bottomRight: Radius.circular(25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green[200]!.withOpacity(0.5),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                onPressed: () => Navigator.maybePop(context),
               ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildWeatherCard(),
-                  const SizedBox(height: 20),
-                  _buildSoilInputSection(),
-                  const SizedBox(height: 25),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: isAnalyzing ? null : analyzeSoilData,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[500],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        disabledBackgroundColor: Colors.green[200],
-                      ),
-                      child: isAnalyzing
-                          ? const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.0,
-                                  ),
-                                ),
-                                SizedBox(width: 10),
-                                Text(
-                                  'Analyzing...',
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.white),
-                                ),
-                              ],
-                            )
-                          : const Text(
-                              'Get Crop Recommendations',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                    ),
+              Expanded(
+                child: Text(
+                  "Crop Recommendation",
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  const SizedBox(height: 25),
-                  if (cropSuggestions.isNotEmpty) ...[
-                    const Text(
-                      'Recommended Crops',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Based on your soil parameters and current weather conditions',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 20),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: cropSuggestions.length,
-                      itemBuilder: (context, index) {
-                        final crop = cropSuggestions[index];
-                        return _buildCropCard(crop);
-                      },
-                    ),
-                  ],
-                ],
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(width: 48), // Balance the back button
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "AI-powered crop suggestions based on your soil and climate",
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.9),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Loading weather data...',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.red[200]!),
+              ),
+              child: Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red[400],
               ),
             ),
+            const SizedBox(height: 20),
+            Text(
+              'Oops! Something went wrong',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.red[700],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _errorMessage,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _loadSessionAndWeatherData,
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: Text(
+                'Try Again',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[400],
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildMainContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Weather information section
+          _buildWeatherCard(),
+          const SizedBox(height: 20),
+          
+          // Soil parameters input section
+          _buildSoilInputSection(),
+          const SizedBox(height: 25),
+          
+          // Analyze button
+          _buildAnalyzeButton(),
+          const SizedBox(height: 25),
+          
+          // Top Recommendations section
+          if (topRecommendations.isNotEmpty) ...[
+            _buildRecommendationsSection(),
+            const SizedBox(height: 20),
+          ],
+        ],
+      ),
     );
   }
 
   Widget _buildWeatherCard() {
     return Card(
-      elevation: 3,
+      elevation: 8,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.white, Colors.grey[50]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Current Weather',
-                  style: TextStyle(
-                    fontSize: 16,
+                Text(
+                  'Weather Data',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Colors.green[700],
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.refresh, color: Colors.green[600]),
+                    onPressed: _loadSessionAndWeatherData,
+                    tooltip: 'Refresh weather data',
                   ),
                 ),
               ],
             ),
-            const Divider(),
-            const SizedBox(height: 5),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildWeatherItem(Icons.thermostat,
                     '${weatherData['temperature']}°C', 'Temperature'),
                 _buildWeatherItem(
-                    Icons.water_drop, '${weatherData['humidity']}%', 'Humidity'),
-                _buildWeatherItem(Icons.grain, '${weatherData['rainfall']} mm',
-                    'Rainfall'),
+                  Icons.thermostat,
+                  '${weatherData['temperature']}°C',
+                  'Temperature',
+                ),
+                _buildWeatherItem(
+                  Icons.water_drop,
+                  '${weatherData['humidity']}%',
+                  'Humidity',
+                ),
+                _buildWeatherItem(
+                  Icons.grain,
+                  '${weatherData['rainfall']} mm',
+                  'Rainfall (Est.)',
+                ),
               ],
             ),
-            const SizedBox(height: 8),
-            Center(
-              child: Text(
-                'Location: ${weatherData['location'] ?? 'Unknown'}',
-                style: const TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey,
-                ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.location_pin, color: Colors.blue[600], size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Location: ${weatherData['location']}',
+                      style: GoogleFonts.poppins(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.blue[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -315,18 +579,26 @@ class _CropSuggestState extends State<CropSuggest> {
   Widget _buildWeatherItem(IconData icon, String value, String label) {
     return Column(
       children: [
-        Icon(icon, size: 30, color: Colors.green[700]),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.green[100],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, size: 30, color: Colors.green[700]),
+        ),
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
         ),
         Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 12,
             color: Colors.grey[600],
           ),
@@ -337,51 +609,80 @@ class _CropSuggestState extends State<CropSuggest> {
 
   Widget _buildSoilInputSection() {
     return Card(
-      elevation: 3,
+      elevation: 8,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.white, Colors.grey[50]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Soil Parameters',
-              style: TextStyle(
-                fontSize: 16,
+              style: GoogleFonts.poppins(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: Colors.green[700],
               ),
             ),
-            const SizedBox(height: 5),
-            const Text(
-              'Enter your soil test results',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            const SizedBox(height: 8),
+            Text(
+              'Enter your soil test results for accurate recommendations',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
                   child: _buildInputField(
-                      'Nitrogen (N)', 'mg/kg', nController),
+                    'Nitrogen (N)',
+                    'mg/kg',
+                    nController,
+                    Icons.science,
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _buildInputField(
-                      'Phosphorus (P)', 'mg/kg', pController),
+                    'Phosphorus (P)',
+                    'mg/kg',
+                    pController,
+                    Icons.science,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: _buildInputField(
-                      'Potassium (K)', 'mg/kg', kController),
+                    'Potassium (K)',
+                    'mg/kg',
+                    kController,
+                    Icons.science,
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: _buildInputField('pH Level', '', phController),
+                  child: _buildInputField(
+                    'pH Level',
+                    '0-14',
+                    phController,
+                    Icons.science,
+                  ),
                 ),
               ],
             ),
@@ -391,79 +692,187 @@ class _CropSuggestState extends State<CropSuggest> {
     );
   }
 
-  Widget _buildInputField(
-      String label, String unit, TextEditingController controller) {
+  Widget _buildInputField(String label, String unit, TextEditingController controller, IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: 8),
         TextField(
           controller: controller,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: GoogleFonts.poppins(),
           decoration: InputDecoration(
+            prefixIcon: Icon(icon, color: Colors.green[400], size: 20),
             suffixText: unit,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+            suffixStyle: GoogleFonts.poppins(
+              color: Colors.grey[600],
+              fontSize: 12,
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.green[400]!),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            fillColor: Colors.grey[50],
+            filled: true,
           ),
         ),
       ],
     );
   }
-
-  Widget _buildCropCard(Map<String, dynamic> crop) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+  
+  Widget _buildAnalyzeButton() {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isAnalyzing 
+              ? [Colors.grey[300]!, Colors.grey[400]!]
+              : [Colors.green[400]!, Colors.green[600]!],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green[300]!.withOpacity(0.5),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: ElevatedButton(
+        onPressed: isAnalyzing ? null : analyzeSoilData,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: isAnalyzing
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.0,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Analyzing...',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.psychology, color: Colors.white, size: 24),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Get AI Crop Recommendations',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+  
+  Widget _buildRecommendationsSection() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.white, Colors.green[50]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.agriculture, color: Colors.green[700], size: 24),
+                ),
+                const SizedBox(width: 12),
                 Text(
-                  crop['name'] ?? '',
-                  style: const TextStyle(
-                    fontSize: 18,
+                  'Recommended Crops',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Colors.green[700],
                   ),
                 ),
-                if (crop['confidence'] != null)
-                  _buildConfidenceChip(crop['confidence']),
               ],
             ),
-            const SizedBox(height: 10),
-            Text(crop['description'] ?? ''),
-            const SizedBox(height: 15),
-            if (crop['season'] != null)
-              _buildInfoRow('Season', crop['season']),
-            if (crop['waterRequirement'] != null)
-              _buildInfoRow('Water Requirement', crop['waterRequirement']),
-            if (crop['soilType'] != null)
-              _buildInfoRow('Ideal Soil Type', crop['soilType']),
-            const SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {
-                  _showCropDetails(context, crop);
-                },
-                child: const Text('More Details'),
+            const SizedBox(height: 16),
+            
+            // Display top 3 recommendations
+            for (int i = 0; i < topRecommendations.length; i++) ...[
+              _buildRecommendationCard(topRecommendations[i], i),
+              if (i < topRecommendations.length - 1) const SizedBox(height: 12),
+            ],
+            
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.lightbulb, color: Colors.blue[600], size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'These recommendations are based on your soil conditions and local climate. Consider consulting with agricultural experts for best results.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.blue[700],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -471,205 +880,113 @@ class _CropSuggestState extends State<CropSuggest> {
       ),
     );
   }
-
-  Widget _buildConfidenceChip(int confidence) {
-    Color chipColor;
-    if (confidence >= 85) {
-      chipColor = Colors.green;
-    } else if (confidence >= 70) {
-      chipColor = Colors.orange;
-    } else {
-      chipColor = Colors.red;
-    }
-
-    return Chip(
-      label: Text(
-        '$confidence% Confidence',
-        style: const TextStyle(color: Colors.white, fontSize: 12),
-      ),
-      backgroundColor: chipColor,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-    );
-  }
-
-  Widget _buildSuitabilityChip(String suitability) {
-    Color chipColor;
-    switch (suitability.toLowerCase()) {
-      case 'high':
-        chipColor = Colors.green;
-        break;
-      case 'medium':
-        chipColor = Colors.orange;
-        break;
-      case 'low':
-        chipColor = Colors.red;
-        break;
-      default:
-        chipColor = Colors.blue;
-    }
-
-    return Chip(
-      label: Text(
-        suitability,
-        style: const TextStyle(color: Colors.white, fontSize: 12),
-      ),
-      backgroundColor: chipColor,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-            ),
+  
+  Widget _buildRecommendationCard(CropRecommendation recommendation, int index) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.green[200]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-    );
-  }
-
-  void _showCropDetails(BuildContext context, Map<String, dynamic> crop) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+      child: Row(
+        children: [
+          // Crop icon
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green[400]!, Colors.green[600]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.eco,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // Crop details
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 5,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      crop['name'] ?? '',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (crop['suitability'] != null)
-                      _buildSuitabilityChip(crop['suitability']),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Detailed Information',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                if (crop['season'] != null)
-                  _buildDetailRow('Season', crop['season']),
-                if (crop['waterRequirement'] != null)
-                  _buildDetailRow('Water Requirement', crop['waterRequirement']),
-                if (crop['soilType'] != null)
-                  _buildDetailRow('Ideal Soil Type', crop['soilType']),
-                const SizedBox(height: 20),
-                const Text(
-                  'Description',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
                 Text(
-                  '${crop['description'] ?? ''} Additional details about growing ${crop['name'] ?? ''} would appear here, including optimal planting times, spacing requirements, fertilizer recommendations, and common issues to watch for during cultivation.',
-                  style: const TextStyle(height: 1.5),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${crop['name'] ?? ''} added to your crops'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[400],
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  _formatCropName(recommendation.cropName),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
-                  child: const Text(
-                    'Add to My Crops',
-                    style: TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Suitability: ${recommendation.confidence.toStringAsFixed(1)}%',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 150,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+          
+          // Confidence indicator
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(8),
             ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: Colors.black87,
-              ),
+            child: Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.green[600],
+              size: 16,
             ),
           ),
         ],
       ),
     );
+  }
+  
+  String _formatCropName(String cropName) {
+    // Capitalize first letter and format crop names
+    if (cropName.isEmpty) return cropName;
+    
+    // Handle special cases
+    Map<String, String> specialNames = {
+      'kidneybeans': 'Kidney Beans',
+      'mothbeans': 'Moth Beans',
+      'mungbean': 'Mung Bean',
+      'muskmelon': 'Muskmelon',
+      'pigeonpeas': 'Pigeon Peas',
+      'blackgram': 'Black Gram',
+    };
+    
+    if (specialNames.containsKey(cropName.toLowerCase())) {
+      return specialNames[cropName.toLowerCase()]!;
+    }
+    
+    // Default formatting: capitalize first letter
+    return cropName[0].toUpperCase() + cropName.substring(1);
   }
 }

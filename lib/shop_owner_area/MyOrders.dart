@@ -22,8 +22,6 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   bool _isLoading = true;
   String? _errorMessage;
   String? _authToken;
-  String? _userType;
-  String? _userName;
 
   @override
   void initState() {
@@ -36,10 +34,6 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
       final prefs = await SharedPreferences.getInstance();
       
       _authToken = prefs.getString('auth_token');
-      _userType = prefs.getString('user_type');
-      _userName = prefs.getString('user_name') ?? 
-                 prefs.getString('farmer_name') ?? 
-                 prefs.getString('shop_name');
       
       print('Session data loaded - Shop ID: ${widget.shopID}, Token: ${_authToken?.isNotEmpty}');
       
