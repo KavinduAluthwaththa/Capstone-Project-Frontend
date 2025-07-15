@@ -14,23 +14,25 @@ Future<void> main() async {
   try {
     // Load environment variables
     await dotenv.load(fileName: ".env");
-    runApp(
-      ChangeNotifierProvider(
-        create: (context) => ThemeService(),
-        child: const MyApp(),
-      ),
-    );
+    print('Environment variables loaded successfully');
+    
+    final apiKey = dotenv.env['geminiapi'];
+    print('Gemini API Key loaded: ${apiKey != null}');
+    print('API Key first 10 chars: ${apiKey?.substring(0, 10) ?? 'null'}...');
+    
+    final weatherKey = dotenv.env['weatherapi'];
+    print('Weather API Key loaded: ${weatherKey != null}');
+    print('Weather API Key length: ${weatherKey?.length ?? 0}');
   } catch (e) {
     print('Error loading .env file: $e');
-    runApp(
-      ChangeNotifierProvider(
-        create: (context) => ThemeService(),
-        child: const MyApp(),
-      ),
-    );
   }
   
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeService(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
