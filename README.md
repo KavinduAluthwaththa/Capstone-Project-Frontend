@@ -76,9 +76,8 @@ The app features a modern, intuitive interface with:
 3. **Environment Setup**
    Create a `.env` file in the root directory with the following variables:
    ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
-   API_BASE_URL=your_backend_api_url
-   WEATHER_API_KEY=your_weather_api_key
+   geminiApiKey=your_gemini_api_key_here
+   weatherApiKey=openweatherapikey
    ```
 
 4. **Run the application**
