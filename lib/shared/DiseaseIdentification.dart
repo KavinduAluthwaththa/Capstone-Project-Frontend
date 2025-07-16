@@ -150,12 +150,12 @@ class _DiseaseMState extends State<DiseaseM> {
         'Content-Type': 'multipart/form-data',
       });
 
-      // Add image file
+      // Add image file - use 'imageFile' as the field name to match your backend
       if (kIsWeb && _webImage != null) {
         // For web, use bytes directly
         request.files.add(
           http.MultipartFile.fromBytes(
-            'image',
+            'imageFile', // Changed from 'image' to 'imageFile'
             _webImage!,
             filename: 'image.jpg',
           ),
@@ -163,7 +163,7 @@ class _DiseaseMState extends State<DiseaseM> {
       } else if (_image != null) {
         // For mobile/desktop, use file path
         request.files.add(
-          await http.MultipartFile.fromPath('image', _image!.path),
+          await http.MultipartFile.fromPath('imageFile', _image!.path), // Changed from 'image' to 'imageFile'
         );
       }
 
@@ -196,54 +196,119 @@ class _DiseaseMState extends State<DiseaseM> {
         });
         _showErrorSnackBar('Authentication failed. Please log in again.');
       } else {
-        final errorData = json.decode(response.body);
-        final errorMessage = errorData['message'] ?? 'Failed to analyze image';
-        throw Exception(errorMessage);
+        setState(() {
+          _isAnalyzing = false;
+        });
+        String errorMessage = 'Failed to analyze image: ${response.statusCode}';
+        try {
+          final errorData = json.decode(response.body);
+          errorMessage = errorData['message'] ?? errorMessage;
+        } catch (e) {
+          // If can't parse error response, use default message
+        }
+        _showErrorSnackBar(errorMessage);
       }
     } catch (e) {
       print('Error analyzing image: $e');
       setState(() {
         _isAnalyzing = false;
       });
-      _showErrorSnackBar('Failed to analyze image: $e');
+      _showErrorSnackBar('Failed to analyze image: Exception: $e');
     }
   }
 
   List<DiseaseResult> _parseDiseaseResults(Map<String, dynamic> response) {
     List<DiseaseResult> results = [];
 
-    if (response.containsKey('predictions')) {
-      List<dynamic> predictions = response['predictions'];
-
-      for (var prediction in predictions) {
-        results.add(
-          DiseaseResult(
-            diseaseName: prediction['disease_name'] ?? 'Unknown Disease',
-            confidence: (prediction['confidence'] ?? 0.0).toDouble() * 100,
-            description:
-                prediction['description'] ?? 'No description available',
-            treatment: prediction['treatment'] ?? 'Consult agricultural expert',
-            severity: prediction['severity'] ?? 'Unknown',
-          ),
-        );
-      }
-    } else if (response.containsKey('disease_name')) {
-      // Single prediction format
+    // Parse your actual backend response format
+    if (response.containsKey('disease') && response.containsKey('confidence')) {
+      String diseaseName = response['disease'] ?? 'Unknown Disease';
+      double confidence = (response['confidence'] ?? 0.0).toDouble() * 100;
+      
+      // Create disease result with available data
       results.add(
         DiseaseResult(
-          diseaseName: response['disease_name'] ?? 'Unknown Disease',
-          confidence: (response['confidence'] ?? 0.0).toDouble() * 100,
-          description: response['description'] ?? 'No description available',
-          treatment: response['treatment'] ?? 'Consult agricultural expert',
-          severity: response['severity'] ?? 'Unknown',
+          diseaseName: diseaseName,
+          confidence: confidence,
+          description: _getDescriptionForDisease(diseaseName),
+          treatment: _getTreatmentForDisease(diseaseName),
+          severity: _getSeverityForDisease(diseaseName, confidence),
         ),
       );
+
+      // Add other probabilities if available
+      if (response.containsKey('probabilities')) {
+        Map<String, dynamic> probabilities = response['probabilities'];
+        probabilities.forEach((disease, prob) {
+          if (disease != diseaseName) { // Don't add the main result again
+            double probability = (prob ?? 0.0).toDouble() * 100;
+            if (probability > 10.0) { // Only show if probability is significant
+              results.add(
+                DiseaseResult(
+                  diseaseName: disease,
+                  confidence: probability,
+                  description: _getDescriptionForDisease(disease),
+                  treatment: _getTreatmentForDisease(disease),
+                  severity: _getSeverityForDisease(disease, probability),
+                ),
+              );
+            }
+          }
+        });
+      }
     }
 
     // Sort by confidence (highest first)
     results.sort((a, b) => b.confidence.compareTo(a.confidence));
 
     return results;
+  }
+
+  String _getDescriptionForDisease(String disease) {
+    Map<String, String> diseaseDescriptions = {
+      'Early Blight': 'Dark spots with concentric rings on leaves, typically starts on older leaves',
+      'Late Blight': 'Water-soaked spots on leaves and stems, can spread rapidly in cool, wet conditions',
+      'Healthy': 'Plant appears healthy with no signs of disease',
+      'Common Scab': 'Rough, corky patches on potato tubers',
+      'Potato Virus Y': 'Mosaic patterns and leaf deformation',
+      'Rice Blast': 'Diamond-shaped lesions on leaves',
+      'Brown Spot': 'Brown spots with gray centers on rice leaves',
+      'Bacterial Leaf Blight': 'Water-soaked lesions along leaf margins',
+      'Sheath Blight': 'Oval to irregular lesions on leaf sheaths',
+      'Powdery Mildew': 'White powdery growth on leaves',
+      'Downy Mildew': 'Yellow patches with fuzzy growth underneath',
+      'Bacterial Wilt': 'Sudden wilting of vines and leaves',
+      'Anthracnose': 'Dark, sunken spots on fruits',
+    };
+    return diseaseDescriptions[disease] ?? 'No description available for this disease';
+  }
+
+  String _getTreatmentForDisease(String disease) {
+    Map<String, String> diseaseTreatments = {
+      'Early Blight': 'Apply copper-based fungicides, improve air circulation, remove affected leaves',
+      'Late Blight': 'Use preventive fungicides, ensure good drainage, remove infected plants immediately',
+      'Healthy': 'Continue regular monitoring and good agricultural practices',
+      'Common Scab': 'Maintain soil pH below 5.2, avoid over-liming, use resistant varieties',
+      'Potato Virus Y': 'Remove infected plants, control aphid vectors, use virus-free seed potatoes',
+      'Rice Blast': 'Apply systemic fungicides, use resistant varieties, avoid excessive nitrogen',
+      'Brown Spot': 'Improve soil fertility, apply appropriate fungicides, ensure proper spacing',
+      'Bacterial Leaf Blight': 'Use copper-based bactericides, avoid overhead irrigation, use resistant varieties',
+      'Sheath Blight': 'Apply fungicides at early stages, improve field drainage, reduce plant density',
+      'Powdery Mildew': 'Apply sulfur or fungicides, improve air circulation, avoid overhead watering',
+      'Downy Mildew': 'Use preventive fungicides, improve drainage, remove affected plants',
+      'Bacterial Wilt': 'Remove infected plants, improve soil drainage, use resistant varieties',
+      'Anthracnose': 'Apply fungicides, improve air circulation, remove infected fruits',
+    };
+    return diseaseTreatments[disease] ?? 'Consult with agricultural extension services for treatment advice';
+  }
+
+  String _getSeverityForDisease(String disease, double confidence) {
+    if (disease == 'Healthy') return 'None';
+    
+    if (confidence >= 80) return 'High';
+    if (confidence >= 60) return 'Medium';
+    if (confidence >= 40) return 'Low';
+    return 'Unknown';
   }
 
   void _showSuccessSnackBar(String message) {
@@ -302,6 +367,102 @@ class _DiseaseMState extends State<DiseaseM> {
           ),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCropSelectionSection(),
+                    const SizedBox(height: 20),
+                    _buildImageUploadSection(),
+                    const SizedBox(height: 20),
+                    _buildAnalyzeButton(),
+                    const SizedBox(height: 25),
+                    if (_diseaseResults.isNotEmpty) ...[
+                      _buildResultsSection(),
+                      const SizedBox(height: 20),
+                    ],
+                    _buildCommonDiseasesSection(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green[400]!, Colors.green[500]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(25),
+          bottomRight: Radius.circular(25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green[200]!.withOpacity(0.5),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+              Expanded(
+                child: Text(
+                  "Disease Identification",
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(width: 48),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "AI-powered crop-specific disease detection and treatment recommendations",
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.9),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -429,102 +590,6 @@ class _DiseaseMState extends State<DiseaseM> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCropSelectionSection(),
-                    const SizedBox(height: 20),
-                    _buildImageUploadSection(),
-                    const SizedBox(height: 20),
-                    _buildAnalyzeButton(),
-                    const SizedBox(height: 25),
-                    if (_diseaseResults.isNotEmpty) ...[
-                      _buildResultsSection(),
-                      const SizedBox(height: 20),
-                    ],
-                    _buildCommonDiseasesSection(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.green[400]!, Colors.green[500]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(25),
-          bottomRight: Radius.circular(25),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green[200]!.withOpacity(0.5),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Expanded(
-                child: Text(
-                  "Disease Identification",
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(width: 48),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "AI-powered crop-specific disease detection and treatment recommendations",
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.9),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
       ),
     );
   }

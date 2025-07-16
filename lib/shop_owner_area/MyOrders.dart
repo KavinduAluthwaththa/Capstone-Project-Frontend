@@ -386,65 +386,6 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     );
   }
 
-  Widget _buildErrorBanner() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red[200]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red[100]!.withOpacity(0.5),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.red[100],
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Icon(Icons.error_outline, color: Colors.red, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _errorMessage!,
-              style: GoogleFonts.poppins(
-                color: Colors.red[700],
-                fontSize: 14,
-              ),
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.close, size: 18, color: Colors.red[600]),
-            onPressed: () => setState(() => _errorMessage = null),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRequestsList() {
-    return RefreshIndicator(
-      onRefresh: _fetchRequests,
-      color: Colors.green[400],
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView.builder(
-          itemCount: _requests.length,
-          itemBuilder: (context, index) => _buildRequestCard(_requests[index]),
-        ),
-      ),
-    );
-  }
-
   Widget _buildRequestCard(Request request) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -508,6 +449,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                               fontSize: 18,
                               color: Colors.black,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Container(
@@ -523,6 +465,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                                 color: Colors.green[700],
                                 fontWeight: FontWeight.w500,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -542,6 +485,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                 ),
                 const SizedBox(height: 16),
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -582,22 +526,29 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
           child: Icon(icon, size: 16, color: Colors.green[800]),
         ),
         const SizedBox(width: 12),
-        Text(
-          '$label: ',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-            color: Colors.black87,
-          ),
-        ),
         Expanded(
-          child: Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[700],
-              fontWeight: FontWeight.w500,
-            ),
+          child: Row(
+            children: [
+              Text(
+                '$label: ',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -606,66 +557,130 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.grey[300]!, Colors.grey[400]!],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.grey[300]!, Colors.grey[400]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(60),
                 ),
-                borderRadius: BorderRadius.circular(60),
+                child: Icon(
+                  Icons.shopping_cart_outlined,
+                  size: 60,
+                  color: Colors.grey[600],
+                ),
               ),
-              child: Icon(
-                Icons.shopping_cart_outlined,
-                size: 60,
-                color: Colors.grey[600],
+              const SizedBox(height: 24),
+              Text(
+                'No order requests found',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No order requests found',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[700],
+              const SizedBox(height: 12),
+              Text(
+                'Start by creating your first order request to connect with farmers',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.grey[500],
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Start by creating your first order request to connect with farmers',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey[500],
+              const SizedBox(height: 16),
+              TextButton.icon(
+                onPressed: _fetchRequests,
+                icon: const Icon(Icons.refresh, size: 20),
+                label: Text(
+                  'Refresh',
+                  style: GoogleFonts.poppins(fontSize: 14),
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.green[600],
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            TextButton.icon(
-              onPressed: _fetchRequests,
-              icon: const Icon(Icons.refresh, size: 20),
-              label: Text(
-                'Refresh',
-                style: GoogleFonts.poppins(fontSize: 14),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.green[600],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _showDeleteConfirmation(int requestId) {
-    showDialog(
+  Widget _buildErrorBanner() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red[100]!.withOpacity(0.5),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.red[100],
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(Icons.error_outline, color: Colors.red, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: GoogleFonts.poppins(
+                color: Colors.red[700],
+                fontSize: 14,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close, size: 18, color: Colors.red[600]),
+            onPressed: () => setState(() => _errorMessage = null),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequestsList() {
+    return RefreshIndicator(
+      onRefresh: _fetchRequests,
+      color: Colors.green[400],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView.builder(
+          itemCount: _requests.length,
+          itemBuilder: (context, index) => _buildRequestCard(_requests[index]),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmation(int requestId) {
+    return showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
