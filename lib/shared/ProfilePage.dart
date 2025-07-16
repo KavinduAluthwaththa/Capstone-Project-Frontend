@@ -1,7 +1,7 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/farmer_area/MyOrders.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:capsfront/models/shop_model.dart';
+import 'package:capsfront/shared/HelpSupport.dart';
 import 'package:capsfront/shared/Settings.dart';
 import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
@@ -276,18 +276,15 @@ class _ProfilePageState extends State<ProfilePage> {
     String name = '';
     String email = '';
     String location = '';
-    String userId = '';
 
     if (_farmer != null) {
       name = _farmer!.name;
       email = _farmer!.Email;
       location = _farmer!.farmLocation;
-      userId = 'ID: ${_farmer!.farmerID}';
     } else if (_shop != null) {
       name = _shop!.name;
       email = _shop!.email;
       location = _shop!.location;
-      userId = 'ID: ${_shop!.shopID}';
     }
 
     return Container(
@@ -347,21 +344,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
           const SizedBox(height: 5),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              userId,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -370,41 +352,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildProfileOptions() {
     return Column(
       children: [
-        if (_farmer != null) ...[
-          ProfileOption(
-            icon: Icons.receipt_long,
-            title: "My Orders",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MyOrdersPage()),
-              );
-            },
-          ),
-          ProfileOption(
-            icon: Icons.grass,
-            title: "My Crops",
-            onTap: () {
-              // Navigate to crops page
-            },
-          ),
-        ],
-        if (_shop != null) ...[
-          ProfileOption(
-            icon: Icons.inventory,
-            title: "My Inventory",
-            onTap: () {
-              // Navigate to inventory page
-            },
-          ),
-          ProfileOption(
-            icon: Icons.shopping_cart,
-            title: "Requests",
-            onTap: () {
-              // Navigate to requests page
-            },
-          ),
-        ],
         ProfileOption(
           icon: Icons.settings,
           title: "Settings",
@@ -419,7 +366,10 @@ class _ProfilePageState extends State<ProfilePage> {
           icon: Icons.help_outline,
           title: "Help & Support",
           onTap: () {
-            // Navigate to help page
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const HelpSupportPage()),
+            );
           },
         ),
       ],
