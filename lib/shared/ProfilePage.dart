@@ -1,7 +1,7 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/farmer_area/MyOrders.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:capsfront/models/shop_model.dart';
+import 'package:capsfront/shared/HelpSupport.dart';
 import 'package:capsfront/shared/Settings.dart';
 import 'package:capsfront/accounts/login.dart';
 import 'package:flutter/material.dart';
@@ -36,30 +36,28 @@ class _ProfilePageState extends State<ProfilePage> {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       final token = prefs.getString('auth_token');
       final userType = prefs.getString('user_type');
       final userEmail = prefs.getString('user_email');
-      
 
       // Check for missing session data
       if (token == null || token.isEmpty) {
         await _handleSessionExpired('Authentication token not found');
         return;
       }
-      
+
       if (userType == null || userType.isEmpty) {
         await _handleSessionExpired('User type not found');
         return;
       }
-      
+
       if (userEmail == null || userEmail.isEmpty) {
         await _handleSessionExpired('User email not found');
         return;
       }
 
-      setState(() {
-      });
+      setState(() {});
 
       if (userType.toLowerCase() == 'farmer') {
         await _loadFarmerProfile(userEmail, token);
@@ -79,11 +77,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _handleSessionExpired(String reason) async {
     print('Session expired: $reason');
-    
+
     // Clear all session data
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    
+
     // Show dialog and navigate to login
     if (mounted) {
       showDialog(
@@ -92,7 +90,9 @@ class _ProfilePageState extends State<ProfilePage> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Session Expired'),
-            content: Text('Your session has expired. Please log in again.\n\nReason: $reason'),
+            content: Text(
+              'Your session has expired. Please log in again.\n\nReason: $reason',
+            ),
             actions: [
               TextButton(
                 onPressed: () {
@@ -116,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final encodedEmail = Uri.encodeComponent(email);
       print('Loading farmer profile for: $encodedEmail');
-      
+
       final response = await http.get(
         Uri.parse(ApiEndpoints.getFarmer(encodedEmail)),
         headers: {
@@ -137,7 +137,9 @@ class _ProfilePageState extends State<ProfilePage> {
       } else if (response.statusCode == 401) {
         await _handleSessionExpired('Authentication failed');
       } else {
-        throw Exception('Failed to load farmer profile: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Failed to load farmer profile: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('Error loading farmer profile: $e');
@@ -152,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final encodedEmail = Uri.encodeComponent(email);
       print('Loading shop profile for: $encodedEmail');
-      
+
       final response = await http.get(
         Uri.parse(ApiEndpoints.getShopByEmail(encodedEmail)),
         headers: {
@@ -173,7 +175,9 @@ class _ProfilePageState extends State<ProfilePage> {
       } else if (response.statusCode == 401) {
         await _handleSessionExpired('Authentication failed');
       } else {
-        throw Exception('Failed to load shop profile: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Failed to load shop profile: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('Error loading shop profile: $e');
@@ -198,11 +202,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[400],
-            ),
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
             const SizedBox(height: 16),
             Text(
               'Error loading profile',
@@ -241,7 +241,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     await prefs.clear();
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
                       (route) => false,
                     );
                   },
@@ -274,18 +276,15 @@ class _ProfilePageState extends State<ProfilePage> {
     String name = '';
     String email = '';
     String location = '';
-    String userId = '';
 
     if (_farmer != null) {
       name = _farmer!.name;
       email = _farmer!.Email;
       location = _farmer!.farmLocation;
-      userId = 'ID: ${_farmer!.farmerID}';
     } else if (_shop != null) {
       name = _shop!.name;
       email = _shop!.email;
       location = _shop!.location;
-      userId = 'ID: ${_shop!.shopID}';
     }
 
     return Container(
@@ -333,11 +332,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.location_on,
-                size: 16,
-                color: Colors.black54,
-              ),
+              const Icon(Icons.location_on, size: 16, color: Colors.black54),
               const SizedBox(width: 4),
               Text(
                 location.isNotEmpty ? location : 'Location',
@@ -349,21 +344,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
           const SizedBox(height: 5),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              userId,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -372,41 +352,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildProfileOptions() {
     return Column(
       children: [
-        if (_farmer != null) ...[
-          ProfileOption(
-            icon: Icons.receipt_long,
-            title: "My Orders",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MyOrdersPage()),
-              );
-            },
-          ),
-          ProfileOption(
-            icon: Icons.grass,
-            title: "My Crops",
-            onTap: () {
-              // Navigate to crops page
-            },
-          ),
-        ],
-        if (_shop != null) ...[
-          ProfileOption(
-            icon: Icons.inventory,
-            title: "My Inventory",
-            onTap: () {
-              // Navigate to inventory page
-            },
-          ),
-          ProfileOption(
-            icon: Icons.shopping_cart,
-            title: "Requests",
-            onTap: () {
-              // Navigate to requests page
-            },
-          ),
-        ],
         ProfileOption(
           icon: Icons.settings,
           title: "Settings",
@@ -421,7 +366,10 @@ class _ProfilePageState extends State<ProfilePage> {
           icon: Icons.help_outline,
           title: "Help & Support",
           onTap: () {
-            // Navigate to help page
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const HelpSupportPage()),
+            );
           },
         ),
       ],

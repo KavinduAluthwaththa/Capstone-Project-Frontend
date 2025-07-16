@@ -621,7 +621,7 @@ class _DiseaseMState extends State<DiseaseM> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Take a clear photo of the affected ${_selectedCrop} plant for accurate diagnosis',
+              'Take a clear photo of the affected $_selectedCrop plant for accurate diagnosis',
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
