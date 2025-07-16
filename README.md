@@ -191,8 +191,8 @@ Developed as part of a capstone project by:
 
 ## 📞 Support
 
-For support, email [your-email@domain.com] or create an issue in this repository.
+For support, email [kavindu18602@gmail.com] or create an issue in this repository.
 
 ---
 
-**Note**: This application requires a backend API to be fully functional. Make sure to set up the corresponding backend services and update the API endpoints accordingly.
+**Note**: This application requires a backend API to be fully functional. Make sure to access the corresponding backend services at [https://github.com/KavinduAluthwaththa/Capstone-Project-Backend] and update the API endpoints accordingly.
