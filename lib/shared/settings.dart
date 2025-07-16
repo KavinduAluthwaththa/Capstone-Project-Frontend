@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:capsfront/services/theme_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -57,22 +59,28 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() {
         // Authentication
         _authToken = prefs.getString('auth_token');
-        
+
         // Basic user info
-        _userName = prefs.getString('user_name') ?? 
-                   prefs.getString('farmer_name') ?? 
-                   prefs.getString('shop_name');
-        _userEmail = prefs.getString('user_email') ?? 
-                    prefs.getString('farmer_email') ?? 
-                    prefs.getString('shop_email');
+        _userName =
+            prefs.getString('user_name') ??
+            prefs.getString('farmer_name') ??
+            prefs.getString('shop_name');
+        _userEmail =
+            prefs.getString('user_email') ??
+            prefs.getString('farmer_email') ??
+            prefs.getString('shop_email');
         _userType = prefs.getString('user_type');
-        _userPhone = prefs.getString('farmer_phone') ?? prefs.getString('shop_phone');
-        _userLocation = prefs.getString('farmer_location') ?? prefs.getString('shop_location');
-        
+        _userPhone =
+            prefs.getString('farmer_phone') ?? prefs.getString('shop_phone');
+        _userLocation =
+            prefs.getString('farmer_location') ??
+            prefs.getString('shop_location');
+
         // User ID
-        _userId = prefs.getInt('user_id') ?? 
-                 prefs.getInt('farmer_id') ?? 
-                 prefs.getInt('shop_id');
+        _userId =
+            prefs.getInt('user_id') ??
+            prefs.getInt('farmer_id') ??
+            prefs.getInt('shop_id');
 
         // Set controller values
         _nameController.text = _userName ?? '';
@@ -85,10 +93,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
         _isLoading = false;
       });
-      
+
       print('User data loaded successfully');
       print('User ID: $_userId, Type: $_userType');
-      
     } catch (e) {
       print('Error loading user data: $e');
       setState(() {
@@ -151,10 +158,9 @@ class _SettingsPageState extends State<SettingsPage> {
         // Update successful, save to local storage
         await _saveUpdatedDataLocally();
         _showSuccessSnackBar('Profile updated successfully!');
-        
+
         // Reload user data to reflect changes
         await _loadUserData();
-        
       } else if (response.statusCode == 401) {
         await _handleSessionExpired('Authentication failed during update');
       } else {
@@ -162,7 +168,6 @@ class _SettingsPageState extends State<SettingsPage> {
         final errorMessage = errorData['message'] ?? 'Failed to update profile';
         throw Exception(errorMessage);
       }
-
     } catch (e) {
       print('Error updating profile: $e');
       _showErrorSnackBar('Error updating profile: $e');
@@ -176,7 +181,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _saveUpdatedDataLocally() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Update the in-memory values
       setState(() {
         _userName = _nameController.text.trim();
@@ -188,13 +193,16 @@ class _SettingsPageState extends State<SettingsPage> {
       // Save general user data
       await prefs.setString('user_name', _nameController.text.trim());
       await prefs.setString('user_email', _emailController.text.trim());
-      
+
       // Save based on user type
       if (_userType == 'farmer') {
         await prefs.setString('farmer_name', _nameController.text.trim());
         await prefs.setString('farmer_email', _emailController.text.trim());
         await prefs.setString('farmer_phone', _phoneController.text.trim());
-        await prefs.setString('farmer_location', _locationController.text.trim());
+        await prefs.setString(
+          'farmer_location',
+          _locationController.text.trim(),
+        );
       } else if (_userType == 'shopowner') {
         await prefs.setString('shop_name', _nameController.text.trim());
         await prefs.setString('shop_email', _emailController.text.trim());
@@ -203,10 +211,12 @@ class _SettingsPageState extends State<SettingsPage> {
       }
 
       // Update last activity
-      await prefs.setString('last_activity_time', DateTime.now().toIso8601String());
-      
-      print('Updated data saved locally');
+      await prefs.setString(
+        'last_activity_time',
+        DateTime.now().toIso8601String(),
+      );
 
+      print('Updated data saved locally');
     } catch (e) {
       print('Error saving updated data locally: $e');
     }
@@ -214,10 +224,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _handleSessionExpired(String reason) async {
     print('Session expired: $reason');
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    
+
     if (mounted) {
       showDialog(
         context: context,
@@ -290,7 +300,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 16),
                     _buildEditField('Phone', _phoneController, Icons.phone),
                     const SizedBox(height: 16),
-                    _buildEditField('Location', _locationController, Icons.location_on),
+                    _buildEditField(
+                      'Location',
+                      _locationController,
+                      Icons.location_on,
+                    ),
                   ],
                 ),
               ),
@@ -310,30 +324,34 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
                 TextButton(
-                  onPressed: _isSaving
-                      ? null
-                      : () async {
-                          if (_validateInputs()) {
-                            Navigator.of(context).pop();
-                            await _updateUserProfile();
-                          }
-                        },
-                  child: _isSaving
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green[700]!),
+                  onPressed:
+                      _isSaving
+                          ? null
+                          : () async {
+                            if (_validateInputs()) {
+                              Navigator.of(context).pop();
+                              await _updateUserProfile();
+                            }
+                          },
+                  child:
+                      _isSaving
+                          ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.green[700]!,
+                              ),
+                            ),
+                          )
+                          : Text(
+                            'Save',
+                            style: GoogleFonts.poppins(
+                              color: Colors.green[700],
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        )
-                      : Text(
-                          'Save',
-                          style: GoogleFonts.poppins(
-                            color: Colors.green[700],
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                 ),
               ],
             );
@@ -359,7 +377,11 @@ class _SettingsPageState extends State<SettingsPage> {
     return true;
   }
 
-  Widget _buildEditField(String label, TextEditingController controller, IconData icon) {
+  Widget _buildEditField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+  ) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -374,11 +396,18 @@ class _SettingsPageState extends State<SettingsPage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.green[400]!),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
       ),
       style: GoogleFonts.poppins(),
-      keyboardType: label == 'Email' ? TextInputType.emailAddress : 
-                   label == 'Phone' ? TextInputType.phone : TextInputType.text,
+      keyboardType:
+          label == 'Email'
+              ? TextInputType.emailAddress
+              : label == 'Phone'
+              ? TextInputType.phone
+              : TextInputType.text,
     );
   }
 
@@ -393,43 +422,45 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _logout() async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: Text(
-            'Log Out',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'Are you sure you want to log out? All local data will be cleared.',
-            style: GoogleFonts.poppins(),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.poppins(color: Colors.grey[600]),
+    final shouldLogout =
+        await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
               ),
-              onPressed: () => Navigator.of(context).pop(false),
-            ),
-            TextButton(
-              child: Text(
+              title: Text(
                 'Log Out',
-                style: GoogleFonts.poppins(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
               ),
-              onPressed: () => Navigator.of(context).pop(true),
-            ),
-          ],
-        );
-      },
-    ) ?? false;
+              content: Text(
+                'Are you sure you want to log out? All local data will be cleared.',
+                style: GoogleFonts.poppins(),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.poppins(color: Colors.grey[600]),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+                TextButton(
+                  child: Text(
+                    'Log Out',
+                    style: GoogleFonts.poppins(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
 
     if (shouldLogout) {
       setState(() => _isLoggingOut = true);
@@ -437,7 +468,7 @@ class _SettingsPageState extends State<SettingsPage> {
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
-        
+
         // Show logout success message
         if (mounted) {
           _showSuccessSnackBar('Logged out successfully');
@@ -463,10 +494,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(color: Colors.white),
-        ),
+        content: Text(message, style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.green[400],
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
@@ -478,10 +506,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(color: Colors.white),
-        ),
+        content: Text(message, style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.red[400],
         duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
@@ -504,30 +529,33 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
             if (_errorMessage.isNotEmpty) _buildErrorBanner(),
             Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              child:
+                  _isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.green,
+                          ),
+                        ),
+                      )
+                      : SingleChildScrollView(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 20),
+                            _buildAccountInfo(),
+                            const SizedBox(height: 20),
+                            _buildSettingsSection(),
+                          ],
+                        ),
                       ),
-                    )
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          _buildAccountInfo(),
-                          const SizedBox(height: 20),
-                          _buildSettingsSection(),
-                        ],
-                      ),
-                    ),
             ),
           ],
         ),
@@ -562,7 +590,11 @@ class _SettingsPageState extends State<SettingsPage> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 24,
+                ),
                 onPressed: () => Navigator.maybePop(context),
               ),
               Expanded(
@@ -623,10 +655,7 @@ class _SettingsPageState extends State<SettingsPage> {
           Expanded(
             child: Text(
               _errorMessage,
-              style: GoogleFonts.poppins(
-                color: Colors.red[700],
-                fontSize: 14,
-              ),
+              style: GoogleFonts.poppins(color: Colors.red[700], fontSize: 14),
             ),
           ),
           IconButton(
@@ -641,18 +670,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildAccountInfo() {
     return Card(
       elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      color: Theme.of(context).cardTheme.color,
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey[50]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -665,7 +685,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green[700],
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
                 Container(
@@ -688,7 +708,11 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             _buildInfoRow('Phone', _userPhone ?? 'Not set', Icons.phone),
             const SizedBox(height: 16),
-            _buildInfoRow('Location', _userLocation ?? 'Not set', Icons.location_on),
+            _buildInfoRow(
+              'Location',
+              _userLocation ?? 'Not set',
+              Icons.location_on,
+            ),
             const SizedBox(height: 16),
             _buildInfoRow('User Type', _getUserTypeDisplayName(), Icons.badge),
           ],
@@ -737,18 +761,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildSettingsSection() {
     return Card(
       elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      color: Theme.of(context).cardTheme.color,
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey[50]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -758,7 +773,7 @@ class _SettingsPageState extends State<SettingsPage> {
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.green[700],
+                color: Theme.of(context).primaryColor,
               ),
             ),
             const SizedBox(height: 24),
@@ -780,6 +795,28 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const Divider(height: 32),
+            Consumer<ThemeService>(
+              builder: (context, themeService, child) {
+                return _buildSettingItem(
+                  icon:
+                      themeService.isDarkMode
+                          ? Icons.dark_mode
+                          : Icons.light_mode,
+                  title: 'Dark Mode',
+                  trailing: Switch(
+                    value: themeService.isDarkMode,
+                    onChanged: (bool value) {
+                      themeService.toggleTheme();
+                    },
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.green[400],
+                    inactiveThumbColor: Colors.grey[300],
+                    inactiveTrackColor: Colors.grey[400],
+                  ),
+                );
+              },
+            ),
+            const Divider(height: 32),
             _buildSettingItem(
               icon: Icons.language,
               title: 'Language',
@@ -794,7 +831,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.grey,
+                    size: 16,
+                  ),
                 ],
               ),
               onTap: () {
@@ -805,7 +846,11 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingItem(
               icon: Icons.privacy_tip,
               title: 'Privacy Policy',
-              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.grey,
+                size: 16,
+              ),
               onTap: () {
                 _showErrorSnackBar('Privacy policy coming soon!');
               },
@@ -814,7 +859,11 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingItem(
               icon: Icons.help,
               title: 'Help & Support',
-              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.grey,
+                size: 16,
+              ),
               onTap: () {
                 _showErrorSnackBar('Help & support coming soon!');
               },
@@ -890,29 +939,30 @@ class _SettingsPageState extends State<SettingsPage> {
           shadowColor: Colors.transparent,
         ),
         onPressed: _isLoggingOut ? null : _logout,
-        child: _isLoggingOut
-            ? SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.red[700]!),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.logout, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Log Out',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+        child:
+            _isLoggingOut
+                ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.red[700]!),
                   ),
-                ],
-              ),
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.logout, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Log Out',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
       ),
     );
   }
