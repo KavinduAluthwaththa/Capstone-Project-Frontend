@@ -1,13 +1,9 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/farmer_area/CropSuggest.dart';
-//import 'package:capsfront/farmer_area/MarketPrice.dart';
 import 'package:capsfront/farmer_area/ShopList.dart';
-import 'package:capsfront/farmer_area/MyCrops.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:capsfront/shared/DiseaseIdentification.dart';
 import 'package:capsfront/shared/FertilizerCalculation.dart';
-import 'package:capsfront/shared/Chatbot.dart';         
-//import 'package:capsfront/shared/profile_page.dart'; 
+import 'package:capsfront/shared/Chatbot.dart';        
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,7 +29,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
   String _weatherIcon = '☀️';
   String _humidity = '--%';
 
-  int _selectedIndex = 0; // <-- Add this
+  int _selectedIndex = 0;
 
   @override
   void initState() {
