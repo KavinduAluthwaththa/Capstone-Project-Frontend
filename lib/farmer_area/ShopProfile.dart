@@ -22,6 +22,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   String? _errorMessage;
   bool _isFavorite = false;
   List<String> _favoriteShops = [];
+  Map<int, String> _cropNames = {}; // Store crop names by ID
 
   @override
   void initState() {
@@ -32,17 +33,56 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   Future<void> _initializeData() async {
     await _loadUserData();
     await _loadFavoriteShops();
+    await _fetchCropNames();
     await _fetchOrderRequests();
     await _saveUsageData();
   }
 
   Future<void> _loadUserData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      setState(() {
-      });
+      // This method can be used to load user-specific data if needed
+      // Currently just a placeholder for future user data loading
+      print('Loading user data...');
     } catch (e) {
       print('Error loading user data: $e');
+    }
+  }
+
+  Future<void> _fetchCropNames() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getCrops),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+
+        // Build a map of crop ID to crop name
+        final Map<int, String> cropNamesMap = {};
+        for (final cropData in jsonData) {
+          final cropId =
+              cropData['value'] is int
+                  ? cropData['value']
+                  : int.tryParse(cropData['value'].toString()) ?? 0;
+          final cropName = cropData['text']?.toString() ?? 'Unknown Crop';
+          cropNamesMap[cropId] = cropName;
+        }
+
+        setState(() {
+          _cropNames = cropNamesMap;
+        });
+
+        print('Loaded ${_cropNames.length} crop names');
+      }
+    } catch (e) {
+      print('Error fetching crop names: $e');
     }
   }
 
@@ -70,35 +110,37 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   Future<void> _saveUsageData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Update shop list usage count
       final currentCount = prefs.getInt('feature_usage_shop_list') ?? 0;
       await prefs.setInt('feature_usage_shop_list', currentCount + 1);
-      
+
       // Save last used feature and activity time
       await prefs.setString('last_used_feature', 'shop_list');
-      await prefs.setString('last_activity_time', DateTime.now().toIso8601String());
-      
+      await prefs.setString(
+        'last_activity_time',
+        DateTime.now().toIso8601String(),
+      );
+
       // Save recently viewed shops
       List<String> recentShops = prefs.getStringList('recent_shops') ?? [];
       String shopId = widget.shop.shopID.toString();
-      
+
       // Remove if already exists and add to front
       recentShops.remove(shopId);
       recentShops.insert(0, shopId);
-      
+
       // Keep only last 10 recent shops
       if (recentShops.length > 10) {
         recentShops = recentShops.sublist(0, 10);
       }
-      
+
       await prefs.setStringList('recent_shops', recentShops);
-      
+
       // Save shop interaction count
       final shopInteractionKey = 'shop_interaction_${widget.shop.shopID}';
       final interactionCount = prefs.getInt(shopInteractionKey) ?? 0;
       await prefs.setInt(shopInteractionKey, interactionCount + 1);
-      
     } catch (e) {
       print('Error saving usage data: $e');
     }
@@ -115,9 +157,9 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           _isFavorite = true;
         }
       });
-      
+
       await _saveFavoriteShops();
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -144,23 +186,45 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
       final token = prefs.getString('auth_token') ?? '';
 
       final response = await http.get(
-        Uri.parse(ApiEndpoints.getRequestById(widget.shop.shopID)),
+        Uri.parse(ApiEndpoints.getRequestByShopId(widget.shop.shopID)),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
       );
 
+      print('API Response Status: ${response.statusCode}');
+      print('API Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
+
+        // Debug: Print the API response structure
+        print('Number of requests: ${jsonData.length}');
+        if (jsonData.isNotEmpty) {
+          print('First request data: ${jsonData[0]}');
+          print('First request keys: ${jsonData[0].keys}');
+        }
+
+        // Parse requests with error handling
+        final List<Request> requests = [];
+        for (int i = 0; i < jsonData.length; i++) {
+          try {
+            final request = Request.fromJson(jsonData[i]);
+            requests.add(request);
+          } catch (e) {
+            print('Error parsing request $i: $e');
+            print('Request data: ${jsonData[i]}');
+          }
+        }
+
         setState(() {
-          _orderRequests = jsonData.map((json) => Request.fromJson(json)).toList();
+          _orderRequests = requests;
           _isLoading = false;
         });
-        
+
         // Cache the data locally
         await _cacheOrderRequests(jsonData);
-        
       } else if (response.statusCode == 404) {
         setState(() {
           _orderRequests = [];
@@ -168,7 +232,9 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           _errorMessage = null;
         });
       } else {
-        throw Exception('Failed to load product requests: ${response.statusCode}');
+        throw Exception(
+          'Failed to load product requests: ${response.statusCode}',
+        );
       }
     } catch (e) {
       // Try to load cached data on error
@@ -185,7 +251,10 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
       final prefs = await SharedPreferences.getInstance();
       final cacheKey = 'shop_requests_${widget.shop.shopID}';
       await prefs.setString(cacheKey, json.encode(jsonData));
-      await prefs.setString('${cacheKey}_timestamp', DateTime.now().toIso8601String());
+      await prefs.setString(
+        '${cacheKey}_timestamp',
+        DateTime.now().toIso8601String(),
+      );
     } catch (e) {
       print('Error caching order requests: $e');
     }
@@ -196,12 +265,25 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
       final prefs = await SharedPreferences.getInstance();
       final cacheKey = 'shop_requests_${widget.shop.shopID}';
       final cachedData = prefs.getString(cacheKey);
-      
+
       if (cachedData != null) {
         final List<dynamic> jsonData = json.decode(cachedData);
+
+        // Parse cached requests with error handling
+        final List<Request> requests = [];
+        for (int i = 0; i < jsonData.length; i++) {
+          try {
+            final request = Request.fromJson(jsonData[i]);
+            requests.add(request);
+          } catch (e) {
+            print('Error parsing cached request $i: $e');
+          }
+        }
+
         setState(() {
-          _orderRequests = jsonData.map((json) => Request.fromJson(json)).toList();
+          _orderRequests = requests;
         });
+        print('Loaded ${requests.length} requests from cache');
       }
     } catch (e) {
       print('Error loading cached order requests: $e');
@@ -283,10 +365,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           const SizedBox(height: 8),
           Text(
             "Shop Profile & Product Requests",
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
             textAlign: TextAlign.center,
           ),
         ],
@@ -297,9 +376,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   Widget _buildShopInfoCard() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -311,7 +388,9 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
                   backgroundColor: Colors.green[400],
                   radius: 30,
                   child: Text(
-                    widget.shop.name.isNotEmpty ? widget.shop.name[0].toUpperCase() : 'S',
+                    widget.shop.name.isNotEmpty
+                        ? widget.shop.name[0].toUpperCase()
+                        : 'S',
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -343,7 +422,10 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
                       if (_isFavorite)
                         Container(
                           margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.red[100],
                             borderRadius: BorderRadius.circular(12),
@@ -382,10 +464,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.poppins(
-              color: Colors.black87,
-              fontSize: 14,
-            ),
+            style: GoogleFonts.poppins(color: Colors.black87, fontSize: 14),
           ),
         ),
       ],
@@ -395,9 +474,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   Widget _buildStatsCard() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -439,7 +516,12 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -460,10 +542,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           ),
           Text(
             label,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -474,9 +553,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   Widget _buildOrderRequestsSection() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -486,7 +563,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Product Requests",
+                  "Shop Orders",
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -510,7 +587,9 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
             else if (_orderRequests.isEmpty && !_isLoading)
               _buildEmptyStateWidget()
             else
-              ..._orderRequests.map((request) => _buildOrderRequestItem(request)),
+              ..._orderRequests.map(
+                (request) => _buildOrderRequestItem(request),
+              ),
           ],
         ),
       ),
@@ -572,28 +651,19 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No product requests found',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              'No shop orders found',
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
-              'Pull down to refresh',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
+              'This shop hasn\'t posted any product requests yet',
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[500]),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _fetchOrderRequests,
               icon: const Icon(Icons.refresh),
-              label: Text(
-                'Refresh',
-                style: GoogleFonts.poppins(),
-              ),
+              label: Text('Refresh', style: GoogleFonts.poppins()),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[400],
                 foregroundColor: Colors.white,
@@ -609,6 +679,8 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   }
 
   Widget _buildOrderRequestItem(Request request) {
+    final String cropName = _cropNames[request.cropID] ?? 'Unknown Crop';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -623,12 +695,14 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Crop ID: ${request.cropID}',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.black,
+              Expanded(
+                child: Text(
+                  'Request ${request.requestID}',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
                 ),
               ),
               Container(
@@ -638,7 +712,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  "Pending",
+                  "Active",
                   style: GoogleFonts.poppins(
                     color: Colors.orange[700],
                     fontSize: 12,
@@ -649,29 +723,59 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            "Request ID: ${request.requestID}",
-            style: GoogleFonts.poppins(
-              color: Colors.grey[600],
-              fontSize: 12,
-            ),
+          Row(
+            children: [
+              Icon(Icons.agriculture, color: Colors.green[600], size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  cropName,
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[700],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: _buildRequestDetail('Amount', '${request.amount} kg', Icons.scale),
+                child: _buildRequestDetail(
+                  'Amount',
+                  '${request.amount} kg',
+                  Icons.scale,
+                ),
               ),
               Expanded(
-                child: _buildRequestDetail('Price', 'Rs. ${request.price}', Icons.monetization_on),
+                child: _buildRequestDetail(
+                  'Price',
+                  'Rs. ${request.price}',
+                  Icons.monetization_on,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          _buildRequestDetail('Date', request.date, Icons.calendar_today),
+          _buildRequestDetail(
+            'Date',
+            _formatDate(request.date),
+            Icons.calendar_today,
+          ),
         ],
       ),
     );
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final DateTime date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateString;
+    }
   }
 
   Widget _buildRequestDetail(String label, String value, IconData icon) {
@@ -684,10 +788,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           children: [
             Text(
               label,
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-                fontSize: 12,
-              ),
+              style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
             ),
             Text(
               value,
