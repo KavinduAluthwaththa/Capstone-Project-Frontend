@@ -39,37 +39,72 @@ class _AddOrderPageState extends State<AddOrderPage> {
 
   Future<void> _initializeData() async {
     await _loadUserData();
+    await _debugCropsAPI(); // Add debug call
     await _loadCrops();
     await _saveUsageData();
   }
 
   Future<void> _loadUserData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      setState(() {
-      });
+      // This method can be used to load user-specific data if needed
+      // Currently just a placeholder for future user data loading
+      print('Loading user data...');
     } catch (e) {
       print('Error loading user data: $e');
+    }
+  }
+
+  // Debugging function to check crops API response
+  Future<void> _debugCropsAPI() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getCrops),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        if (data is List && data.isNotEmpty) {
+          print('First item keys: ${data[0].keys}');
+          print('First item values: ${data[0].values}');
+        }
+      }
+    } catch (e) {
+      print('Debug error: $e');
     }
   }
 
   Future<void> _saveUsageData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Update add order usage count
       final currentCount = prefs.getInt('feature_usage_add_order') ?? 0;
       await prefs.setInt('feature_usage_add_order', currentCount + 1);
-      
+
       // Save last used feature and activity time
       await prefs.setString('last_used_feature', 'add_order');
-      await prefs.setString('last_activity_time', DateTime.now().toIso8601String());
-      
+      await prefs.setString(
+        'last_activity_time',
+        DateTime.now().toIso8601String(),
+      );
     } catch (e) {
       print('Error saving usage data: $e');
     }
   }
 
+  // Load crops from API with caching and error handling
   Future<void> _loadCrops() async {
     setState(() {
       _isLoading = true;
@@ -92,23 +127,65 @@ class _AddOrderPageState extends State<AddOrderPage> {
         },
       );
 
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        final crops = data.map((crop) => Crop.fromJson(crop)).toList();
-        
+        final responseBody = response.body;
+        if (responseBody.isEmpty) {
+          throw Exception('Empty response from server');
+        }
+
+        final dynamic jsonData = jsonDecode(responseBody);
+
+        if (jsonData is! List) {
+          throw Exception('Expected list but got: ${jsonData.runtimeType}');
+        }
+
+        final List<dynamic> data = jsonData;
+        print('Number of crops in response: ${data.length}');
+
+        if (data.isEmpty) {
+          setState(() {
+            _crops = [];
+            _isLoading = false;
+            _errorMessage = 'No crops available';
+          });
+          return;
+        }
+
+        // Debug first crop
+        print('First crop data: ${data[0]}');
+
+        final crops = <Crop>[];
+        for (int i = 0; i < data.length; i++) {
+          try {
+            print('Processing crop $i: ${data[i]}');
+            final crop = Crop.fromJson(data[i]);
+            print('Parsed crop: ID=${crop.cropId}, Name="${crop.cropName}"');
+            crops.add(crop);
+          } catch (e) {
+            print('Error parsing crop at index $i: $e');
+            print('Crop data: ${data[i]}');
+          }
+        }
+
+        print('Successfully parsed ${crops.length} crops');
+        print('Crop names: ${crops.map((c) => c.cropName).toList()}');
+
         setState(() {
           _crops = crops;
           _isLoading = false;
         });
 
-        // Cache the crops data
         await _cacheCrops(data);
-        
       } else {
-        throw Exception('Failed to load crops: ${response.statusCode}');
+        throw Exception(
+          'Failed to load crops: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
-      // Try to load cached data on error
+      print('Error in _loadCrops: $e');
       await _loadCachedCrops();
       setState(() {
         _errorMessage = 'Error loading crops: $e';
@@ -121,7 +198,10 @@ class _AddOrderPageState extends State<AddOrderPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('cached_crops_for_orders', json.encode(cropsData));
-      await prefs.setString('crops_orders_cache_timestamp', DateTime.now().toIso8601String());
+      await prefs.setString(
+        'crops_orders_cache_timestamp',
+        DateTime.now().toIso8601String(),
+      );
       print('Cached ${cropsData.length} crops for orders');
     } catch (e) {
       print('Error caching crops: $e');
@@ -132,7 +212,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final cachedData = prefs.getString('cached_crops_for_orders');
-      
+
       if (cachedData != null) {
         final List<dynamic> jsonData = json.decode(cachedData);
         final crops = jsonData.map((json) => Crop.fromJson(json)).toList();
@@ -186,7 +266,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
       if (response.statusCode == 201) {
         // Save successful order creation
         await _saveOrderCreation();
-        
+
         _showSuccessSnackBar('Order request created successfully!');
         Navigator.pop(context, true);
       } else {
@@ -204,14 +284,16 @@ class _AddOrderPageState extends State<AddOrderPage> {
   Future<void> _saveOrderCreation() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Update order creation count
       final orderCount = prefs.getInt('orders_created_count') ?? 0;
       await prefs.setInt('orders_created_count', orderCount + 1);
-      
+
       // Save last order creation time
-      await prefs.setString('last_order_created', DateTime.now().toIso8601String());
-      
+      await prefs.setString(
+        'last_order_created',
+        DateTime.now().toIso8601String(),
+      );
     } catch (e) {
       print('Error saving order creation data: $e');
     }
@@ -220,10 +302,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(color: Colors.white),
-        ),
+        content: Text(message, style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.green[400],
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
@@ -235,10 +314,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(color: Colors.white),
-        ),
+        content: Text(message, style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.red[400],
         duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
@@ -257,13 +333,16 @@ class _AddOrderPageState extends State<AddOrderPage> {
             _buildHeader(),
             if (_errorMessage != null) _buildErrorBanner(),
             Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                      ),
-                    )
-                  : _buildForm(),
+              child:
+                  _isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.green,
+                          ),
+                        ),
+                      )
+                      : _buildForm(),
             ),
           ],
         ),
@@ -298,7 +377,11 @@ class _AddOrderPageState extends State<AddOrderPage> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 24,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               Expanded(
@@ -351,10 +434,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
           Expanded(
             child: Text(
               _errorMessage!,
-              style: GoogleFonts.poppins(
-                color: Colors.red[700],
-                fontSize: 14,
-              ),
+              style: GoogleFonts.poppins(color: Colors.red[700], fontSize: 14),
             ),
           ),
           IconButton(
@@ -371,9 +451,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
       padding: const EdgeInsets.all(16),
       child: Card(
         elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -443,11 +521,17 @@ class _AddOrderPageState extends State<AddOrderPage> {
           ),
           child: DropdownButtonFormField<int>(
             decoration: InputDecoration(
-              hintText: 'Choose a crop to request',
+              hintText:
+                  _crops.isEmpty
+                      ? 'Loading crops...'
+                      : 'Choose a crop to request',
               hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey[300]!),
@@ -463,26 +547,89 @@ class _AddOrderPageState extends State<AddOrderPage> {
               prefixIcon: Icon(Icons.agriculture, color: Colors.green[600]),
             ),
             value: _selectedCropId,
-            items: _crops.map((crop) {
-              return DropdownMenuItem<int>(
-                value: crop.cropId,
-                child: Text(
-                  crop.cropName,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedCropId = value;
-              });
-            },
+            items:
+                _crops.isEmpty
+                    ? <DropdownMenuItem<int>>[] // Empty list instead of null
+                    : _crops
+                        .where(
+                          (crop) => crop.cropId > 0,
+                        ) // Filter out invalid IDs
+                        .map((crop) {
+                          return DropdownMenuItem<int>(
+                            value: crop.cropId,
+                            child: Text(
+                              crop.cropName.isEmpty ||
+                                      crop.cropName == 'Unknown Crop'
+                                  ? 'Crop ID: ${crop.cropId}'
+                                  : crop.cropName,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          );
+                        })
+                        .toList(),
+            onChanged:
+                _crops.isEmpty
+                    ? null
+                    : (value) {
+                      setState(() {
+                        _selectedCropId = value;
+                      });
+                    },
             validator: (value) => value == null ? 'Please select a crop' : null,
           ),
         ),
+        // Add debug info
+        if (_crops.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Found ${_crops.length} crops',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                Text(
+                  'Valid crops: ${_crops.where((crop) => crop.cropId > 0).length}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                if (_crops.isNotEmpty)
+                  Text(
+                    'Sample: ${_crops.first.cropName} (ID: ${_crops.first.cropId})',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        // Show loading/error state
+        if (_isLoading)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              'Loading crops...',
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.blue[600]),
+            ),
+          ),
+        if (_errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              'Error: $_errorMessage',
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.red[600]),
+            ),
+          ),
       ],
     );
   }
@@ -520,7 +667,10 @@ class _AddOrderPageState extends State<AddOrderPage> {
               hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey[300]!),
@@ -591,7 +741,10 @@ class _AddOrderPageState extends State<AddOrderPage> {
               hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey[300]!),
@@ -605,7 +758,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
                 borderSide: BorderSide(color: Colors.green[400]!, width: 2),
               ),
               prefixIcon: Icon(Icons.attach_money, color: Colors.green[600]),
-              prefixText: '₱ ',
+              prefixText: 'Rs. ',
               prefixStyle: GoogleFonts.poppins(
                 color: Colors.black87,
                 fontWeight: FontWeight.w500,
@@ -658,42 +811,43 @@ class _AddOrderPageState extends State<AddOrderPage> {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: _isSubmitting
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
+        child:
+            _isSubmitting
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Creating Request...',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(width: 12),
+                    Text(
+                      'Creating Request...',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.send, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'CREATE REQUEST',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  ],
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.send, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'CREATE REQUEST',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
       ),
     );
   }
