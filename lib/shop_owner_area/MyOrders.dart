@@ -1,5 +1,6 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:capsfront/models/request_model.dart';
+import 'package:capsfront/models/crop_model.dart';
 import 'package:capsfront/shop_owner_area/AddOrders.dart';
 import 'package:capsfront/accounts/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +20,7 @@ class MyRequestsPage extends StatefulWidget {
 
 class _MyRequestsPageState extends State<MyRequestsPage> {
   List<Request> _requests = [];
+  List<Crop> _crops = [];
   bool _isLoading = true;
   String? _errorMessage;
   String? _authToken;
@@ -32,16 +34,19 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   Future<void> _loadSessionAndFetchRequests() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       _authToken = prefs.getString('auth_token');
-      
-      print('Session data loaded - Shop ID: ${widget.shopID}, Token: ${_authToken?.isNotEmpty}');
-      
+
+      print(
+        'Session data loaded - Shop ID: ${widget.shopID}, Token: ${_authToken?.isNotEmpty}',
+      );
+
       if (_authToken == null || _authToken!.isEmpty) {
         await _handleSessionExpired('Authentication token missing');
         return;
       }
-      
+
+      await _fetchCrops();
       await _fetchRequests();
       await _saveUsageData();
     } catch (e) {
@@ -56,26 +61,68 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   Future<void> _saveUsageData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Update my orders usage count
       final currentCount = prefs.getInt('feature_usage_my_orders') ?? 0;
       await prefs.setInt('feature_usage_my_orders', currentCount + 1);
-      
+
       // Save last used feature and activity time
       await prefs.setString('last_used_feature', 'my_orders');
-      await prefs.setString('last_activity_time', DateTime.now().toIso8601String());
-      
+      await prefs.setString(
+        'last_activity_time',
+        DateTime.now().toIso8601String(),
+      );
     } catch (e) {
       print('Error saving usage data: $e');
     }
   }
 
+  Future<void> _fetchCrops() async {
+    try {
+      print('Fetching crops...');
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getCrops),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_authToken',
+        },
+      );
+
+      print('Crops API response status: ${response.statusCode}');
+      print('Crops API response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        print('Fetched ${data.length} crops');
+        setState(() {
+          _crops = data.map((json) => Crop.fromJson(json)).toList();
+        });
+        print(
+          'Crops loaded successfully: ${_crops.map((c) => '${c.cropId}: ${c.cropName}').join(', ')}',
+        );
+      } else {
+        print('Failed to fetch crops: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching crops: $e');
+    }
+  }
+
+  String _getCropNameById(int cropId) {
+    try {
+      final crop = _crops.firstWhere((crop) => crop.cropId == cropId);
+      return crop.cropName;
+    } catch (e) {
+      return 'Unknown Crop';
+    }
+  }
+
   Future<void> _handleSessionExpired(String reason) async {
     print('Session expired: $reason');
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    
+
     if (mounted) {
       showDialog(
         context: context,
@@ -134,7 +181,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
 
     try {
       print('Fetching requests for shop ID: ${widget.shopID}');
-      
+
       final response = await http.get(
         Uri.parse(ApiEndpoints.getRequestByShopId(widget.shopID)),
         headers: {
@@ -147,11 +194,38 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
       print('API response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        final List<Request> loadedRequests = data
-            .map((e) => Request.fromJson(e as Map<String, dynamic>))
-            .toList();
-        
+        final dynamic responseData = json.decode(response.body);
+        print('Decoded response type: ${responseData.runtimeType}');
+        print('Decoded response: $responseData');
+
+        // Handle both array and single object responses
+        List<dynamic> data;
+        if (responseData is List) {
+          data = responseData;
+        } else if (responseData is Map) {
+          data = [responseData];
+        } else {
+          throw Exception(
+            'Unexpected response format: ${responseData.runtimeType}',
+          );
+        }
+
+        print('Processing ${data.length} items');
+
+        final List<Request> loadedRequests = [];
+        for (int i = 0; i < data.length; i++) {
+          try {
+            print('Processing item $i: ${data[i]}');
+            final request = Request.fromJson(data[i] as Map<String, dynamic>);
+            loadedRequests.add(request);
+            print('Successfully parsed request $i: ID=${request.requestID}');
+          } catch (e) {
+            print('Error parsing item $i: $e');
+            print('Item data: ${data[i]}');
+            // Continue with other items
+          }
+        }
+
         setState(() {
           _requests = loadedRequests;
           _errorMessage = null;
@@ -159,7 +233,6 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
 
         // Cache the requests
         await _cacheRequests(data);
-        
       } else if (response.statusCode == 401) {
         await _handleSessionExpired('Authentication failed');
         return;
@@ -169,7 +242,9 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
           _errorMessage = null;
         });
       } else {
-        throw Exception('Failed to load requests: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Failed to load requests: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('Error fetching requests: $e');
@@ -186,8 +261,14 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   Future<void> _cacheRequests(List<dynamic> requestsData) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('cached_requests_${widget.shopID}', json.encode(requestsData));
-      await prefs.setString('requests_cache_timestamp', DateTime.now().toIso8601String());
+      await prefs.setString(
+        'cached_requests_${widget.shopID}',
+        json.encode(requestsData),
+      );
+      await prefs.setString(
+        'requests_cache_timestamp',
+        DateTime.now().toIso8601String(),
+      );
       print('Cached ${requestsData.length} requests');
     } catch (e) {
       print('Error caching requests: $e');
@@ -198,10 +279,11 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final cachedData = prefs.getString('cached_requests_${widget.shopID}');
-      
+
       if (cachedData != null) {
         final List<dynamic> jsonData = json.decode(cachedData);
-        final requests = jsonData.map((json) => Request.fromJson(json)).toList();
+        final requests =
+            jsonData.map((json) => Request.fromJson(json)).toList();
         setState(() {
           _requests = requests;
         });
@@ -255,10 +337,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(color: Colors.white),
-        ),
+        content: Text(message, style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.green[400],
         duration: const Duration(seconds: 3),
       ),
@@ -268,10 +347,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(color: Colors.white),
-        ),
+        content: Text(message, style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.red[400],
         duration: const Duration(seconds: 4),
       ),
@@ -288,13 +364,16 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
             _buildHeader(),
             if (_errorMessage != null) _buildErrorBanner(),
             Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                      ),
-                    )
-                  : _requests.isEmpty
+              child:
+                  _isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.green,
+                          ),
+                        ),
+                      )
+                      : _requests.isEmpty
                       ? _buildEmptyState()
                       : _buildRequestsList(),
             ),
@@ -361,7 +440,11 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 24,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               Expanded(
@@ -375,9 +458,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.all(8),
-              ),
+              Container(padding: const EdgeInsets.all(8)),
             ],
           ),
           const SizedBox(height: 8),
@@ -415,35 +496,12 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.green[400]!, Colors.green[600]!],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          request.cropID.toString(),
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Crop ID: ${request.cropID}',
+                            _getCropNameById(request.cropID),
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
@@ -453,7 +511,10 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                           ),
                           const SizedBox(height: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.green[100],
                               borderRadius: BorderRadius.circular(6),
@@ -477,8 +538,13 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: IconButton(
-                        icon: Icon(Icons.delete_outline, color: Colors.red[600], size: 20),
-                        onPressed: () => _showDeleteConfirmation(request.requestID),
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: Colors.red[600],
+                          size: 20,
+                        ),
+                        onPressed:
+                            () => _showDeleteConfirmation(request.requestID),
                       ),
                     ),
                   ],
@@ -489,7 +555,10 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.green[50]!, Colors.green[100]!.withOpacity(0.3)],
+                      colors: [
+                        Colors.green[50]!,
+                        Colors.green[100]!.withOpacity(0.3),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -498,11 +567,23 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                   ),
                   child: Column(
                     children: [
-                      _buildInfoRow(Icons.scale, 'Amount', '${request.amount} kg'),
+                      _buildInfoRow(
+                        Icons.scale,
+                        'Amount',
+                        '${request.amount} kg',
+                      ),
                       const SizedBox(height: 12),
-                      _buildInfoRow(Icons.attach_money, 'Price', '₱${request.price.toString()}'),
+                      _buildInfoRow(
+                        Icons.attach_money,
+                        'Price',
+                        'Rs.${request.price.toString()}',
+                      ),
                       const SizedBox(height: 12),
-                      _buildInfoRow(Icons.calendar_today, 'Date', _formatDate(request.date)),
+                      _buildInfoRow(
+                        Icons.calendar_today,
+                        'Date',
+                        _formatDate(request.date),
+                      ),
                     ],
                   ),
                 ),
@@ -607,9 +688,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                   'Refresh',
                   style: GoogleFonts.poppins(fontSize: 14),
                 ),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.green[600],
-                ),
+                style: TextButton.styleFrom(foregroundColor: Colors.green[600]),
               ),
             ],
           ),
@@ -648,10 +727,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
           Expanded(
             child: Text(
               _errorMessage!,
-              style: GoogleFonts.poppins(
-                color: Colors.red[700],
-                fontSize: 14,
-              ),
+              style: GoogleFonts.poppins(color: Colors.red[700], fontSize: 14),
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
             ),
@@ -682,62 +758,67 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   Future<void> _showDeleteConfirmation(int requestId) {
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red[100],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(Icons.delete_outline, color: Colors.red[600], size: 24),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            Text(
-              'Confirm Delete',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.red[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.delete_outline,
+                    color: Colors.red[600],
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Confirm Delete',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to delete this order request? This action cannot be undone.',
-          style: GoogleFonts.poppins(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.poppins(color: Colors.grey[600]),
+            content: Text(
+              'Are you sure you want to delete this order request? This action cannot be undone.',
+              style: GoogleFonts.poppins(),
             ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.red[400]!, Colors.red[600]!],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _deleteRequest(requestId);
-              },
-              child: Text(
-                'Delete',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.poppins(color: Colors.grey[600]),
                 ),
               ),
-            ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.red[400]!, Colors.red[600]!],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _deleteRequest(requestId);
+                  },
+                  child: Text(
+                    'Delete',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 

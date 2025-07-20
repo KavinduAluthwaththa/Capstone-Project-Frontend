@@ -1,12 +1,12 @@
 import 'package:capsfront/accounts/login.dart';
 import 'package:capsfront/constraints/api_endpoint.dart';
+import 'package:capsfront/shared/PrivacyPolicyPage.dart';
+import 'package:capsfront/shared/HelpSupport.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:provider/provider.dart';
-import 'package:capsfront/services/theme_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -16,7 +16,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _notificationsEnabled = true;
   bool _isLoggingOut = false;
   bool _isLoading = true;
   bool _isSaving = false;
@@ -87,9 +86,6 @@ class _SettingsPageState extends State<SettingsPage> {
         _emailController.text = _userEmail ?? '';
         _phoneController.text = _userPhone ?? '';
         _locationController.text = _userLocation ?? '';
-
-        // App settings
-        _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
 
         _isLoading = false;
       });
@@ -409,16 +405,6 @@ class _SettingsPageState extends State<SettingsPage> {
               ? TextInputType.phone
               : TextInputType.text,
     );
-  }
-
-  Future<void> _saveNotificationPreference(bool enabled) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('notifications_enabled', enabled);
-      print('Notification preference saved: $enabled');
-    } catch (e) {
-      print('Error saving notification preference: $e');
-    }
   }
 
   Future<void> _logout() async {
@@ -778,46 +764,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 24),
             _buildSettingItem(
-              icon: Icons.notifications,
-              title: 'Notifications',
-              trailing: Switch(
-                value: _notificationsEnabled,
-                onChanged: (bool value) {
-                  setState(() {
-                    _notificationsEnabled = value;
-                  });
-                  _saveNotificationPreference(value);
-                },
-                activeColor: Colors.white,
-                activeTrackColor: Colors.green[400],
-                inactiveThumbColor: Colors.grey[300],
-                inactiveTrackColor: Colors.grey[400],
-              ),
-            ),
-            const Divider(height: 32),
-            Consumer<ThemeService>(
-              builder: (context, themeService, child) {
-                return _buildSettingItem(
-                  icon:
-                      themeService.isDarkMode
-                          ? Icons.dark_mode
-                          : Icons.light_mode,
-                  title: 'Dark Mode',
-                  trailing: Switch(
-                    value: themeService.isDarkMode,
-                    onChanged: (bool value) {
-                      themeService.toggleTheme();
-                    },
-                    activeColor: Colors.white,
-                    activeTrackColor: Colors.green[400],
-                    inactiveThumbColor: Colors.grey[300],
-                    inactiveTrackColor: Colors.grey[400],
-                  ),
-                );
-              },
-            ),
-            const Divider(height: 32),
-            _buildSettingItem(
               icon: Icons.language,
               title: 'Language',
               trailing: Row(
@@ -852,7 +798,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 size: 16,
               ),
               onTap: () {
-                _showErrorSnackBar('Privacy policy coming soon!');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
+                );
               },
             ),
             const Divider(height: 32),
@@ -865,7 +814,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 size: 16,
               ),
               onTap: () {
-                _showErrorSnackBar('Help & support coming soon!');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HelpSupportPage()),
+                );
               },
             ),
             const SizedBox(height: 32),
