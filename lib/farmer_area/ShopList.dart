@@ -401,14 +401,6 @@ class _ShopListPageState extends State<ShopListPage> {
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "ID: SHOP-${shop.shopID}",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
                       ],
                     ),
                   ),

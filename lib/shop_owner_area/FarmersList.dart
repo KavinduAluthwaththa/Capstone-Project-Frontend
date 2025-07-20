@@ -410,14 +410,6 @@ class _FarmersListPageState extends State<FarmersListPage> {
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "ID: FRM-${farmer.farmerID}",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -439,8 +431,6 @@ class _FarmersListPageState extends State<FarmersListPage> {
               _buildFarmerDetailRow(Icons.phone, farmer.phoneNumber.toString()),
               const SizedBox(height: 8),
               _buildFarmerDetailRow(Icons.location_on, farmer.farmLocation),
-              const SizedBox(height: 8),
-              _buildFarmerDetailRow(Icons.email, farmer.Email),
             ],
           ),
         ),
