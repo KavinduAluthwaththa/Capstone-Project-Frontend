@@ -18,6 +18,7 @@ class _FertilizingState extends State<Fertilizing> {
   double? amountToUse;
   String? recommendation;
   bool isLoading = false;
+  Map<String, dynamic>? calculationResults;
 
   // Enhanced crop and fertilizer data with proper NPK values
   final Map<String, Map<String, dynamic>> crops = {
@@ -26,57 +27,57 @@ class _FertilizingState extends State<Fertilizing> {
       'P': 40,
       'K': 40,
       'seasons': ['Yala', 'Maha'],
-      'description': 'Sri Lankan staple crop requiring balanced nutrition'
+      'description': 'Sri Lankan staple crop requiring balanced nutrition',
     },
     'Wheat': {
       'N': 120,
       'P': 60,
       'K': 40,
       'seasons': ['Yala'],
-      'description': 'High nitrogen requirement cereal crop'
+      'description': 'High nitrogen requirement cereal crop',
     },
     'Corn (Maize)': {
       'N': 150,
       'P': 75,
       'K': 75,
       'seasons': ['Year-round'],
-      'description': 'Heavy feeder requiring high nutrient input'
+      'description': 'Heavy feeder requiring high nutrient input',
     },
     'Potato': {
       'N': 100,
       'P': 50,
       'K': 150,
       'seasons': ['Yala'],
-      'description': 'High potassium requirement for tuber development'
+      'description': 'High potassium requirement for tuber development',
     },
     'Tomato': {
       'N': 120,
       'P': 80,
       'K': 120,
       'seasons': ['Year-round'],
-      'description': 'Fruit crop with high nutrient demands'
+      'description': 'Fruit crop with high nutrient demands',
     },
     'Cabbage': {
       'N': 100,
       'P': 50,
       'K': 100,
       'seasons': ['Year-round'],
-      'description': 'Leafy vegetable requiring balanced nutrition'
+      'description': 'Leafy vegetable requiring balanced nutrition',
     },
     'Carrot': {
       'N': 80,
       'P': 60,
       'K': 120,
       'seasons': ['Year-round'],
-      'description': 'Root crop with moderate nutrient needs'
+      'description': 'Root crop with moderate nutrient needs',
     },
     'Bean': {
       'N': 30, // Lower due to nitrogen fixation
       'P': 40,
       'K': 60,
       'seasons': ['Year-round'],
-      'description': 'Legume crop that fixes nitrogen naturally'
-    }
+      'description': 'Legume crop that fixes nitrogen naturally',
+    },
   };
 
   final Map<String, Map<String, dynamic>> fertilizers = {
@@ -85,50 +86,50 @@ class _FertilizingState extends State<Fertilizing> {
       'P': 0,
       'K': 0,
       'cost_per_kg': 85, // LKR
-      'description': 'High nitrogen fertilizer for vegetative growth'
+      'description': 'High nitrogen fertilizer for vegetative growth',
     },
     'Triple Super Phosphate (TSP)': {
       'N': 0,
       'P': 46,
       'K': 0,
       'cost_per_kg': 120,
-      'description': 'Phosphate fertilizer for root development'
+      'description': 'Phosphate fertilizer for root development',
     },
     'Muriate of Potash (MOP)': {
       'N': 0,
       'P': 0,
       'K': 60,
       'cost_per_kg': 110,
-      'description': 'Potassium fertilizer for fruit quality'
+      'description': 'Potassium fertilizer for fruit quality',
     },
     'NPK 15:15:15': {
       'N': 15,
       'P': 15,
       'K': 15,
       'cost_per_kg': 95,
-      'description': 'Balanced fertilizer for general use'
+      'description': 'Balanced fertilizer for general use',
     },
     'NPK 20:10:10': {
       'N': 20,
       'P': 10,
       'K': 10,
       'cost_per_kg': 100,
-      'description': 'High nitrogen blend for leafy crops'
+      'description': 'High nitrogen blend for leafy crops',
     },
     'DAP (Diammonium Phosphate)': {
       'N': 18,
       'P': 46,
       'K': 0,
       'cost_per_kg': 130,
-      'description': 'Nitrogen-phosphate fertilizer for early growth'
+      'description': 'Nitrogen-phosphate fertilizer for early growth',
     },
     'Compost': {
       'N': 1.5,
       'P': 1.0,
       'K': 1.5,
       'cost_per_kg': 15,
-      'description': 'Organic fertilizer for soil health'
-    }
+      'description': 'Organic fertilizer for soil health',
+    },
   };
 
   final List<String> areaUnits = ['acres', 'hectares', 'perches'];
@@ -148,10 +149,17 @@ class _FertilizingState extends State<Fertilizing> {
   Future<void> _saveUsageData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final currentCount = prefs.getInt('feature_usage_fertilizer_calculation') ?? 0;
-      await prefs.setInt('feature_usage_fertilizer_calculation', currentCount + 1);
+      final currentCount =
+          prefs.getInt('feature_usage_fertilizer_calculation') ?? 0;
+      await prefs.setInt(
+        'feature_usage_fertilizer_calculation',
+        currentCount + 1,
+      );
       await prefs.setString('last_used_feature', 'fertilizer_calculation');
-      await prefs.setString('last_activity_time', DateTime.now().toIso8601String());
+      await prefs.setString(
+        'last_activity_time',
+        DateTime.now().toIso8601String(),
+      );
     } catch (e) {
       print('Error saving usage data: $e');
     }
@@ -169,13 +177,20 @@ class _FertilizingState extends State<Fertilizing> {
     }
   }
 
-  Map<String, dynamic> calculateFertilizerAmount(String crop, String fertilizer, double area, String unit) {
+  Map<String, dynamic> calculateFertilizerAmount(
+    String crop,
+    String fertilizer,
+    double area,
+    String unit,
+  ) {
     if (!crops.containsKey(crop) || !fertilizers.containsKey(fertilizer)) {
       return {'error': 'Invalid crop or fertilizer selection'};
     }
 
+    // Convert area to standard unit (hectares for metric, then convert to square feet for calculations)
     double areaInHectares = convertToHectares(area, unit);
-    
+    double areaInSqFt = areaInHectares * 107639; // 1 hectare = 107,639 sq ft
+
     final cropData = crops[crop]!;
     final fertilizerData = fertilizers[fertilizer]!;
 
@@ -185,79 +200,241 @@ class _FertilizingState extends State<Fertilizing> {
     double requiredK = cropData['K'].toDouble();
 
     // Nutrient content in fertilizer (%)
-    double fertilizerN = fertilizerData['N'].toDouble();
-    double fertilizerP = fertilizerData['P'].toDouble();
-    double fertilizerK = fertilizerData['K'].toDouble();
+    double fertilizerN =
+        fertilizerData['N'].toDouble() / 100; // Convert % to decimal
+    double fertilizerP = fertilizerData['P'].toDouble() / 100;
+    double fertilizerK = fertilizerData['K'].toDouble() / 100;
 
-    // Calculate fertilizer amount needed to meet primary nutrient requirement
-    double fertilizerAmount = 0;
-    String primaryNutrient = '';
-    
+    // Calculate fertilizer amount needed using the formula:
+    // Fertilizer rate = (Required nutrient application rate × 100) / (% nutrient in fertilizer × W)
+    // Where W is the weight factor (we'll use 1 for direct calculation)
+
+    Map<String, double> fertilizerAmounts = {};
+    Map<String, double> nutrientDeficiencies = {};
+
+    // Calculate for each nutrient
     if (fertilizerN > 0) {
-      fertilizerAmount = (requiredN * areaInHectares * 100) / fertilizerN;
-      primaryNutrient = 'Nitrogen';
-    } else if (fertilizerP > 0) {
-      fertilizerAmount = (requiredP * areaInHectares * 100) / fertilizerP;
-      primaryNutrient = 'Phosphorus';
-    } else if (fertilizerK > 0) {
-      fertilizerAmount = (requiredK * areaInHectares * 100) / fertilizerK;
-      primaryNutrient = 'Potassium';
+      // Required N in kg for the total area
+      double totalNRequired = requiredN * areaInHectares;
+      // Apply the formula: (Required nutrient × 100) / (% nutrient × W)
+      fertilizerAmounts['N'] =
+          (totalNRequired * 100) / (fertilizerData['N'].toDouble() * 1);
+      nutrientDeficiencies['N'] = totalNRequired;
     }
 
-    // Calculate cost
-    double totalCost = fertilizerAmount * fertilizerData['cost_per_kg'];
+    if (fertilizerP > 0) {
+      double totalPRequired = requiredP * areaInHectares;
+      fertilizerAmounts['P'] =
+          (totalPRequired * 100) / (fertilizerData['P'].toDouble() * 1);
+      nutrientDeficiencies['P'] = totalPRequired;
+    }
 
-    // Generate recommendations
-    String recommendations = _generateRecommendations(crop, fertilizer, fertilizerAmount, areaInHectares);
+    if (fertilizerK > 0) {
+      double totalKRequired = requiredK * areaInHectares;
+      fertilizerAmounts['K'] =
+          (totalKRequired * 100) / (fertilizerData['K'].toDouble() * 1);
+      nutrientDeficiencies['K'] = totalKRequired;
+    }
+
+    // Determine the primary nutrient and calculate based on the limiting factor
+    double finalFertilizerAmount = 0;
+    String primaryNutrient = '';
+    String calculationMethod = '';
+
+    if (fertilizerAmounts.containsKey('N') && fertilizerAmounts['N']! > 0) {
+      finalFertilizerAmount = fertilizerAmounts['N']!;
+      primaryNutrient = 'Nitrogen (N)';
+      calculationMethod = 'Calculated based on Nitrogen requirement';
+    } else if (fertilizerAmounts.containsKey('P') &&
+        fertilizerAmounts['P']! > 0) {
+      finalFertilizerAmount = fertilizerAmounts['P']!;
+      primaryNutrient = 'Phosphorus (P)';
+      calculationMethod = 'Calculated based on Phosphorus requirement';
+    } else if (fertilizerAmounts.containsKey('K') &&
+        fertilizerAmounts['K']! > 0) {
+      finalFertilizerAmount = fertilizerAmounts['K']!;
+      primaryNutrient = 'Potassium (K)';
+      calculationMethod = 'Calculated based on Potassium requirement';
+    }
+
+    // Calculate actual nutrients provided (convert back from percentage)
+    double actualN =
+        (finalFertilizerAmount * fertilizerData['N'].toDouble()) / 100;
+    double actualP =
+        (finalFertilizerAmount * fertilizerData['P'].toDouble()) / 100;
+    double actualK =
+        (finalFertilizerAmount * fertilizerData['K'].toDouble()) / 100;
+
+    // Calculate application rate per 1000 sq ft (standard reference)
+    double applicationRatePer1000SqFt =
+        (finalFertilizerAmount * 1000) / (areaInSqFt);
+
+    // Calculate cost
+    double totalCost = finalFertilizerAmount * fertilizerData['cost_per_kg'];
+
+    // Generate detailed recommendations
+    String recommendations = _generateDetailedRecommendations(
+      crop,
+      fertilizer,
+      finalFertilizerAmount,
+      areaInHectares,
+      applicationRatePer1000SqFt,
+      primaryNutrient,
+      actualN,
+      actualP,
+      actualK,
+      requiredN * areaInHectares,
+      requiredP * areaInHectares,
+      requiredK * areaInHectares,
+    );
 
     return {
-      'amount': fertilizerAmount,
+      'amount': finalFertilizerAmount,
       'cost': totalCost,
       'primary_nutrient': primaryNutrient,
+      'calculation_method': calculationMethod,
+      'application_rate_per_1000sqft': applicationRatePer1000SqFt,
       'recommendations': recommendations,
       'area_hectares': areaInHectares,
-      'nutrient_provided': {
-        'N': (fertilizerAmount * fertilizerN) / 100,
-        'P': (fertilizerAmount * fertilizerP) / 100,
-        'K': (fertilizerAmount * fertilizerK) / 100,
-      },
+      'area_sqft': areaInSqFt,
+      'nutrient_provided': {'N': actualN, 'P': actualP, 'K': actualK},
       'nutrient_required': {
         'N': requiredN * areaInHectares,
         'P': requiredP * areaInHectares,
         'K': requiredK * areaInHectares,
-      }
+      },
+      'nutrient_sufficiency': {
+        'N': actualN >= (requiredN * areaInHectares),
+        'P': actualP >= (requiredP * areaInHectares),
+        'K': actualK >= (requiredK * areaInHectares),
+      },
+      'fertilizer_percentage': {
+        'N': fertilizerData['N'],
+        'P': fertilizerData['P'],
+        'K': fertilizerData['K'],
+      },
     };
   }
 
-  String _generateRecommendations(String crop, String fertilizer, double amount, double area) {
-    String recommendations = "Application Guidelines:\n\n";
-    
-    // Application timing
+  String _generateDetailedRecommendations(
+    String crop,
+    String fertilizer,
+    double amount,
+    double area,
+    double applicationRatePer1000SqFt,
+    String primaryNutrient,
+    double actualN,
+    double actualP,
+    double actualK,
+    double requiredN,
+    double requiredP,
+    double requiredK,
+  ) {
+    String recommendations = "📊 FERTILIZER CALCULATION SUMMARY\n\n";
+
+    // Calculation details
+    recommendations += "🧮 Calculation Method:\n";
+    recommendations +=
+        "Formula Used: Fertilizer rate = (Required nutrient application rate × 100) / (% nutrient in fertilizer × W)\n";
+    recommendations +=
+        "Where W = weight factor (typically 1 for direct calculation)\n";
+    recommendations += "Primary Nutrient: $primaryNutrient\n";
+    recommendations +=
+        "Application Rate: ${applicationRatePer1000SqFt.toStringAsFixed(2)} kg per 1000 sq ft\n\n";
+
+    // Nutrient analysis
+    recommendations += "🌱 NUTRIENT ANALYSIS\n";
+    recommendations += "Nutrients Provided vs Required:\n";
+    recommendations +=
+        "• Nitrogen (N): ${actualN.toStringAsFixed(1)} kg provided | ${requiredN.toStringAsFixed(1)} kg required\n";
+    recommendations +=
+        "• Phosphorus (P): ${actualP.toStringAsFixed(1)} kg provided | ${requiredP.toStringAsFixed(1)} kg required\n";
+    recommendations +=
+        "• Potassium (K): ${actualK.toStringAsFixed(1)} kg provided | ${requiredK.toStringAsFixed(1)} kg required\n\n";
+
+    // Nutrient sufficiency warnings
+    if (actualN < requiredN && actualN > 0) {
+      recommendations +=
+          "⚠️ WARNING: Nitrogen deficiency! Consider supplementing with additional nitrogen fertilizer.\n";
+    }
+    if (actualP < requiredP && actualP > 0) {
+      recommendations +=
+          "⚠️ WARNING: Phosphorus deficiency! Consider supplementing with phosphate fertilizer.\n";
+    }
+    if (actualK < requiredK && actualK > 0) {
+      recommendations +=
+          "⚠️ WARNING: Potassium deficiency! Consider supplementing with potash fertilizer.\n";
+    }
+
+    recommendations += "\n📅 APPLICATION SCHEDULE\n";
+
+    // Application timing based on fertilizer type
     if (fertilizer.contains('Urea') || fertilizer.contains('NPK')) {
-      recommendations += "• Apply in 2-3 split doses during growing season\n";
-      recommendations += "• First application: 25% at planting\n";
-      recommendations += "• Second application: 50% at 4-6 weeks\n";
-      recommendations += "• Third application: 25% at flowering stage\n\n";
+      recommendations += "Split Application Recommended:\n";
+      recommendations +=
+          "• 1st Application (Planting): ${(amount * 0.25).toStringAsFixed(1)} kg (25%)\n";
+      recommendations +=
+          "• 2nd Application (4-6 weeks): ${(amount * 0.50).toStringAsFixed(1)} kg (50%)\n";
+      recommendations +=
+          "• 3rd Application (Flowering): ${(amount * 0.25).toStringAsFixed(1)} kg (25%)\n\n";
     } else if (fertilizer.contains('TSP') || fertilizer.contains('DAP')) {
-      recommendations += "• Apply full amount at planting time\n";
-      recommendations += "• Mix well with soil before sowing\n\n";
+      recommendations += "Single Application at Planting:\n";
+      recommendations +=
+          "• Apply full amount: ${amount.toStringAsFixed(1)} kg at soil preparation\n";
+      recommendations += "• Mix thoroughly with soil before sowing\n\n";
     } else if (fertilizer.contains('Compost')) {
-      recommendations += "• Apply 2-3 weeks before planting\n";
-      recommendations += "• Mix thoroughly with soil\n\n";
+      recommendations += "Pre-planting Application:\n";
+      recommendations +=
+          "• Apply 2-3 weeks before planting: ${amount.toStringAsFixed(1)} kg\n";
+      recommendations += "• Allow decomposition time\n\n";
+    } else {
+      recommendations += "Standard Application:\n";
+      recommendations +=
+          "• Total amount needed: ${amount.toStringAsFixed(1)} kg\n";
+      recommendations += "• Apply in 2-3 split doses for best results\n\n";
     }
 
     // Application method
-    recommendations += "Application Method:\n";
-    recommendations += "• Apply during cool hours (early morning/evening)\n";
-    recommendations += "• Ensure soil is moist but not waterlogged\n";
-    recommendations += "• Keep fertilizer away from plant stems\n";
-    recommendations += "• Water lightly after application\n\n";
+    recommendations += "🚜 APPLICATION METHOD\n";
+    recommendations +=
+        "• Apply during cool hours (early morning 6-8 AM or evening 4-6 PM)\n";
+    recommendations +=
+        "• Ensure soil moisture is adequate but not waterlogged\n";
+    recommendations += "• Maintain 2-3 cm distance from plant stems\n";
+    recommendations +=
+        "• Water lightly after application to activate nutrients\n";
+    recommendations += "• Incorporate into soil if surface applied\n\n";
 
-    // Safety precautions
-    recommendations += "Safety Precautions:\n";
-    recommendations += "• Wear gloves and protective clothing\n";
-    recommendations += "• Store in cool, dry place away from children\n";
-    recommendations += "• Do not apply before heavy rain\n";
+    // Environmental considerations
+    recommendations += "🌍 ENVIRONMENTAL GUIDELINES\n";
+    recommendations +=
+        "• Avoid application before heavy rain (>25mm predicted)\n";
+    recommendations += "• Do not apply on frozen or waterlogged soil\n";
+    recommendations +=
+        "• Consider soil pH - optimal range 6.0-7.0 for most crops\n";
+    recommendations += "• Monitor for nutrient runoff in sloped areas\n\n";
+
+    // Safety and storage
+    recommendations += "⚠️ SAFETY PRECAUTIONS\n";
+    recommendations +=
+        "• Wear protective equipment: gloves, mask, long sleeves\n";
+    recommendations +=
+        "• Store in cool, dry place away from children and pets\n";
+    recommendations +=
+        "• Keep fertilizer bags sealed to prevent moisture absorption\n";
+    recommendations += "• Wash hands thoroughly after handling\n";
+    recommendations += "• Do not smoke or eat while applying fertilizer\n\n";
+
+    // Cost and efficiency tips
+    recommendations += "💡 EFFICIENCY TIPS\n";
+    recommendations +=
+        "• Conduct soil test before application for precise nutrient needs\n";
+    recommendations +=
+        "• Consider slow-release fertilizers for reduced application frequency\n";
+    recommendations +=
+        "• Monitor crop response and adjust future applications accordingly\n";
+    recommendations +=
+        "• Combine with organic matter to improve soil structure\n";
 
     return recommendations;
   }
@@ -331,10 +508,7 @@ class _FertilizingState extends State<Fertilizing> {
           const SizedBox(height: 8),
           Text(
             "Calculate optimal fertilizer amounts for your crops",
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.white,
-            ),
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
             textAlign: TextAlign.center,
           ),
         ],
@@ -345,9 +519,7 @@ class _FertilizingState extends State<Fertilizing> {
   Widget _buildCropSelection() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -382,15 +554,15 @@ class _FertilizingState extends State<Fertilizing> {
                   amountToUse = null;
                 });
               },
-              items: crops.keys
-                  .map((crop) => DropdownMenuItem(
-                        value: crop,
-                        child: Text(
-                          crop,
-                          style: GoogleFonts.poppins(),
+              items:
+                  crops.keys
+                      .map(
+                        (crop) => DropdownMenuItem(
+                          value: crop,
+                          child: Text(crop, style: GoogleFonts.poppins()),
                         ),
-                      ))
-                  .toList(),
+                      )
+                      .toList(),
             ),
             if (selectedCrop != null) ...[
               const SizedBox(height: 12),
@@ -418,9 +590,7 @@ class _FertilizingState extends State<Fertilizing> {
   Widget _buildFertilizerSelection() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -455,47 +625,16 @@ class _FertilizingState extends State<Fertilizing> {
                   amountToUse = null;
                 });
               },
-              items: fertilizers.keys
-                  .map((fertilizer) => DropdownMenuItem(
-                        value: fertilizer,
-                        child: Text(
-                          fertilizer,
-                          style: GoogleFonts.poppins(),
+              items:
+                  fertilizers.keys
+                      .map(
+                        (fertilizer) => DropdownMenuItem(
+                          value: fertilizer,
+                          child: Text(fertilizer, style: GoogleFonts.poppins()),
                         ),
-                      ))
-                  .toList(),
+                      )
+                      .toList(),
             ),
-            if (selectedFertilizer != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fertilizers[selectedFertilizer]!['description'],
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.blue[700],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'NPK: ${fertilizers[selectedFertilizer]!['N']}:${fertilizers[selectedFertilizer]!['P']}:${fertilizers[selectedFertilizer]!['K']} | Cost: LKR ${fertilizers[selectedFertilizer]!['cost_per_kg']}/kg',
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.blue[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -505,9 +644,7 @@ class _FertilizingState extends State<Fertilizing> {
   Widget _buildAreaInput() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -560,15 +697,15 @@ class _FertilizingState extends State<Fertilizing> {
                         amountToUse = null;
                       });
                     },
-                    items: areaUnits
-                        .map((unit) => DropdownMenuItem(
-                              value: unit,
-                              child: Text(
-                                unit,
-                                style: GoogleFonts.poppins(),
+                    items:
+                        areaUnits
+                            .map(
+                              (unit) => DropdownMenuItem(
+                                value: unit,
+                                child: Text(unit, style: GoogleFonts.poppins()),
                               ),
-                            ))
-                        .toList(),
+                            )
+                            .toList(),
                   ),
                 ),
               ],
@@ -594,27 +731,32 @@ class _FertilizingState extends State<Fertilizing> {
               elevation: 2,
             ),
             onPressed: isLoading ? null : _calculateFertilizer,
-            child: isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                        const Icon(Icons.calculate, size: 20, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Calculate',
-                        style: GoogleFonts.poppins(
+            child:
+                isLoading
+                    ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.calculate,
+                          size: 20,
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Calculate',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
           ),
         ),
         const SizedBox(width: 16),
@@ -653,9 +795,7 @@ class _FertilizingState extends State<Fertilizing> {
   Widget _buildResults() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -666,7 +806,7 @@ class _FertilizingState extends State<Fertilizing> {
                 Icon(Icons.analytics, color: Colors.green[400], size: 24),
                 const SizedBox(width: 12),
                 Text(
-                  "Calculation Results",
+                  "Fertilizer Calculation Results",
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -676,13 +816,18 @@ class _FertilizingState extends State<Fertilizing> {
               ],
             ),
             const SizedBox(height: 20),
-            
-            // Amount and cost display
+
+            // Enhanced amount and cost display
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green[50],
+                gradient: LinearGradient(
+                  colors: [Colors.green[50]!, Colors.green[100]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green[200]!),
               ),
               child: Column(
                 children: [
@@ -690,7 +835,7 @@ class _FertilizingState extends State<Fertilizing> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Required Amount:",
+                        "Total Fertilizer Required:",
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -699,9 +844,75 @@ class _FertilizingState extends State<Fertilizing> {
                       Text(
                         "${amountToUse!.toStringAsFixed(1)} kg",
                         style: GoogleFonts.poppins(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.green[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Selected Crop:",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      Text(
+                        selectedCrop!,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Fertilizer Type:",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      Flexible(
+                        child: Text(
+                          selectedFertilizer!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blue[600],
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Application Area:",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      Text(
+                        "${areaController.text} $selectedAreaUnit",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.orange[600],
                         ),
                       ),
                     ],
@@ -709,35 +920,92 @@ class _FertilizingState extends State<Fertilizing> {
                 ],
               ),
             ),
-            
+
+            // Scientific calculation info
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.science, color: Colors.blue[600], size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Scientific Calculation",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Formula: Fertilizer rate = (Required nutrient application rate × 100) / (% nutrient in fertilizer × W)",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.blue[600],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "NPK Content: ${fertilizers[selectedFertilizer]!['N']}% - ${fertilizers[selectedFertilizer]!['P']}% - ${fertilizers[selectedFertilizer]!['K']}%",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.blue[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             if (recommendation != null) ...[
               const SizedBox(height: 20),
-              Text(
-                "Application Guidelines",
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+              Row(
+                children: [
+                  Icon(Icons.assignment, color: Colors.green[600], size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Detailed Application Guidelines",
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: Colors.grey[50],
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[300]!),
                 ),
-                child: Text(
-                  recommendation!,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: Colors.blue[700],
-                    height: 1.5,
+                child: SingleChildScrollView(
+                  child: Text(
+                    recommendation!,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: Colors.grey[700],
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ),
             ],
-            
+
             const SizedBox(height: 20),
             _buildSuccessIndicator(),
           ],
@@ -751,11 +1019,7 @@ class _FertilizingState extends State<Fertilizing> {
       alignment: Alignment.center,
       child: Column(
         children: [
-          Icon(
-            Icons.assignment_turned_in,
-            size: 60,
-            color: Colors.green[400],
-          ),
+          Icon(Icons.assignment_turned_in, size: 60, color: Colors.green[400]),
           const SizedBox(height: 8),
           Text(
             'Calculation Complete',
@@ -767,10 +1031,7 @@ class _FertilizingState extends State<Fertilizing> {
           ),
           Text(
             'Follow the guidelines for best results',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -778,7 +1039,9 @@ class _FertilizingState extends State<Fertilizing> {
   }
 
   void _calculateFertilizer() {
-    if (selectedCrop == null || selectedFertilizer == null || areaController.text.isEmpty) {
+    if (selectedCrop == null ||
+        selectedFertilizer == null ||
+        areaController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -830,6 +1093,7 @@ class _FertilizingState extends State<Fertilizing> {
         );
       } else {
         setState(() {
+          calculationResults = result;
           amountToUse = result['amount'];
           recommendation = result['recommendations'];
           taskCompleted = true;
@@ -838,7 +1102,7 @@ class _FertilizingState extends State<Fertilizing> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Fertilizer calculation completed successfully!',
+              'Fertilizer calculation completed using scientific formula!',
               style: GoogleFonts.poppins(color: Colors.white),
             ),
             backgroundColor: Colors.green[400],
@@ -861,6 +1125,7 @@ class _FertilizingState extends State<Fertilizing> {
       amountToUse = null;
       recommendation = null;
       taskCompleted = false;
+      calculationResults = null;
     });
   }
 
