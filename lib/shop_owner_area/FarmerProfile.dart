@@ -1,5 +1,5 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
-import 'package:capsfront/models/crop_model.dart' as GrowingCrop;
+import 'package:capsfront/models/growingCrop_model.dart';
 import 'package:capsfront/models/farmer_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +17,7 @@ class FarmerProfileScreen extends StatefulWidget {
 }
 
 class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
-  List<GrowingCrop.Crop> _farmerCrops = [];
+  List<GrowingCrop> _farmerCrops = [];
   bool _isLoading = true;
   String? _errorMessage;
   bool _isFavorite = false;
@@ -38,9 +38,9 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
 
   Future<void> _loadUserData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      setState(() {
-      });
+      // This method can be used to load user-specific data if needed
+      // Currently just a placeholder for future user data loading
+      print('Loading user data...');
     } catch (e) {
       print('Error loading user data: $e');
     }
@@ -51,7 +51,9 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
       final prefs = await SharedPreferences.getInstance();
       _favoriteFarmers = prefs.getStringList('favorite_farmers') ?? [];
       setState(() {
-        _isFavorite = _favoriteFarmers.contains(widget.farmer.farmerID.toString());
+        _isFavorite = _favoriteFarmers.contains(
+          widget.farmer.farmerID.toString(),
+        );
       });
     } catch (e) {
       print('Error loading favorite farmers: $e');
@@ -70,35 +72,38 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
   Future<void> _saveUsageData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Update farmer profile usage count
       final currentCount = prefs.getInt('feature_usage_farmer_profile') ?? 0;
       await prefs.setInt('feature_usage_farmer_profile', currentCount + 1);
-      
+
       // Save last used feature and activity time
       await prefs.setString('last_used_feature', 'farmer_profile');
-      await prefs.setString('last_activity_time', DateTime.now().toIso8601String());
-      
+      await prefs.setString(
+        'last_activity_time',
+        DateTime.now().toIso8601String(),
+      );
+
       // Save recently viewed farmers
       List<String> recentFarmers = prefs.getStringList('recent_farmers') ?? [];
       String farmerId = widget.farmer.farmerID.toString();
-      
+
       // Remove if already exists and add to front
       recentFarmers.remove(farmerId);
       recentFarmers.insert(0, farmerId);
-      
+
       // Keep only last 10 recent farmers
       if (recentFarmers.length > 10) {
         recentFarmers = recentFarmers.sublist(0, 10);
       }
-      
+
       await prefs.setStringList('recent_farmers', recentFarmers);
-      
+
       // Save farmer interaction count
-      final farmerInteractionKey = 'farmer_interaction_${widget.farmer.farmerID}';
+      final farmerInteractionKey =
+          'farmer_interaction_${widget.farmer.farmerID}';
       final interactionCount = prefs.getInt(farmerInteractionKey) ?? 0;
       await prefs.setInt(farmerInteractionKey, interactionCount + 1);
-      
     } catch (e) {
       print('Error saving usage data: $e');
     }
@@ -115,9 +120,9 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           _isFavorite = true;
         }
       });
-      
+
       await _saveFavoriteFarmers();
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -127,7 +132,9 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           backgroundColor: Colors.green[400],
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     } catch (e) {
@@ -156,13 +163,13 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         setState(() {
-          _farmerCrops = jsonData.map((json) => GrowingCrop.Crop.fromJson(json)).toList();
+          _farmerCrops =
+              jsonData.map((json) => GrowingCrop.fromJson(json)).toList();
           _isLoading = false;
         });
-        
+
         // Cache the data locally
         await _cacheFarmerCrops(jsonData);
-        
       } else if (response.statusCode == 404) {
         setState(() {
           _farmerCrops = [];
@@ -187,7 +194,10 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
       final prefs = await SharedPreferences.getInstance();
       final cacheKey = 'farmer_crops_${widget.farmer.farmerID}';
       await prefs.setString(cacheKey, json.encode(jsonData));
-      await prefs.setString('${cacheKey}_timestamp', DateTime.now().toIso8601String());
+      await prefs.setString(
+        '${cacheKey}_timestamp',
+        DateTime.now().toIso8601String(),
+      );
     } catch (e) {
       print('Error caching farmer crops: $e');
     }
@@ -198,11 +208,12 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
       final prefs = await SharedPreferences.getInstance();
       final cacheKey = 'farmer_crops_${widget.farmer.farmerID}';
       final cachedData = prefs.getString(cacheKey);
-      
+
       if (cachedData != null) {
         final List<dynamic> jsonData = json.decode(cachedData);
         setState(() {
-          _farmerCrops = jsonData.map((json) => GrowingCrop.Crop.fromJson(json)).toList();
+          _farmerCrops =
+              jsonData.map((json) => GrowingCrop.fromJson(json)).toList();
         });
       }
     } catch (e) {
@@ -259,7 +270,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.maybePop(context),
               ),
               Expanded(
@@ -268,7 +279,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -285,10 +296,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           const SizedBox(height: 8),
           Text(
             "Farmer Profile & Crop Information",
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
             textAlign: TextAlign.center,
           ),
         ],
@@ -299,9 +307,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
   Widget _buildFarmerInfoCard() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -313,7 +319,9 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
                   backgroundColor: Colors.green[400],
                   radius: 30,
                   child: Text(
-                    widget.farmer.name.isNotEmpty ? widget.farmer.name[0].toUpperCase() : 'F',
+                    widget.farmer.name.isNotEmpty
+                        ? widget.farmer.name[0].toUpperCase()
+                        : 'F',
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -345,7 +353,10 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
                       if (_isFavorite)
                         Container(
                           margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.red[100],
                             borderRadius: BorderRadius.circular(12),
@@ -384,10 +395,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.poppins(
-              color: Colors.black87,
-              fontSize: 14,
-            ),
+            style: GoogleFonts.poppins(color: Colors.black87, fontSize: 14),
           ),
         ),
       ],
@@ -397,9 +405,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
   Widget _buildStatsCard() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -427,10 +433,10 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildStatItem(
-                    'Status',
-                    _isFavorite ? 'Favorite' : 'Regular',
-                    Icons.star,
-                    _isFavorite ? Colors.red : Colors.grey,
+                    'Total Amount',
+                    '${_farmerCrops.fold(0, (sum, crop) => sum + crop.amount)} kg',
+                    Icons.inventory,
+                    Colors.blue,
                   ),
                 ),
               ],
@@ -441,7 +447,12 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -462,10 +473,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           ),
           Text(
             label,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -476,9 +484,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
   Widget _buildFarmingCropsSection() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -488,7 +494,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Farming Crops",
+                  "Farmed Crops & Quantities",
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -567,35 +573,23 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
       child: Center(
         child: Column(
           children: [
-            Icon(
-              Icons.agriculture_outlined,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.agriculture_outlined, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No crops found',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
-              'Pull down to refresh',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
+              'This farmer has not registered any crops yet',
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[500]),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _fetchFarmerCrops,
               icon: const Icon(Icons.refresh),
-              label: Text(
-                'Refresh',
-                style: GoogleFonts.poppins(),
-              ),
+              label: Text('Refresh', style: GoogleFonts.poppins()),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[400],
                 foregroundColor: Colors.white,
@@ -610,7 +604,7 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
     );
   }
 
-  Widget _buildCropItem(GrowingCrop.Crop crop) {
+  Widget _buildCropItem(GrowingCrop crop) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -625,12 +619,14 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                crop.cropName,
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.black,
+              Expanded(
+                child: Text(
+                  crop.crop.cropName,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
                 ),
               ),
               Container(
@@ -650,16 +646,18 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            "Crop ID: ${crop.cropId}",
-            style: GoogleFonts.poppins(
-              color: Colors.grey[600],
-              fontSize: 12,
-            ),
-          ),
           const SizedBox(height: 12),
-          _buildCropDetail('Planting Season', crop.plantingSeason, Icons.calendar_today),
+          Row(
+            children: [
+              Expanded(
+                child: _buildCropDetail(
+                  'Amount',
+                  '${crop.amount} kg',
+                  Icons.inventory,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -670,25 +668,27 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
       children: [
         Icon(icon, color: Colors.green[400], size: 16),
         const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-                fontSize: 12,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ),
               ),
-            ),
-            Text(
-              value,
-              style: GoogleFonts.poppins(
-                color: Colors.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              Text(
+                value,
+                style: GoogleFonts.poppins(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

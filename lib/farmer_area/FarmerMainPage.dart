@@ -541,7 +541,7 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Welcome Back! 👋',
+                    'Welcome',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.white.withOpacity(0.9),
@@ -562,15 +562,6 @@ class _FarmerMainPageState extends State<FarmerMainPage> {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.green[300],
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           'Online & Ready to Farm',

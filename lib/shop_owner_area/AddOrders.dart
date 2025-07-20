@@ -27,7 +27,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
   @override
   void initState() {
     super.initState();
-    _initializeData();
+    _loadCrops();
   }
 
   @override
@@ -37,74 +37,6 @@ class _AddOrderPageState extends State<AddOrderPage> {
     super.dispose();
   }
 
-  Future<void> _initializeData() async {
-    await _loadUserData();
-    await _debugCropsAPI(); // Add debug call
-    await _loadCrops();
-    await _saveUsageData();
-  }
-
-  Future<void> _loadUserData() async {
-    try {
-      // This method can be used to load user-specific data if needed
-      // Currently just a placeholder for future user data loading
-      print('Loading user data...');
-    } catch (e) {
-      print('Error loading user data: $e');
-    }
-  }
-
-  // Debugging function to check crops API response
-  Future<void> _debugCropsAPI() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
-
-      final response = await http.get(
-        Uri.parse(ApiEndpoints.getCrops),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print('Parsed Data: $data');
-
-        if (data is List && data.isNotEmpty) {
-          print('First item keys: ${data[0].keys}');
-          print('First item values: ${data[0].values}');
-        }
-      }
-    } catch (e) {
-      print('Debug error: $e');
-    }
-  }
-
-  Future<void> _saveUsageData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      // Update add order usage count
-      final currentCount = prefs.getInt('feature_usage_add_order') ?? 0;
-      await prefs.setInt('feature_usage_add_order', currentCount + 1);
-
-      // Save last used feature and activity time
-      await prefs.setString('last_used_feature', 'add_order');
-      await prefs.setString(
-        'last_activity_time',
-        DateTime.now().toIso8601String(),
-      );
-    } catch (e) {
-      print('Error saving usage data: $e');
-    }
-  }
-
-  // Load crops from API with caching and error handling
   Future<void> _loadCrops() async {
     setState(() {
       _isLoading = true;
@@ -127,9 +59,6 @@ class _AddOrderPageState extends State<AddOrderPage> {
         },
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final responseBody = response.body;
         if (responseBody.isEmpty) {
@@ -143,7 +72,6 @@ class _AddOrderPageState extends State<AddOrderPage> {
         }
 
         final List<dynamic> data = jsonData;
-        print('Number of crops in response: ${data.length}');
 
         if (data.isEmpty) {
           setState(() {
@@ -154,39 +82,27 @@ class _AddOrderPageState extends State<AddOrderPage> {
           return;
         }
 
-        // Debug first crop
-        print('First crop data: ${data[0]}');
-
         final crops = <Crop>[];
         for (int i = 0; i < data.length; i++) {
           try {
-            print('Processing crop $i: ${data[i]}');
             final crop = Crop.fromJson(data[i]);
-            print('Parsed crop: ID=${crop.cropId}, Name="${crop.cropName}"');
-            crops.add(crop);
+            if (crop.cropId > 0) {
+              // Only add valid crops
+              crops.add(crop);
+            }
           } catch (e) {
             print('Error parsing crop at index $i: $e');
-            print('Crop data: ${data[i]}');
           }
         }
-
-        print('Successfully parsed ${crops.length} crops');
-        print('Crop names: ${crops.map((c) => c.cropName).toList()}');
 
         setState(() {
           _crops = crops;
           _isLoading = false;
         });
-
-        await _cacheCrops(data);
       } else {
-        throw Exception(
-          'Failed to load crops: ${response.statusCode} - ${response.body}',
-        );
+        throw Exception('Failed to load crops: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error in _loadCrops: $e');
-      await _loadCachedCrops();
       setState(() {
         _errorMessage = 'Error loading crops: $e';
         _isLoading = false;
@@ -194,42 +110,18 @@ class _AddOrderPageState extends State<AddOrderPage> {
     }
   }
 
-  Future<void> _cacheCrops(List<dynamic> cropsData) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('cached_crops_for_orders', json.encode(cropsData));
-      await prefs.setString(
-        'crops_orders_cache_timestamp',
-        DateTime.now().toIso8601String(),
-      );
-      print('Cached ${cropsData.length} crops for orders');
-    } catch (e) {
-      print('Error caching crops: $e');
-    }
-  }
-
-  Future<void> _loadCachedCrops() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cachedData = prefs.getString('cached_crops_for_orders');
-
-      if (cachedData != null) {
-        final List<dynamic> jsonData = json.decode(cachedData);
-        final crops = jsonData.map((json) => Crop.fromJson(json)).toList();
-        setState(() {
-          _crops = crops;
-        });
-        print('Loaded ${crops.length} crops from cache');
-      }
-    } catch (e) {
-      print('Error loading cached crops: $e');
-    }
-  }
-
   Future<void> _submitRequest() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCropId == null) {
       _showErrorSnackBar('Please select a crop');
+      return;
+    }
+
+    // Validate that the selected crop ID exists in our crops list
+    final selectedCrop =
+        _crops.where((crop) => crop.cropId == _selectedCropId).toList();
+    if (selectedCrop.isEmpty) {
+      _showErrorSnackBar('Invalid crop selected. Please select a valid crop.');
       return;
     }
 
@@ -245,13 +137,15 @@ class _AddOrderPageState extends State<AddOrderPage> {
         throw Exception('Authentication token not found');
       }
 
+      final now = DateTime.now();
+      final dateOnly =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       final requestData = {
+        "Date": dateOnly,
+        "Amount": int.parse(_amountController.text.trim()),
+        "Price": int.parse(_priceController.text.trim()),
         "CropID": _selectedCropId,
         "ShopID": widget.shopId,
-        "Date": DateTime.now().toIso8601String(),
-        "Amount": int.parse(_amountController.text),
-        "Price": int.parse(_priceController.text),
-        "IsAvailable": true,
       };
 
       final response = await http.post(
@@ -263,14 +157,29 @@ class _AddOrderPageState extends State<AddOrderPage> {
         body: jsonEncode(requestData),
       );
 
-      if (response.statusCode == 201) {
-        // Save successful order creation
-        await _saveOrderCreation();
-
+      if (response.statusCode == 200 || response.statusCode == 201) {
         _showSuccessSnackBar('Order request created successfully!');
         Navigator.pop(context, true);
       } else {
-        throw Exception('Failed to create request: ${response.statusCode}');
+        String errorMessage =
+            'Failed to create request (${response.statusCode})';
+
+        if (response.body.isNotEmpty) {
+          try {
+            final errorData = jsonDecode(response.body);
+            if (errorData is Map) {
+              if (errorData.containsKey('message')) {
+                errorMessage = errorData['message'].toString();
+              } else if (errorData.containsKey('error')) {
+                errorMessage = errorData['error'].toString();
+              }
+            }
+          } catch (e) {
+            errorMessage = response.body;
+          }
+        }
+
+        throw Exception(errorMessage);
       }
     } catch (e) {
       _showErrorSnackBar('Error creating request: $e');
@@ -278,24 +187,6 @@ class _AddOrderPageState extends State<AddOrderPage> {
       setState(() {
         _isSubmitting = false;
       });
-    }
-  }
-
-  Future<void> _saveOrderCreation() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      // Update order creation count
-      final orderCount = prefs.getInt('orders_created_count') ?? 0;
-      await prefs.setInt('orders_created_count', orderCount + 1);
-
-      // Save last order creation time
-      await prefs.setString(
-        'last_order_created',
-        DateTime.now().toIso8601String(),
-      );
-    } catch (e) {
-      print('Error saving order creation data: $e');
     }
   }
 
@@ -549,27 +440,22 @@ class _AddOrderPageState extends State<AddOrderPage> {
             value: _selectedCropId,
             items:
                 _crops.isEmpty
-                    ? <DropdownMenuItem<int>>[] // Empty list instead of null
-                    : _crops
-                        .where(
-                          (crop) => crop.cropId > 0,
-                        ) // Filter out invalid IDs
-                        .map((crop) {
-                          return DropdownMenuItem<int>(
-                            value: crop.cropId,
-                            child: Text(
-                              crop.cropName.isEmpty ||
-                                      crop.cropName == 'Unknown Crop'
-                                  ? 'Crop ID: ${crop.cropId}'
-                                  : crop.cropName,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          );
-                        })
-                        .toList(),
+                    ? <DropdownMenuItem<int>>[]
+                    : _crops.where((crop) => crop.cropId > 0).map((crop) {
+                      return DropdownMenuItem<int>(
+                        value: crop.cropId,
+                        child: Text(
+                          crop.cropName.isEmpty ||
+                                  crop.cropName == 'Unknown Crop'
+                              ? 'Crop ID: ${crop.cropId}'
+                              : crop.cropName,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      );
+                    }).toList(),
             onChanged:
                 _crops.isEmpty
                     ? null
@@ -581,53 +467,33 @@ class _AddOrderPageState extends State<AddOrderPage> {
             validator: (value) => value == null ? 'Please select a crop' : null,
           ),
         ),
-        // Add debug info
-        if (_crops.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Found ${_crops.length} crops',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                Text(
-                  'Valid crops: ${_crops.where((crop) => crop.cropId > 0).length}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                if (_crops.isNotEmpty)
-                  Text(
-                    'Sample: ${_crops.first.cropName} (ID: ${_crops.first.cropId})',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        // Show loading/error state
-        if (_isLoading)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              'Loading crops...',
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.blue[600]),
-            ),
-          ),
+        // Add a refresh button if there's an error
         if (_errorMessage != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              'Error: $_errorMessage',
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.red[600]),
+            child: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.red[600], size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  'Failed to load crops.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.red[600],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: _loadCrops,
+                  child: Text(
+                    'Retry',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.blue[600],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
       ],

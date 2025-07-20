@@ -393,7 +393,6 @@ class _DiseaseMState extends State<DiseaseM> {
                       _buildResultsSection(),
                       const SizedBox(height: 20),
                     ],
-                    _buildCommonDiseasesSection(),
                   ],
                 ),
               ),
@@ -945,40 +944,7 @@ class _DiseaseMState extends State<DiseaseM> {
         return Colors.blue;
     }
   }
-
-  Widget _buildCommonDiseasesSection() {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey[50]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Common ${_cropTypes.firstWhere((crop) => crop['value'] == _selectedCrop)['name']} Diseases',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.green[700],
-              ),
-            ),
-            const SizedBox(height: 16),
-            ..._buildCropSpecificDiseases(),
-          ],
-        ),
-      ),
-    );
-  }
-
+  
   List<Widget> _buildCropSpecificDiseases() {
     Map<String, List<Map<String, String>>> cropDiseases = {
       'potato': [

@@ -67,100 +67,186 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'Help & Support',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
-      ),
-      body: SingleChildScrollView(
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
         child: Column(
           children: [
-            _buildContactSection(),
-            const SizedBox(height: 20),
-            _buildFAQSection(),
-            const SizedBox(height: 20),
+            _buildHeader(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildContactSection(),
+                    const SizedBox(height: 20),
+                    _buildFAQSection(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContactSection() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        gradient: LinearGradient(
+          colors: [Colors.green[400]!, Colors.green[500]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.green[200]!.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.contact_support, color: Colors.green[600], size: 28),
-              const SizedBox(width: 12),
-              Text(
-                'Contact Us',
-                style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+              IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+              Expanded(
+                child: Text(
+                  "Help & Support",
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
+              const SizedBox(width: 48),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // Phone Contact
-          _buildContactItem(
-            icon: Icons.phone,
-            title: 'Phone Support',
-            subtitle: '+94 11 234 5678',
-            description: 'Available 24/7 for urgent agricultural queries',
-            onTap: () => _makePhoneCall('+94112345678'),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Email Contact
-          _buildContactItem(
-            icon: Icons.email,
-            title: 'Email Support',
-            subtitle: 'support@smartagri.lk',
-            description: 'Get detailed help within 24 hours',
-            onTap: () => _sendEmail('support@smartagri.lk'),
-          ),
-
-          const SizedBox(height: 16),
-
-          // WhatsApp Contact
-          _buildContactItem(
-            icon: Icons.chat,
-            title: 'WhatsApp Support',
-            subtitle: '+94 77 123 4567',
-            description: 'Quick assistance via WhatsApp',
-            onTap: () => _openWhatsApp('+94771234567'),
+          const SizedBox(height: 8),
+          Text(
+            "We're here to help you",
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.9),
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildContactSection() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.white, Colors.grey[50]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.contact_support,
+                    color: Colors.green[700],
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  'Contact Us',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green[700],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Phone Contact
+            Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: _buildContactItem(
+                icon: Icons.phone,
+                title: 'Phone Support',
+                subtitle: '+94 11 234 5678',
+                description: 'Available 24/7 for urgent agricultural queries',
+                onTap: () => _makePhoneCall('+94112345678'),
+              ),
+            ),
+
+            // Email Contact
+            Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: _buildContactItem(
+                icon: Icons.email,
+                title: 'Email Support',
+                subtitle: 'support@smartagri.lk',
+                description: 'Get detailed help within 24 hours',
+                onTap: () => _sendEmail('support@smartagri.lk'),
+              ),
+            ),
+
+            // WhatsApp Contact
+            Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: _buildContactItem(
+                icon: Icons.chat,
+                title: 'WhatsApp Support',
+                subtitle: '+94 77 123 4567',
+                description: 'Quick assistance via WhatsApp',
+                onTap: () => _openWhatsApp('+94771234567'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

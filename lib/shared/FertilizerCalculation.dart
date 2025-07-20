@@ -311,7 +311,7 @@ class _FertilizingState extends State<Fertilizing> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.maybePop(context),
               ),
               Expanded(
@@ -320,7 +320,7 @@ class _FertilizingState extends State<Fertilizing> {
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -333,7 +333,7 @@ class _FertilizingState extends State<Fertilizing> {
             "Calculate optimal fertilizer amounts for your crops",
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: Colors.black87,
+              color: Colors.white,
             ),
             textAlign: TextAlign.center,
           ),
@@ -603,11 +603,12 @@ class _FertilizingState extends State<Fertilizing> {
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.calculate, size: 20),
+                        const Icon(Icons.calculate, size: 20, color: Colors.white),
                       const SizedBox(width: 8),
                       Text(
                         'Calculate',
                         style: GoogleFonts.poppins(
+                          color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -697,27 +698,6 @@ class _FertilizingState extends State<Fertilizing> {
                       ),
                       Text(
                         "${amountToUse!.toStringAsFixed(1)} kg",
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Estimated Cost:",
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        "LKR ${(amountToUse! * fertilizers[selectedFertilizer]!['cost_per_kg']).toStringAsFixed(0)}",
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

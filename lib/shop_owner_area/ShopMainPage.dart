@@ -45,7 +45,7 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
   Future<void> _loadSessionAndFetchData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       setState(() {
         _authToken = prefs.getString('auth_token');
         _userType = prefs.getString('user_type');
@@ -54,7 +54,11 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
       });
 
       print('Session data loaded:');
-      
+      print('Auth token: ${_authToken != null ? "Present" : "Missing"}');
+      print('User type: $_userType');
+      print('User email: $_userEmail');
+      print('User name: $_userName');
+
       if (_authToken == null || _authToken!.isEmpty) {
         await _handleSessionExpired('Authentication token missing');
         return;
@@ -67,10 +71,9 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
 
       // Load cached data first for immediate display
       await _loadCachedShopData();
-      
+
       // Then fetch fresh data
       await _fetchShopData();
-      
     } catch (e) {
       print('Error loading session data: $e');
       await _handleSessionExpired('Session error: $e');
@@ -80,10 +83,10 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
   // Handle session expiry
   Future<void> _handleSessionExpired(String reason) async {
     print('Session expired: $reason');
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    
+
     if (mounted) {
       showDialog(
         context: context,
@@ -130,21 +133,24 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
   Future<void> _saveShopDataToPrefs(Shop shop) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Save shop-specific data
       await prefs.setString('shop_name', shop.name);
       await prefs.setString('shop_email', shop.email);
       await prefs.setString('shop_location', shop.location);
       await prefs.setInt('shop_id', shop.shopID);
       await prefs.setString('shop_phone', shop.phoneNumber);
-      
+
       // Save weather data
       await prefs.setString('last_temperature', _temperature);
       await prefs.setString('last_humidity', _humidity);
       await prefs.setString('last_weather_icon', _weatherIcon);
       await prefs.setString('weather_location', shop.location);
-      await prefs.setString('weather_last_updated', DateTime.now().toIso8601String());
-      
+      await prefs.setString(
+        'weather_last_updated',
+        DateTime.now().toIso8601String(),
+      );
+
       print('Shop data saved to SharedPreferences');
     } catch (e) {
       print('Error saving shop data to SharedPreferences: $e');
@@ -155,14 +161,17 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
   Future<void> _loadCachedShopData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       final cachedName = prefs.getString('shop_name');
       final cachedEmail = prefs.getString('shop_email');
       final cachedLocation = prefs.getString('shop_location');
       final cachedId = prefs.getInt('shop_id');
       final cachedPhone = prefs.getString('shop_phone');
-      
-      if (cachedName != null && cachedEmail != null && cachedLocation != null && cachedId != null) {
+
+      if (cachedName != null &&
+          cachedEmail != null &&
+          cachedLocation != null &&
+          cachedId != null) {
         setState(() {
           _currentShop = Shop(
             shopID: cachedId,
@@ -171,17 +180,17 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
             location: cachedLocation,
             phoneNumber: cachedPhone ?? '',
           );
-          
+
           // Load cached weather data
           _temperature = prefs.getString('last_temperature') ?? '--°';
           _humidity = prefs.getString('last_humidity') ?? '--%';
           _weatherIcon = prefs.getString('last_weather_icon') ?? '☀️';
-          
+
           _isLoading = false;
         });
-        
+
         print('Loaded cached shop data');
-        
+
         // Check if weather data needs updating (if older than 30 minutes)
         final lastUpdated = prefs.getString('weather_last_updated');
         if (lastUpdated != null) {
@@ -202,17 +211,22 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
       if (_authToken == null || _authToken!.isEmpty) {
         throw Exception('No authentication token available');
       }
-      
+
       // Use email from SharedPreferences, fallback to widget.email
       final emailToUse = _userEmail ?? widget.email;
       if (emailToUse == null || emailToUse.isEmpty) {
         throw Exception('No email available for shop lookup');
       }
-      
+
+      print('Fetching shop data for email: $emailToUse');
+
       final email = Uri.encodeComponent(emailToUse);
-    
+      final url = ApiEndpoints.getShopByEmail(email);
+
+      print('Shop API URL: $url');
+
       final response = await http.get(
-        Uri.parse(ApiEndpoints.getShopByEmail(email)),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_authToken',
@@ -220,25 +234,34 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
       );
 
       print('Shop API response status: ${response.statusCode}');
+      print('Shop API response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final shop = Shop.fromJson(data);
-        
+
         setState(() {
           _currentShop = shop;
         });
-        
+
         // Save shop data to SharedPreferences
         await _saveShopDataToPrefs(shop);
-        
+
         // Fetch weather data
         await _fetchWeatherData(shop.location);
-        
       } else if (response.statusCode == 401) {
         await _handleSessionExpired('Authentication failed');
+      } else if (response.statusCode == 404) {
+        print('Shop not found for email: $emailToUse');
+        setState(() {
+          _errorMessage =
+              'Shop not found. Please ensure your shop is registered in the system.';
+          _isLoading = false;
+        });
       } else {
-        throw Exception('Failed to load shop data: ${response.statusCode}');
+        throw Exception(
+          'Failed to load shop data: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('Error fetching shop data: $e');
@@ -261,7 +284,9 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://api.openweathermap.org/data/2.5/weather?q=$location,LK&units=metric&appid=$weatherApiKey'),
+        Uri.parse(
+          'https://api.openweathermap.org/data/2.5/weather?q=$location,LK&units=metric&appid=$weatherApiKey',
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -273,7 +298,7 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
           _isLoading = false;
           _errorMessage = '';
         });
-        
+
         // Save updated weather data to SharedPreferences
         if (_currentShop != null) {
           await _saveShopDataToPrefs(_currentShop!);
@@ -308,8 +333,11 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
       final currentCount = prefs.getInt(usageKey) ?? 0;
       await prefs.setInt(usageKey, currentCount + 1);
       await prefs.setString('last_used_feature', feature);
-      await prefs.setString('last_activity_time', DateTime.now().toIso8601String());
-      
+      await prefs.setString(
+        'last_activity_time',
+        DateTime.now().toIso8601String(),
+      );
+
       print('Usage tracked: $feature used ${currentCount + 1} times');
     } catch (e) {
       print('Error saving usage data: $e');
@@ -329,13 +357,14 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
           _buildHeader(),
           // Main Content with Buttons
           Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                    ),
-                  )
-                : _errorMessage.isNotEmpty
+            child:
+                _isLoading
+                    ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                      ),
+                    )
+                    : _errorMessage.isNotEmpty
                     ? _buildErrorState()
                     : _buildMainContent(),
           ),
@@ -391,9 +420,9 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Weather and Location Section
             LayoutBuilder(
               builder: (context, constraints) {
@@ -458,15 +487,18 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(width: 8),
-                    
+
                     // Location Info
                     if (_currentShop != null) ...[
                       Flexible(
                         flex: 2,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
@@ -511,9 +543,9 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
                 );
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Welcome Section
             Container(
               width: double.infinity,
@@ -531,7 +563,7 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Welcome Back! 👋',
+                    'Welcome',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.white.withOpacity(0.9),
@@ -552,15 +584,6 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.green[300],
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           'Online & Ready for Business',
@@ -595,11 +618,7 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.red[200]!),
             ),
-            child: Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[400],
-            ),
+            child: Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
           ),
           const SizedBox(height: 20),
           Text(
@@ -616,10 +635,7 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
             child: Text(
               _errorMessage,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
+              style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 14),
             ),
           ),
           const SizedBox(height: 24),
@@ -650,7 +666,10 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -679,7 +698,8 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const FarmersListPage()),
+                    builder: (context) => const FarmersListPage(),
+                  ),
                 );
               },
             ),
@@ -690,10 +710,20 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
               'Manage your crop orders',
               () async {
                 await _saveAppUsageData('my_orders');
+
+                // Check if shop data is loaded
+                if (_currentShop == null || _currentShop!.shopID <= 0) {
+                  _showShopNotFoundDialog();
+                  return;
+                }
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => MyRequestsPage(shopID: _currentShop?.shopID ?? 0)),
+                    builder:
+                        (context) =>
+                            MyRequestsPage(shopID: _currentShop!.shopID),
+                  ),
                 );
               },
             ),
@@ -725,11 +755,16 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
           unselectedItemColor: Colors.white70,
           backgroundColor: Colors.green[400],
           selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+          unselectedLabelStyle: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+          ),
           onTap: _onItemTapped,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Ask me'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.smart_toy),
+              label: 'Ask me',
+            ),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
         ),
@@ -738,7 +773,11 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
   }
 
   Widget _buildActionButton(
-      String title, IconData icon, String subtitle, VoidCallback onPressed) {
+    String title,
+    IconData icon,
+    String subtitle,
+    VoidCallback onPressed,
+  ) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -782,11 +821,7 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 32,
-                  ),
+                  child: Icon(icon, color: Colors.white, size: 32),
                 ),
                 const SizedBox(width: 20),
                 Expanded(
@@ -830,6 +865,58 @@ class _ShopOwnerMainPageState extends State<ShopOwnerMainPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showShopNotFoundDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.store_mall_directory_outlined, color: Colors.red[600]),
+              const SizedBox(width: 8),
+              Text(
+                'Shop Not Found',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            'Your shop information could not be loaded. This might be because:\n\n'
+            '• Your shop is not registered in the system\n'
+            '• There\'s a connection issue\n'
+            '• Your account needs to be verified\n\n'
+            'Please try refreshing the page or contact support if the issue persists.',
+            style: GoogleFonts.poppins(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.poppins(color: Colors.grey[600]),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Retry loading shop data
+                _loadSessionAndFetchData();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[600],
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Retry', style: GoogleFonts.poppins()),
+            ),
+          ],
+        );
+      },
     );
   }
 }

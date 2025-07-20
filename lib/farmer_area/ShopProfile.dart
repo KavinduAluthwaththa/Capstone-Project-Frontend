@@ -339,7 +339,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.maybePop(context),
               ),
               Expanded(
@@ -348,7 +348,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -365,7 +365,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
           const SizedBox(height: 8),
           Text(
             "Shop Profile & Product Requests",
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
             textAlign: TextAlign.center,
           ),
         ],

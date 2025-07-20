@@ -1,17 +1,9 @@
 import 'package:capsfront/constraints/api_endpoint.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-const Color appBackgroundColor = Colors.white;
-const Color topBarColor = Color(0xFFAED581);
-const Color formCardBackgroundColor = Color(0xFFE7F0E2);
-const Color textFieldFillColor = Color(0xFFF5F5F5);
-const Color textFieldBorderColor = Color(0xFFDCDCDC);
-const Color requestButtonColor = Color(0xFF67A36F);
-const Color requestButtonTextColor = Colors.white;
-const Color primaryTextColor = Colors.black;
 
 class AddGrowingCropScreen extends StatefulWidget {
   final int farmerId;
@@ -23,6 +15,7 @@ class AddGrowingCropScreen extends StatefulWidget {
 
 class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
   final _formKey = GlobalKey<FormState>();
+  
   final _amountController = TextEditingController();
   int? _selectedCropId;
   bool _isLoading = false;
@@ -51,20 +44,19 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
 
       final response = await http.get(
         Uri.parse(ApiEndpoints.getCrops),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         setState(() {
-          _crops = data.map((json) {
-            return {
-              'id': int.parse(json['value'].toString()),
-              'name': json['text'].toString(),
-            };
-          }).toList();
+          _crops =
+              data.map((json) {
+                return {
+                  'id': int.parse(json['value'].toString()),
+                  'name': json['text'].toString(),
+                };
+              }).toList();
         });
       } else {
         throw Exception('Failed to load crops');
@@ -129,7 +121,8 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
         Navigator.pop(context, true);
       } else {
         final errorResponse = jsonDecode(response.body);
-        final errorMessage = errorResponse['message'] ??
+        final errorMessage =
+            errorResponse['message'] ??
             'Failed to add crop record (Status: ${response.statusCode})';
         throw Exception(errorMessage);
       }
@@ -147,201 +140,353 @@ class _AddGrowingCropScreenState extends State<AddGrowingCropScreen> {
     }
   }
 
-  Widget _buildDropdownWithLabel() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Select Crop:",
-            style: TextStyle(
-              color: primaryTextColor,
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child:
+                  _isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.green,
+                          ),
+                        ),
+                      )
+                      : _buildForm(),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green[400]!, Colors.green[500]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green[200]!.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              Expanded(
+                child: Text(
+                  "Add Growing Crop",
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(width: 48), // Balance the back button
+            ],
           ),
           const SizedBox(height: 8),
-          DropdownButtonFormField<int>(
-            decoration: InputDecoration(
-              hintText: 'Select a crop',
-              filled: true,
-              fillColor: textFieldFillColor,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: textFieldBorderColor, width: 1.0),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: textFieldBorderColor, width: 1.0),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
-              ),
-              // Add isDense to make dropdown more compact
-              isDense: true,
-            ),
-            value: _selectedCropId,
-            items: _crops.map((crop) {
-              return DropdownMenuItem<int>(
-                value: crop['id'],
-                child: Text(
-                  crop['name'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                  ),
-                  // Prevent text overflow in dropdown items
-                  overflow: TextOverflow.ellipsis,
-                ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedCropId = value;
-              });
-            },
-            validator: (value) => value == null ? 'Please select a crop' : null,
-            isExpanded: true,
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildTextFieldWithLabel({
-    required String label,
-    required TextEditingController controller,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: primaryTextColor,
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
+  Widget _buildForm() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white, Colors.grey[50]!],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle('Crop Details'),
+                const SizedBox(height: 20),
+                _buildCropDropdown(),
+                const SizedBox(height: 20),
+                _buildAmountField(),
+                const SizedBox(height: 32),
+                _buildSubmitButton(),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            validator: validator,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.poppins(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Colors.green[700],
+      ),
+    );
+  }
+
+  Widget _buildCropDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Select Crop",
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: DropdownButtonFormField<int>(
             decoration: InputDecoration(
+              hintText: _crops.isEmpty ? 'Loading crops...' : 'Choose a crop',
+              hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
               filled: true,
-              fillColor: textFieldFillColor,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: textFieldBorderColor, width: 1.0),
+                borderSide: BorderSide(color: Colors.grey[300]!),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: textFieldBorderColor, width: 1.0),
+                borderSide: BorderSide(color: Colors.grey[300]!),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
+                borderSide: BorderSide(color: Colors.green[400]!, width: 2),
+              ),
+              prefixIcon: Icon(Icons.agriculture, color: Colors.green[600]),
+            ),
+            value: _selectedCropId,
+            items:
+                _crops.isEmpty
+                    ? <DropdownMenuItem<int>>[]
+                    : _crops.map((crop) {
+                      return DropdownMenuItem<int>(
+                        value: crop['id'],
+                        child: Text(
+                          crop['name'],
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+            onChanged:
+                _crops.isEmpty
+                    ? null
+                    : (value) {
+                      setState(() {
+                        _selectedCropId = value;
+                      });
+                    },
+            validator: (value) => value == null ? 'Please select a crop' : null,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmountField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Amount (kg)",
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: _amountController,
+            keyboardType: TextInputType.number,
+            style: GoogleFonts.poppins(),
+            decoration: InputDecoration(
+              hintText: 'Enter amount in kilograms',
+              hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.green[400]!, width: 2),
+              ),
+              prefixIcon: Icon(Icons.scale, color: Colors.green[600]),
+              suffixText: 'kg',
+              suffixStyle: GoogleFonts.poppins(
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
               ),
             ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter the amount';
+              }
+              if (int.tryParse(value) == null) {
+                return 'Please enter a valid number';
+              }
+              if (int.parse(value) <= 0) {
+                return 'Amount must be greater than 0';
+              }
+              return null;
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildSubmitButton() {
-    return SizedBox(
+    return Container(
       width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green[400]!, Colors.green[600]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green[300]!.withOpacity(0.5),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: ElevatedButton(
         onPressed: _isLoading ? null : _submitGrowingCrop,
         style: ElevatedButton.styleFrom(
-          backgroundColor: requestButtonColor,
-          padding: const EdgeInsets.symmetric(vertical: 15),
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          minimumSize: const Size(double.infinity, 56),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          elevation: 3,
         ),
-        child: _isLoading
-            ? const CircularProgressIndicator(color: Colors.white)
-            : const Text(
-                'SAVE CROP RECORD',
-                style: TextStyle(
-                  color: requestButtonTextColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appBackgroundColor,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: primaryTextColor, size: 28),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Add Crop Record',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: primaryTextColor,
-          ),
-        ),
-        backgroundColor: topBarColor,
-        centerTitle: true,
-        toolbarHeight: 100,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-        ),
-        iconTheme: const IconThemeData(color: primaryTextColor),
-      ),
-
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
+        child:
+            _isLoading
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildDropdownWithLabel(),
-                    _buildTextFieldWithLabel(
-                      label: "Amount (kg):",
-                      controller: _amountController,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the amount';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                        return null;
-                      },
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    _buildSubmitButton(),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Saving...',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
-
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.save, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'SAVE CROP RECORD',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
       ),
-      resizeToAvoidBottomInset: true,
     );
   }
 }

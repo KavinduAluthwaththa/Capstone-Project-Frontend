@@ -317,7 +317,7 @@ class _ProfilePageState extends State<ProfilePage> {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 5),
@@ -325,20 +325,20 @@ class _ProfilePageState extends State<ProfilePage> {
             email.isNotEmpty ? email : 'user@gmail.com',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.white.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 5),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.location_on, size: 16, color: Colors.black54),
+              const Icon(Icons.location_on, size: 16, color: Colors.white),
               const SizedBox(width: 4),
               Text(
                 location.isNotEmpty ? location : 'Location',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.white.withOpacity(0.6),
                 ),
               ),
             ],
