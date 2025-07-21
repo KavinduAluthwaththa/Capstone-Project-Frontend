@@ -26,11 +26,19 @@ class _CropSuggestState extends State<CropSuggest> {
     'location': '',
   };
   
+  // Manual weather input toggle
+  bool useManualWeatherInput = false;
+  
   // Controllers for text fields
   final nController = TextEditingController();
   final pController = TextEditingController();
   final kController = TextEditingController();
   final phController = TextEditingController();
+  
+  // Manual weather input controllers
+  final temperatureController = TextEditingController();
+  final humidityController = TextEditingController();
+  final rainfallController = TextEditingController();
   
   // API response data
   Map<String, dynamic>? cropPredictionResponse;
@@ -52,6 +60,9 @@ class _CropSuggestState extends State<CropSuggest> {
     pController.dispose();
     kController.dispose();
     phController.dispose();
+    temperatureController.dispose();
+    humidityController.dispose();
+    rainfallController.dispose();
     super.dispose();
   }
   
@@ -133,12 +144,70 @@ class _CropSuggestState extends State<CropSuggest> {
     }
   }
   
+  // Method to get current weather data (automatic or manual)
+  Map<String, dynamic> getCurrentWeatherData() {
+    if (useManualWeatherInput) {
+      // Use manual input values
+      double temperature = double.tryParse(temperatureController.text) ?? 0.0;
+      int humidity = int.tryParse(humidityController.text) ?? 0;
+      double rainfall = double.tryParse(rainfallController.text) ?? 0.0;
+      
+      return {
+        'temperature': temperature,
+        'humidity': humidity,
+        'rainfall': rainfall,
+        'location': 'Manual Input',
+      };
+    } else {
+      // Use automatic weather data from SharedPreferences
+      return weatherData;
+    }
+  }
+  
+  // Method to validate manual weather input
+  bool validateManualWeatherInput() {
+    if (!useManualWeatherInput) return true;
+    
+    if (temperatureController.text.isEmpty || 
+        humidityController.text.isEmpty || 
+        rainfallController.text.isEmpty) {
+      _showErrorSnackBar('Please fill in all weather parameters');
+      return false;
+    }
+    
+    double? temperature = double.tryParse(temperatureController.text);
+    int? humidity = int.tryParse(humidityController.text);
+    double? rainfall = double.tryParse(rainfallController.text);
+    
+    if (temperature == null || humidity == null || rainfall == null) {
+      _showErrorSnackBar('Please enter valid numeric values for weather data');
+      return false;
+    }
+    
+    if (humidity < 0 || humidity > 100) {
+      _showErrorSnackBar('Humidity must be between 0 and 100%');
+      return false;
+    }
+    
+    if (rainfall < 0) {
+      _showErrorSnackBar('Rainfall cannot be negative');
+      return false;
+    }
+    
+    return true;
+  }
+  
   // Method to analyze soil data and get crop recommendations from API
   Future<void> analyzeSoilData() async {
     // Validate input fields
     if (nController.text.isEmpty || pController.text.isEmpty ||
         kController.text.isEmpty || phController.text.isEmpty) {
       _showErrorSnackBar('Please fill in all soil parameters');
+      return;
+    }
+    
+    // Validate manual weather input if enabled
+    if (!validateManualWeatherInput()) {
       return;
     }
     
@@ -165,20 +234,24 @@ class _CropSuggestState extends State<CropSuggest> {
     });
     
     try {
+      // Get current weather data (automatic or manual)
+      Map<String, dynamic> currentWeatherData = getCurrentWeatherData();
+      
       // Prepare data in the required order: nitrogen, phosphorus, potassium, temperature, humidity, ph, rainfall
       final requestData = {
         "nitrogen": nitrogen,
         "phosphorus": phosphorus,
         "potassium": potassium,
-        "temperature": weatherData['temperature'],
-        "humidity": weatherData['humidity'],
+        "temperature": currentWeatherData['temperature'],
+        "humidity": currentWeatherData['humidity'],
         "ph": ph,
-        "rainfall": weatherData['rainfall'],
+        "rainfall": currentWeatherData['rainfall'],
       };
       
       print('Sending crop prediction request:');
       print('API Endpoint: ${ApiEndpoints.cropPrediction}');
       print('Request Data: $requestData');
+      print('Using manual weather input: $useManualWeatherInput');
       
       final response = await http.post(
         Uri.parse(ApiEndpoints.cropPrediction),
@@ -498,41 +571,23 @@ class _CropSuggestState extends State<CropSuggest> {
                     color: Colors.green[700],
                   ),
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(8),
+                if (!useManualWeatherInput)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.green[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.refresh, color: Colors.green[600]),
+                      onPressed: _loadSessionAndWeatherData,
+                      tooltip: 'Refresh weather data',
+                    ),
                   ),
-                  child: IconButton(
-                    icon: Icon(Icons.refresh, color: Colors.green[600]),
-                    onPressed: _loadSessionAndWeatherData,
-                    tooltip: 'Refresh weather data',
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildWeatherItem(
-                  Icons.thermostat,
-                  '${weatherData['temperature']}°C',
-                  'Temperature',
-                ),
-                _buildWeatherItem(
-                  Icons.water_drop,
-                  '${weatherData['humidity']}%',
-                  'Humidity',
-                ),
-                _buildWeatherItem(
-                  Icons.grain,
-                  '${weatherData['rainfall']} mm',
-                  'Rainfall (Est.)',
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+            
+            // Toggle for manual weather input
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -542,27 +597,98 @@ class _CropSuggestState extends State<CropSuggest> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.location_pin, color: Colors.blue[600], size: 20),
+                  Icon(Icons.settings, color: Colors.blue[600], size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Location: ${weatherData['location']}',
+                      'Use manual weather input',
                       style: GoogleFonts.poppins(
-                        fontStyle: FontStyle.italic,
+                        fontSize: 14,
                         color: Colors.blue[700],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
+                  Switch(
+                    value: useManualWeatherInput,
+                    onChanged: (value) {
+                      setState(() {
+                        useManualWeatherInput = value;
+                        if (!value) {
+                          // Clear manual input controllers when switching to automatic
+                          temperatureController.clear();
+                          humidityController.clear();
+                          rainfallController.clear();
+                        }
+                      });
+                    },
+                    activeColor: Colors.green[600],
+                  ),
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            
+            // Display weather data or manual input fields
+            if (useManualWeatherInput) ...[
+              _buildManualWeatherInputs(),
+            ] else ...[
+              _buildAutomaticWeatherDisplay(),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.location_pin, color: Colors.blue[600], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Location: ${weatherData['location']}',
+                        style: GoogleFonts.poppins(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
-
+  
+  Widget _buildAutomaticWeatherDisplay() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildWeatherItem(
+          Icons.thermostat,
+          '${weatherData['temperature']}°C',
+          'Temperature',
+        ),
+        _buildWeatherItem(
+          Icons.water_drop,
+          '${weatherData['humidity']}%',
+          'Humidity',
+        ),
+        _buildWeatherItem(
+          Icons.grain,
+          '${weatherData['rainfall']} mm',
+          'Rainfall (Est.)',
+        ),
+      ],
+    );
+  }
+  
   Widget _buildWeatherItem(IconData icon, String value, String label) {
     return Column(
       children: [
@@ -588,6 +714,100 @@ class _CropSuggestState extends State<CropSuggest> {
           style: GoogleFonts.poppins(
             fontSize: 12,
             color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildManualWeatherInputs() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Enter Weather Data Manually',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildWeatherInputField(
+                'Temperature',
+                '°C',
+                temperatureController,
+                Icons.thermostat,
+                'e.g., 28',
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildWeatherInputField(
+                'Humidity',
+                '%',
+                humidityController,
+                Icons.water_drop,
+                'e.g., 65',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildWeatherInputField(
+          'Rainfall',
+          'mm',
+          rainfallController,
+          Icons.grain,
+          'e.g., 10.5',
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildWeatherInputField(String label, String unit, TextEditingController controller, IconData icon, String hint) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: GoogleFonts.poppins(),
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, color: Colors.blue[400], size: 20),
+            suffixText: unit,
+            suffixStyle: GoogleFonts.poppins(
+              color: Colors.grey[600],
+              fontSize: 12,
+            ),
+            hintText: hint,
+            hintStyle: GoogleFonts.poppins(
+              color: Colors.grey[400],
+              fontSize: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.blue[400]!),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            fillColor: Colors.grey[50],
+            filled: true,
           ),
         ),
       ],
