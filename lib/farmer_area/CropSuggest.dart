@@ -46,7 +46,6 @@ class _CropSuggestState extends State<CropSuggest> {
   
   // Session data
   String? _authToken;
-  String? _farmerLocation;
   
   @override
   void initState() {
@@ -78,7 +77,6 @@ class _CropSuggestState extends State<CropSuggest> {
       
       // Load session data
       _authToken = prefs.getString('auth_token');
-      _farmerLocation = prefs.getString('farmer_location') ?? prefs.getString('weather_location');
       
       if (_authToken == null || _authToken!.isEmpty) {
         throw Exception('Authentication token missing. Please log in again.');
