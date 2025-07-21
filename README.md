@@ -127,14 +127,35 @@ lib/
 ├── shared/                   # Shared components
 │   ├── Splash.dart
 │   ├── Chatbot.dart
+│   ├── Chat.dart
 │   ├── DiseaseIdentification.dart
 │   ├── FertilizerCalculation.dart
 │   ├── ProfilePage.dart
-│   ├── Chat.dart
-│   └── settings.dart
+│   ├── HelpSupport.dart
+│   ├── PrivacyPolicyPage.dart
+│   ├── settings.dart
+│   └── theme_test.dart
 ├── models/                   # Data models
+│   ├── crop_model.dart
+│   ├── crop_suggest_model.dart
+│   ├── cropDisease_model.dart
+│   ├── cropRecommendation_model.dart
+│   ├── cropShop_model.dart
+│   ├── DiseaseResult_model.dart
+│   ├── farmer_model.dart
+│   ├── growingCrop_model.dart
+│   ├── login_model.dart
+│   ├── pesticide_model.dart
+│   ├── register_model.dart
+│   ├── request_model.dart
+│   ├── shop_model.dart
+│   ├── shopOwner_model.dart
+│   └── user_model.dart
 ├── services/                 # App services
+│   ├── env.g.dart
+│   └── theme_service.dart
 └── constraints/              # API endpoints & constants
+    └── api_endpoint.dart
 ```
 
 ## 🔧 Configuration
