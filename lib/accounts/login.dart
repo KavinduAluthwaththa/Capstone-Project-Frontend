@@ -29,7 +29,46 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  Future<void> testBasicConnectivity() async {
+    try {
+      print('Testing basic connectivity...');
+      print('Base URL: ${ApiEndpoints.baseUrl}');
+      
+      // Test 1: Swagger page
+      final testUrl = '${ApiEndpoints.baseUrl.replaceAll('/api', '')}/swagger';
+      print('Testing Swagger URL: $testUrl');
+      
+      final swaggerResponse = await http.get(Uri.parse(testUrl));
+      print('Swagger test - Status: ${swaggerResponse.statusCode}');
+      
+      // Test 2: Login endpoint with GET (should return Method Not Allowed)
+      print('Testing Login URL: ${ApiEndpoints.loginUser}');
+      final loginResponse = await http.get(Uri.parse(ApiEndpoints.loginUser));
+      print('Login endpoint test - Status: ${loginResponse.statusCode}');
+      print('Login endpoint test - Body: ${loginResponse.body}');
+      
+      if (swaggerResponse.statusCode == 200) {
+        print('✅ Swagger connectivity works');
+      } else {
+        print('❌ Swagger connectivity failed');
+      }
+      
+      // 405 Method Not Allowed is expected for GET on login endpoint
+      if (loginResponse.statusCode == 405 || loginResponse.statusCode == 404) {
+        print('✅ Login endpoint is reachable (${loginResponse.statusCode})');
+      } else {
+        print('❌ Login endpoint test unexpected status: ${loginResponse.statusCode}');
+      }
+      
+    } catch (e) {
+      print('❌ Connectivity test error: $e');
+    }
+  }
+
   Future<void> submitForm() async {
+    // First, let's test basic connectivity
+    await testBasicConnectivity();
+    
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
@@ -41,11 +80,18 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       try {
+        print('Login URL: ${ApiEndpoints.loginUser}');
+        print('Request body: ${jsonEncode(loginData.toJson())}');
+        
         final response = await http.post(
           Uri.parse(ApiEndpoints.loginUser),
           headers: {"Content-Type": "application/json", "Accept": "application/json"},
           body: jsonEncode(loginData.toJson()),
         );
+
+        print('Response status: ${response.statusCode}');
+        print('Response headers: ${response.headers}');
+        print('Response body: ${response.body}');
 
         if (response.statusCode >= 200 && response.statusCode < 300) {
           final jsonData = json.decode(response.body);
@@ -106,12 +152,23 @@ class _LoginPageState extends State<LoginPage> {
           // Navigate to appropriate dashboard
           _navigateToDashboard(roleNumber, email);
         } else {
-          final errorData = json.decode(response.body);
-          String errorMessage = errorData['message'] ?? "Login failed. Please check your credentials.";
-          _showError(errorMessage);
+          // Check if response body is not empty before decoding
+          if (response.body.isNotEmpty) {
+            try {
+              final errorData = json.decode(response.body);
+              String errorMessage = errorData['message'] ?? "Login failed. Please check your credentials.";
+              _showError(errorMessage);
+            } catch (e) {
+              _showError("Login failed. Invalid response from server.");
+            }
+          } else {
+            // Handle empty response (e.g., Unauthorized with no body)
+            _showError("Login failed. Please check your credentials.");
+          }
         }
       } catch (e) {
-        _showError("An error occurred: $e");
+        print('Network error: $e');
+        _showError("Network error: $e");
       } finally {
         setState(() {
           _isLoading = false;

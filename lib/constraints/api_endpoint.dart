@@ -1,9 +1,19 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class ApiEndpoints {
-  static const String baseUrl = "https://localhost:44320/api";
+  static String get baseUrl {
+    if (kIsWeb) {
+      // For web, use localhost
+      return "http://localhost:7126/api";
+    } else {
+      // For mobile (emulator/physical device), use your actual IP address
+      return "http://172.20.10.2:7126/api";
+    }
+  }
 
   // Crop
-  static const String getCrops = "$baseUrl/Crop";
-  static const String postCrop = "$baseUrl/Crop";
+  static String getCrops = "$baseUrl/Crop";
+  static String postCrop = "$baseUrl/Crop";
   static String deleteCrop(String cropId) => "$baseUrl/Crop/$cropId";
   static String updateCrop(String cropId) => "$baseUrl/Crop/$cropId";
 
@@ -14,8 +24,8 @@ class ApiEndpoints {
   // static String updateCropDisease(String cdid) => "$baseUrl/CropDisease/$cdid";
 
   // Crop Shop
-  static const String getCropShops = "$baseUrl/CropShop";
-  static const String postCropShop = "$baseUrl/CropShop";
+  static String getCropShops = "$baseUrl/CropShop";
+  static String postCropShop = "$baseUrl/CropShop";
   static String getCropShopById(String id) => "$baseUrl/CropShop/$id";
   static String updateCropShop(String id) => "$baseUrl/CropShop/$id";
   static String deleteCropShop(String id) => "$baseUrl/CropShop/$id";
@@ -28,23 +38,23 @@ class ApiEndpoints {
   // static String deleteDisease(String id) => "$baseUrl/Disease/$id";
 
   // Farmer
-  static const String getFarmers = "$baseUrl/Farmer/full";
-  static const String postFarmer = "$baseUrl/Farmer";
+  static String getFarmers = "$baseUrl/Farmer/full";
+  static String postFarmer = "$baseUrl/Farmer";
   static String getFarmer(String Email) => "$baseUrl/Farmer/$Email";
   static String deleteFarmer(String farmerID) => "$baseUrl/Farmer/$farmerID";
   static String updateFarmer(String farmerID) => "$baseUrl/Farmer/$farmerID";
 
   // Fertilizer
-  static const String getFertilizers = "$baseUrl/Fertilizer";
-  static const String postFertilizer = "$baseUrl/Fertilizer";
+  static String getFertilizers = "$baseUrl/Fertilizer";
+  static String postFertilizer = "$baseUrl/Fertilizer";
   static String deleteFertilizer(String fertilizerID) =>
       "$baseUrl/Fertilizer/$fertilizerID";
   static String updateFertilizer(String fertilizerID) =>
       "$baseUrl/Fertilizer/$fertilizerID";
 
   // Growing Crop
-  static const String getGrowingCrops = "$baseUrl/GrowingCrop";
-  static const String postGrowingCrop = "$baseUrl/GrowingCrop";
+  static String getGrowingCrops = "$baseUrl/GrowingCrop";
+  static String postGrowingCrop = "$baseUrl/GrowingCrop";
   static String getGrowingCropById(int farmerID) => "$baseUrl/GrowingCrop/$farmerID";
   static String updateGrowingCrop(String id) => "$baseUrl/GrowingCrop/$id";
   static String deleteGrowingCrop(String id) => "$baseUrl/GrowingCrop/$id";
@@ -78,30 +88,30 @@ class ApiEndpoints {
   // static String deletePesticide(String id) => "$baseUrl/Pesticide/$id";
 
   // Request
-  static const String getRequests = "$baseUrl/Request";
-  static const String postRequest = "$baseUrl/Request";
+  static String getRequests = "$baseUrl/Request";
+  static String postRequest = "$baseUrl/Request";
   static String getRequestById(int id) => "$baseUrl/Request/$id";
   static String getRequestByShopId(int shopid) => "$baseUrl/Request/shop/$shopid";
   static String updateRequest(String id) => "$baseUrl/Request/$id";
   static String deleteRequest(String id) => "$baseUrl/Request/$id";
 
   // Shop
-  static const String getShops = "$baseUrl/Shop";
+  static String getShops = "$baseUrl/Shop";
   static String getShopByEmail(String email) => "$baseUrl/Shop/$email";
   static String updateShop(String id) => "$baseUrl/Shop/$id";
   static String deleteShop(String id) => "$baseUrl/Shop/$id";
 
   // User
-  static const String registerUser = "$baseUrl/User/Register";
-  static const String loginUser = "$baseUrl/User/Login";
+  static String registerUser = "$baseUrl/User/Register";
+  static String loginUser = "$baseUrl/User/Login";
 
   //suggestion model
-  static const String cropPrediction = "$baseUrl/CropRecommendation/predict"; //nitrogen, phosphorus,potassium,temperature,humidity,ph,rainfall
+  static String cropPrediction = "$baseUrl/CropRecommendation/predict"; //nitrogen, phosphorus,potassium,temperature,humidity,ph,rainfall
 
   //disease prediction
-  static const String potatodisease = "$baseUrl/PotatoDisease/predict"; //potato
-  static const String ricedisease = "$baseUrl/RiceDisease/predict"; //rice
-  static const String pumpkindisease = "$baseUrl/PumpkinDisease/predict"; //pumpkin
+  static String potatodisease = "$baseUrl/PotatoDisease/predict"; //potato
+  static String ricedisease = "$baseUrl/RiceDisease/predict"; //rice
+  static String pumpkindisease = "$baseUrl/PumpkinDisease/predict"; //pumpkin
 
 
 
