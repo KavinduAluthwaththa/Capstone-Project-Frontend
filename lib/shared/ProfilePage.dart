@@ -289,7 +289,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: MediaQuery.of(context).padding.top + 20,
+        bottom: 20,
+      ),
       decoration: BoxDecoration(
         color: Colors.green[400],
         borderRadius: const BorderRadius.only(
@@ -380,7 +385,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(child: _buildProfileContent()),
+      body: _buildProfileContent(),
     );
   }
 }

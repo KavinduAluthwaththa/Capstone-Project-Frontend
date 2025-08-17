@@ -218,25 +218,23 @@ class _CropsPageState extends State<CropsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            if (_errorMessage != null) _buildErrorBanner(),
-            Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                      ),
-                    )
-                  : growingCrops.isEmpty
-                      ? _buildEmptyState()
-                      : _buildCropsList(),
-            ),
-            _buildAddButton(),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildHeader(),
+          if (_errorMessage != null) _buildErrorBanner(),
+          Expanded(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                    ),
+                  )
+                : growingCrops.isEmpty
+                    ? _buildEmptyState()
+                    : _buildCropsList(),
+          ),
+          SafeArea(bottom: true, child: _buildAddButton()),
+        ],
       ),
     );
   }
@@ -244,7 +242,12 @@ class _CropsPageState extends State<CropsPage> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).padding.top + 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         color: Colors.green[400],
         borderRadius: const BorderRadius.only(

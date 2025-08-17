@@ -516,35 +516,33 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            if (_errorMessage.isNotEmpty) _buildErrorBanner(),
-            Expanded(
-              child:
-                  _isLoading
-                      ? const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.green,
-                          ),
-                        ),
-                      )
-                      : SingleChildScrollView(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 20),
-                            _buildAccountInfo(),
-                            const SizedBox(height: 20),
-                            _buildSettingsSection(),
-                          ],
+      body: Column(
+        children: [
+          _buildHeader(),
+          if (_errorMessage.isNotEmpty) _buildErrorBanner(),
+          Expanded(
+            child:
+                _isLoading
+                    ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.green,
                         ),
                       ),
-            ),
-          ],
-        ),
+                    )
+                    : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 20),
+                          _buildAccountInfo(),
+                          const SizedBox(height: 20),
+                          _buildSettingsSection(),
+                        ],
+                      ),
+                    ),
+          ),
+        ],
       ),
     );
   }
@@ -552,7 +550,12 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).padding.top + 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.green[400]!, Colors.green[500]!],

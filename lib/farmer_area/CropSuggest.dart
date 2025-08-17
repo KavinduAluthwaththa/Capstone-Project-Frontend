@@ -355,26 +355,29 @@ class _CropSuggestState extends State<CropSuggest> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: isLoading
-                  ? _buildLoadingState()
-                  : _errorMessage.isNotEmpty
-                      ? _buildErrorState()
-                      : _buildMainContent(),
-            ),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: isLoading
+                ? _buildLoadingState()
+                : _errorMessage.isNotEmpty
+                    ? _buildErrorState()
+                    : _buildMainContent(),
+          ),
+        ],
       ),
     );
   }
   
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).padding.top + 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.green[400]!, Colors.green[500]!],

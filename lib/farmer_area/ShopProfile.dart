@@ -294,31 +294,29 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _fetchOrderRequests,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      _buildShopInfoCard(),
-                      const SizedBox(height: 20),
-                      _buildStatsCard(),
-                      const SizedBox(height: 20),
-                      _buildOrderRequestsSection(),
-                    ],
-                  ),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _fetchOrderRequests,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildShopInfoCard(),
+                    const SizedBox(height: 20),
+                    _buildStatsCard(),
+                    const SizedBox(height: 20),
+                    _buildOrderRequestsSection(),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -326,7 +324,12 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).padding.top + 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         color: Colors.green[400],
         borderRadius: const BorderRadius.only(

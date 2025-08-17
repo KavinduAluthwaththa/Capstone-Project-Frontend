@@ -373,39 +373,42 @@ class _DiseaseMState extends State<DiseaseM> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCropSelectionSection(),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildCropSelectionSection(),
+                  const SizedBox(height: 20),
+                  _buildImageUploadSection(),
+                  const SizedBox(height: 20),
+                  _buildAnalyzeButton(),
+                  const SizedBox(height: 25),
+                  if (_diseaseResults.isNotEmpty) ...[
+                    _buildResultsSection(),
                     const SizedBox(height: 20),
-                    _buildImageUploadSection(),
-                    const SizedBox(height: 20),
-                    _buildAnalyzeButton(),
-                    const SizedBox(height: 25),
-                    if (_diseaseResults.isNotEmpty) ...[
-                      _buildResultsSection(),
-                      const SizedBox(height: 20),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).padding.top + 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.green[400]!, Colors.green[500]!],

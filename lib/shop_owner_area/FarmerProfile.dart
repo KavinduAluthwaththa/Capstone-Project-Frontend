@@ -221,35 +221,33 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
     }
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _fetchFarmerCrops,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      _buildFarmerInfoCard(),
-                      const SizedBox(height: 20),
-                      _buildStatsCard(),
-                      const SizedBox(height: 20),
-                      _buildFarmingCropsSection(),
-                    ],
-                  ),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _fetchFarmerCrops,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildFarmerInfoCard(),
+                    const SizedBox(height: 16),
+                    _buildStatsCard(),
+                    const SizedBox(height: 16),
+                    _buildFarmingCropsSection(),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -257,7 +255,12 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 16,
+        right: 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         color: Colors.green[400],
         borderRadius: const BorderRadius.only(

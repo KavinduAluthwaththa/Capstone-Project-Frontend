@@ -6,8 +6,9 @@ class ApiEndpoints {
       // For web, use localhost
       return "http://localhost:7126/api";
     } else {
-      // For mobile (emulator/physical device), use your actual IP address
-      return "http://172.20.10.2:7126/api";
+      // For Android emulator, use 10.0.2.2 to access host machine
+      // For physical devices, use your actual IP address like 172.20.10.2
+      return "http://10.0.2.2:7126/api";
     }
   }
 

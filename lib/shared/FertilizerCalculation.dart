@@ -335,31 +335,29 @@ class _FertilizingState extends State<Fertilizing> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildCropSelection(),
-                    const SizedBox(height: 20),
-                    _buildFertilizerSelection(),
-                    const SizedBox(height: 20),
-                    _buildAreaInput(),
-                    const SizedBox(height: 30),
-                    _buildActionButtons(),
-                    const SizedBox(height: 30),
-                    if (taskCompleted && amountToUse != null) _buildResults(),
-                  ],
-                ),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  _buildCropSelection(),
+                  const SizedBox(height: 20),
+                  _buildFertilizerSelection(),
+                  const SizedBox(height: 20),
+                  _buildAreaInput(),
+                  const SizedBox(height: 30),
+                  _buildActionButtons(),
+                  const SizedBox(height: 30),
+                  if (taskCompleted && amountToUse != null) _buildResults(),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -367,7 +365,12 @@ class _FertilizingState extends State<Fertilizing> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).padding.top + 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         color: Colors.green[400],
         borderRadius: const BorderRadius.only(
@@ -435,6 +438,7 @@ class _FertilizingState extends State<Fertilizing> {
             DropdownButtonFormField<String>(
               decoration: _inputDecoration(),
               value: selectedCrop,
+              isExpanded: true,
               hint: Text(
                 "Choose your crop",
                 style: GoogleFonts.poppins(color: Colors.grey[600]),
@@ -451,7 +455,11 @@ class _FertilizingState extends State<Fertilizing> {
                       .map(
                         (crop) => DropdownMenuItem(
                           value: crop,
-                          child: Text(crop, style: GoogleFonts.poppins()),
+                          child: Text(
+                            crop, 
+                            style: GoogleFonts.poppins(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       )
                       .toList(),
@@ -506,6 +514,7 @@ class _FertilizingState extends State<Fertilizing> {
             DropdownButtonFormField<String>(
               decoration: _inputDecoration(),
               value: selectedFertilizer,
+              isExpanded: true,
               hint: Text(
                 "Choose fertilizer",
                 style: GoogleFonts.poppins(color: Colors.grey[600]),
@@ -522,7 +531,11 @@ class _FertilizingState extends State<Fertilizing> {
                       .map(
                         (fertilizer) => DropdownMenuItem(
                           value: fertilizer,
-                          child: Text(fertilizer, style: GoogleFonts.poppins()),
+                          child: Text(
+                            fertilizer, 
+                            style: GoogleFonts.poppins(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       )
                       .toList(),
@@ -579,9 +592,11 @@ class _FertilizingState extends State<Fertilizing> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
+                  flex: 1,
                   child: DropdownButtonFormField<String>(
                     decoration: _inputDecoration(),
                     value: selectedAreaUnit,
+                    isExpanded: true,
                     onChanged: (value) {
                       setState(() {
                         selectedAreaUnit = value;
@@ -594,7 +609,11 @@ class _FertilizingState extends State<Fertilizing> {
                             .map(
                               (unit) => DropdownMenuItem(
                                 value: unit,
-                                child: Text(unit, style: GoogleFonts.poppins()),
+                                child: Text(
+                                  unit, 
+                                  style: GoogleFonts.poppins(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             )
                             .toList(),
@@ -726,11 +745,13 @@ class _FertilizingState extends State<Fertilizing> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Amount Required:",
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Text(
+                          "Amount Required:",
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       Text(
@@ -750,12 +771,15 @@ class _FertilizingState extends State<Fertilizing> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Crop:", style: GoogleFonts.poppins(fontSize: 14)),
-                      Text(
-                        selectedCrop!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green[600],
+                      Flexible(
+                        child: Text(
+                          selectedCrop!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green[600],
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -765,12 +789,15 @@ class _FertilizingState extends State<Fertilizing> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Fertilizer:", style: GoogleFonts.poppins(fontSize: 14)),
-                      Text(
-                        selectedFertilizer!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.blue[600],
+                      Flexible(
+                        child: Text(
+                          selectedFertilizer!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blue[600],
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

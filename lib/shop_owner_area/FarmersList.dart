@@ -246,24 +246,22 @@ class _FarmersListPageState extends State<FarmersListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _fetchFarmers,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [const SizedBox(height: 20), _buildFarmersList()],
-                  ),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _fetchFarmers,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [const SizedBox(height: 20), _buildFarmersList()],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -271,7 +269,12 @@ class _FarmersListPageState extends State<FarmersListPage> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 16,
+        right: 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         color: Colors.green[400],
         borderRadius: const BorderRadius.only(

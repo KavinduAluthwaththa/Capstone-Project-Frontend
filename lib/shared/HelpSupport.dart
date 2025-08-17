@@ -68,26 +68,24 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildContactSection(),
-                    const SizedBox(height: 20),
-                    _buildFAQSection(),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+      body: Column(
+        children: [
+          _buildHeader(context),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  _buildContactSection(),
+                  const SizedBox(height: 20),
+                  _buildFAQSection(),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -95,7 +93,12 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).padding.top + 16,
+        bottom: 16,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.green[400]!, Colors.green[500]!],
@@ -290,6 +293,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -299,6 +303,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
                       fontWeight: FontWeight.w500,
                       color: Colors.green[700],
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -307,6 +312,8 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
                       fontSize: 12,
                       color: Colors.grey[600],
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
                 ],
               ),
@@ -320,7 +327,6 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
 
   Widget _buildFAQSection() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -341,12 +347,16 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
             children: [
               Icon(Icons.quiz, color: Colors.green[600], size: 28),
               const SizedBox(width: 12),
-              Text(
-                'Frequently Asked Questions',
-                style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+              Expanded(
+                child: Text(
+                  'Frequently Asked Questions',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
             ],
@@ -439,6 +449,8 @@ class _FAQItemState extends State<FAQItem> {
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 3,
                     ),
                   ),
                   const SizedBox(width: 12),

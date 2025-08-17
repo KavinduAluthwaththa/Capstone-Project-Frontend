@@ -25,19 +25,21 @@ class _SplashscreenState extends State<Splashscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.green.shade900, Colors.white10],
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-            ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green.shade900, Colors.white10],
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
           ),
+        ),
+        child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Spacer(flex: 2),
               _buildIcon(),
               const SizedBox(height: 20),
               const Text(
@@ -48,8 +50,9 @@ class _SplashscreenState extends State<Splashscreen> {
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 20),
-              Expanded(child: _buildLoading()),
+              const SizedBox(height: 40),
+              _buildLoading(),
+              const Spacer(flex: 1),
             ],
           ),
         ),
@@ -59,7 +62,7 @@ class _SplashscreenState extends State<Splashscreen> {
 
   Widget _buildIcon() {
     return Container(
-      margin: const EdgeInsets.only(top: 200, bottom: 10),
+      margin: const EdgeInsets.only(bottom: 10),
       child: const Icon(
         Icons.agriculture,
         size: 90,
@@ -70,7 +73,8 @@ class _SplashscreenState extends State<Splashscreen> {
 
   Widget _buildLoading() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 50),
+      height: 150,
+      margin: const EdgeInsets.symmetric(horizontal: 50),
       child: Lottie.network(
         'https://lottie.host/9f1a777d-fa08-4d3b-8c88-9e510ee525be/r1E9fn5G5E.json',
       ),
